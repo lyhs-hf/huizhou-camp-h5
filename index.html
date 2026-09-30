@@ -3,27 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>【千里徽州·行止画卷】新东方文旅黄山冬雪亲子营</title>
+  <title>【新东方文旅】徽州过大年·黄山冬雪亲子营</title>
   <style>
 /* ============================================================
-   【千里徽州 · 行止画卷】风物探索长卷交互样式表
-   高定新中式美学 · 墨金冬雪
+   【徽州过大年·黄山冬雪亲子营】沉浸式交互H5样式表
+   视觉风格：新中式手绘国风 · 墨金冬雪
    ============================================================ */
 
 :root {
-  --bg-deep: #0e0f12;
-  --paper-cream: #fbf9f4;
-  --gold-primary: #d4af37;
-  --gold-glow: rgba(212, 175, 55, 0.4);
-  --gold-light: #fef08a;
-  --vermilion: #b92b27;
-  --vermilion-glow: rgba(185, 43, 39, 0.35);
-  --ink-black: #141518;
-  --ink-gray: #282a30;
-  --text-main: #f1f5f9;
-  --text-sub: #94a3b8;
+  --color-bg-dark: #121316;
+  --color-card-bg: #1e2025;
+  --color-paper: #fcfbf7;
+  --color-paper-dark: #f2eee5;
+  --color-gold: #d4af37;
+  --color-gold-light: #f3e5ab;
+  --color-gold-glow: rgba(212, 175, 55, 0.4);
+  --color-vermilion: #b92b27;
+  --color-ink: #1a1a1a;
+  --color-gray-sub: #78716c;
+  --color-lantern-glow: rgba(245, 158, 11, 0.6);
   --font-serif: "Noto Serif SC", "Source Han Serif CN", "Songti SC", "SimSun", serif;
-  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 * {
@@ -38,12 +38,12 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background-color: #07080a;
+  background-color: #0b0c0e;
   font-family: var(--font-sans);
-  color: var(--text-main);
+  color: #333;
 }
 
-/* 移动端视口容器 (居中模拟器) */
+/* 桌面居中容器，移动端100%撑满 */
 #app-viewport {
   width: 100%;
   max-width: 440px;
@@ -52,117 +52,125 @@ html, body {
   margin: 0 auto;
   position: relative;
   overflow: hidden;
-  background-color: var(--bg-deep);
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
-  display: flex;
-  flex-direction: column;
+  background-color: var(--color-bg-dark);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
 }
 
-/* 顶部悬浮控制栏 */
-.top-header {
+/* 背景冬雪粒子 Canvas */
+#snow-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 顶部通用控制条（BGM与阶段指示器） */
+.top-nav {
   position: absolute;
   top: 14px;
   left: 0;
   width: 100%;
-  padding: 0 16px;
+  padding: 0 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  z-index: 50;
-  pointer-events: none;
+  z-index: 30;
 }
 
-.top-header > * {
-  pointer-events: auto;
-}
-
-.brand-capsule {
+.brand-badge {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: rgba(15, 16, 20, 0.75);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  padding: 5px 12px;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--color-gold);
+  background: rgba(20, 20, 25, 0.6);
+  padding: 4px 10px;
   border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
   backdrop-filter: blur(8px);
 }
 
-.brand-capsule .brand-logo {
-  color: var(--gold-primary);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  font-family: var(--font-serif);
-}
-
-.brand-capsule .camp-tag {
-  font-size: 11px;
-  color: #cbd5e1;
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
-  padding-left: 6px;
-}
-
 .audio-btn {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: rgba(15, 16, 20, 0.75);
-  border: 1px solid rgba(212, 175, 55, 0.35);
+  background: rgba(20, 20, 25, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--gold-primary);
-  backdrop-filter: blur(8px);
+  color: var(--color-gold);
   transition: all 0.3s;
 }
 
 .audio-btn.playing {
-  animation: discSpin 4s linear infinite;
-  box-shadow: 0 0 12px var(--gold-glow);
+  animation: rotateDisc 4s linear infinite;
+  box-shadow: 0 0 10px var(--color-gold-glow);
 }
 
-@keyframes discSpin {
+@keyframes rotateDisc {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-/* ============================================================
-   开篇扉页覆盖层 (Opening Screen)
-   ============================================================ */
-#cover-overlay {
+/* 页面切换总舞台 */
+.stage {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: radial-gradient(circle at center, #1e2027 0%, #0a0b0d 100%);
-  z-index: 100;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.stage.active {
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+}
+
+/* ============================================================
+   PAGE 1: 扉页信笺 (Opening Invitation)
+   ============================================================ */
+.opening-wrap {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 24px;
-  transition: opacity 0.8s ease, transform 0.8s ease;
-}
-
-#cover-overlay.hide {
-  opacity: 0;
-  transform: scale(1.05);
-  pointer-events: none;
-}
-
-.cover-letter-card {
-  width: 100%;
-  max-width: 360px;
-  background: var(--paper-cream);
-  border-radius: 6px;
-  padding: 30px 22px;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), inset 0 0 50px rgba(212, 175, 55, 0.08);
-  border: 1px solid #dfd7c2;
+  background: radial-gradient(circle at center, #23252c 0%, #101114 100%);
   position: relative;
-  color: #1f1f1f;
 }
 
-.cover-letter-card::before {
+.envelope-card {
+  width: 100%;
+  max-width: 350px;
+  background: var(--color-paper);
+  border-radius: 6px;
+  padding: 30px 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 0 60px rgba(212, 175, 55, 0.08);
+  border: 1px solid #e0d8c3;
+  position: relative;
+  transform: translateY(20px);
+  animation: envelopeRise 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes envelopeRise {
+  to { transform: translateY(0); }
+}
+
+.envelope-card::before {
   content: "";
   position: absolute;
   top: 6px; left: 6px; right: 6px; bottom: 6px;
@@ -170,675 +178,796 @@ html, body {
   pointer-events: none;
 }
 
-.cover-tag {
+.letter-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.letter-tag {
   display: inline-block;
   font-size: 11px;
   letter-spacing: 3px;
-  color: var(--vermilion);
-  font-weight: 700;
-  border-bottom: 1px solid var(--vermilion);
+  color: var(--color-vermilion);
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-vermilion);
   padding-bottom: 2px;
+  margin-bottom: 8px;
+}
+
+.letter-title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  color: #1f1f1f;
+  letter-spacing: 2px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.letter-body {
+  font-family: var(--font-serif);
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: #3b3a36;
+  text-align: justify;
+  margin-bottom: 24px;
+}
+
+.letter-body p {
   margin-bottom: 12px;
 }
 
-.cover-title {
-  font-family: var(--font-serif);
-  font-size: 21px;
-  line-height: 1.45;
-  letter-spacing: 1.5px;
-  margin-bottom: 18px;
-  font-weight: 700;
-  color: #111;
-}
-
-.cover-body {
-  font-family: var(--font-serif);
-  font-size: 14px;
-  line-height: 1.85;
-  color: #333;
-  margin-bottom: 22px;
-}
-
-.cover-body p {
-  margin-bottom: 10px;
-}
-
-.cover-body .quote-point {
-  color: var(--vermilion);
+.letter-body .highlight {
+  color: var(--color-vermilion);
   font-weight: 600;
   background: rgba(185, 43, 39, 0.06);
-  padding: 0 2px;
+  padding: 0 3px;
 }
 
-.btn-open-scroll {
+.letter-signature {
+  text-align: right;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  color: #666;
+  border-top: 1px dashed #d5cdb8;
+  padding-top: 12px;
+}
+
+.btn-seal {
   width: 100%;
+  margin-top: 20px;
   background: linear-gradient(135deg, #b92b27, #8e1c18);
   color: #fff;
   border: none;
-  padding: 14px;
+  padding: 14px 20px;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 3px;
   border-radius: 4px;
   cursor: pointer;
-  box-shadow: 0 8px 25px rgba(185, 43, 39, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: transform 0.2s;
+  box-shadow: 0 8px 20px rgba(185, 43, 39, 0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.btn-open-scroll:active {
+.btn-seal:active {
   transform: scale(0.98);
 }
 
 /* ============================================================
-   画卷主探索视口 (Scroll Viewport)
+   LEVEL TEMPLATE: 3D 翻转卡片总结构
    ============================================================ */
-#scroll-container {
+.level-container {
   width: 100%;
   height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  position: relative;
-  padding-bottom: 120px;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* 顶部导引提示 */
-.scroll-intro-tip {
-  padding: 68px 20px 14px;
-  text-align: center;
-}
-
-.scroll-intro-tip .tip-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--gold-light);
-  background: rgba(212, 175, 55, 0.12);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  padding: 4px 12px;
-  border-radius: 20px;
-}
-
-/* 每一个站点区块 */
-.station-section {
-  padding: 18px 16px 28px;
-  position: relative;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.station-meta-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.day-tag {
-  background: var(--gold-primary);
-  color: #0f1013;
-  font-size: 10px;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 3px;
-  letter-spacing: 1px;
-}
-
-.city-tag {
-  font-size: 12px;
-  color: #94a3b8;
-  letter-spacing: 1px;
-}
-
-.station-title {
-  font-family: var(--font-serif);
-  font-size: 18.5px;
-  color: #f8fafc;
-  letter-spacing: 1px;
-  margin-bottom: 6px;
-}
-
-.station-summary {
-  font-size: 12.5px;
-  color: #a1a1aa;
-  line-height: 1.5;
-  margin-bottom: 16px;
-}
-
-/* 站点下的探索卡片列表 (热点入口) */
-.hotspot-cards {
+  padding: 60px 18px 24px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
 }
 
-.hotspot-card {
-  background: rgba(26, 28, 35, 0.85);
-  border: 1px solid rgba(212, 175, 55, 0.25);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-  cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+.level-progress-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+
+.progress-steps {
+  display: flex;
+  gap: 6px;
+}
+
+.progress-dot {
+  width: 22px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  transition: all 0.4s;
+}
+
+.progress-dot.active {
+  background: var(--color-gold);
+  box-shadow: 0 0 8px var(--color-gold);
+}
+
+.progress-dot.done {
+  background: var(--color-vermilion);
+}
+
+.level-meta {
+  font-size: 11px;
+  color: #8e8d8a;
+  letter-spacing: 1px;
+}
+
+/* 翻转卡片视口 */
+.flip-card-viewport {
+  flex: 1;
+  perspective: 1200px;
   position: relative;
-}
-
-.hotspot-card:active {
-  transform: scale(0.99);
-}
-
-.hotspot-card.collected {
-  border-color: rgba(34, 197, 94, 0.5);
-}
-
-.hotspot-image-wrap {
   width: 100%;
-  height: 165px;
-  position: relative;
-  overflow: hidden;
-  background: #1e2025;
 }
 
-.hotspot-image-wrap img {
+.flip-card-inner {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.hotspot-card:hover .hotspot-image-wrap img {
-  transform: scale(1.04);
-}
-
-.hotspot-img-overlay {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: linear-gradient(180deg, transparent 40%, rgba(14, 15, 18, 0.95) 100%);
-}
-
-.hotspot-pill-tag {
-  position: absolute;
-  top: 10px; left: 10px;
-  font-size: 11px;
-  background: rgba(14, 15, 18, 0.85);
-  color: var(--gold-light);
-  border: 1px solid rgba(212, 175, 55, 0.35);
-  padding: 3px 9px;
-  border-radius: 12px;
-  backdrop-filter: blur(4px);
-}
-
-.hotspot-status-badge {
-  position: absolute;
-  top: 10px; right: 10px;
-  font-size: 10.5px;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.status-unread {
-  background: rgba(185, 43, 39, 0.8);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  animation: pulseBadge 2s infinite;
-}
-
-.status-done {
-  background: rgba(34, 197, 94, 0.85);
-  color: #fff;
-}
-
-@keyframes pulseBadge {
-  0%, 100% { opacity: 0.9; }
-  50% { opacity: 1; transform: scale(1.05); }
-}
-
-.hotspot-content-body {
-  padding: 12px 14px;
-}
-
-.hotspot-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-
-.hotspot-name {
-  font-family: var(--font-serif);
-  font-size: 16px;
-  color: #f1f5f9;
-  letter-spacing: 1px;
-}
-
-.hotspot-peek {
-  font-size: 12px;
-  color: #94a3b8;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.hotspot-footer-action {
-  margin-top: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-  color: var(--gold-primary);
-  border-top: 1px dashed rgba(255, 255, 255, 0.1);
-  padding-top: 8px;
-}
-
-/* ============================================================
-   底部常驻：母子风物印谱收集条 (Passport Floating Dock)
-   ============================================================ */
-.bottom-dock {
-  position: absolute;
-  bottom: 0; left: 0;
-  width: 100%;
-  background: rgba(14, 15, 18, 0.94);
-  border-top: 1px solid rgba(212, 175, 55, 0.35);
-  backdrop-filter: blur(12px);
-  padding: 10px 16px 14px;
-  z-index: 60;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.dock-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.dock-title {
-  font-family: var(--font-serif);
-  font-size: 12.5px;
-  color: var(--gold-primary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.dock-counter {
-  font-size: 11px;
-  color: #cbd5e1;
-}
-
-.dock-counter strong {
-  color: #38bdf8;
-  font-size: 13px;
-}
-
-.seals-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-}
-
-.seal-slot {
-  flex: 1;
-  height: 48px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px dashed rgba(212, 175, 55, 0.25);
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
   position: relative;
-  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.2, 0.85, 0.32, 1.2);
 }
 
-.seal-slot.unlocked {
-  background: rgba(185, 43, 39, 0.12);
-  border: 1px solid var(--vermilion);
-  box-shadow: 0 0 10px rgba(185, 43, 39, 0.3);
+.flip-card-inner.flipped {
+  transform: rotateY(180deg);
 }
 
-.seal-slot-icon {
-  font-size: 14px;
-  opacity: 0.3;
-}
-
-.seal-slot.unlocked .seal-slot-icon {
-  opacity: 1;
-}
-
-.seal-slot-name {
-  font-size: 9.5px;
-  color: #64748b;
-  font-family: var(--font-serif);
-}
-
-.seal-slot.unlocked .seal-slot-name {
-  color: #fca5a5;
-  font-weight: 700;
-}
-
-.btn-open-finale {
-  width: 100%;
-  background: linear-gradient(135deg, var(--gold-primary), #b38f2a);
-  color: #111;
-  font-size: 13.5px;
-  font-weight: 700;
-  border: none;
-  padding: 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  letter-spacing: 2px;
-  display: none;
-  box-shadow: 0 4px 15px var(--gold-glow);
-  animation: pulseBtn 1.8s infinite;
-}
-
-@keyframes pulseBtn {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
-
-/* ============================================================
-   风物深度解密抽屉 (Detail Reader Modal)
-   ============================================================ */
-.reader-modal {
+.flip-face {
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(10px);
-  z-index: 120;
-  display: none;
-  justify-content: flex-end;
-  flex-direction: column;
-}
-
-.reader-modal.active {
-  display: flex;
-}
-
-.reader-sheet {
-  width: 100%;
-  max-height: 85%;
-  background: #17181c;
-  border-top: 1px solid var(--gold-primary);
-  border-radius: 18px 18px 0 0;
-  display: flex;
-  flex-direction: column;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.9);
-  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+/* 正面：孩子探索线 */
+.flip-front {
+  background: radial-gradient(circle at 50% 20%, #282a33 0%, #15161a 100%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
 
-.sheet-handle-bar {
-  width: 100%;
-  padding: 12px 16px 8px;
+/* 反面：母亲享受线 */
+.flip-back {
+  background: radial-gradient(circle at 50% 20%, #2a2522 0%, #141211 100%);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  padding: 22px;
+  transform: rotateY(180deg);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+}
+
+/* 卡片头部 */
+.card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.sheet-close-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: #fff;
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.sheet-body-scroll {
-  padding: 16px 18px 30px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.sheet-header-img {
-  width: 100%;
-  height: 190px;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 16px;
-  border: 1px solid rgba(212, 175, 55, 0.3);
-}
-
-.sheet-header-img img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-}
-
-.sheet-title {
-  font-family: var(--font-serif);
-  font-size: 20px;
-  color: #f8fafc;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
-}
-
-.sheet-tag-line {
-  font-size: 12px;
-  color: var(--gold-primary);
-  margin-bottom: 16px;
-}
-
-/* 核心三段论解析框 */
-.deep-section {
-  margin-bottom: 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-  padding: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.deep-section-title {
-  font-family: var(--font-serif);
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.deep-section-title.history { color: var(--gold-primary); }
-.deep-section-title.child { color: #38bdf8; }
-.deep-section-title.mom { color: #fb7185; }
-
-.deep-section-content {
-  font-size: 13.5px;
-  line-height: 1.75;
-  color: #cbd5e1;
-  text-align: justify;
-}
-
-.btn-collect-seal {
-  width: 100%;
-  margin-top: 10px;
-  background: linear-gradient(135deg, #b92b27, #8e1c18);
-  color: #fff;
-  border: none;
-  padding: 14px;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 6px 20px rgba(185, 43, 39, 0.4);
-}
-
-/* ============================================================
-   终局海报弹窗与留资卡片 (Finale Modal & Lead-Gen)
-   ============================================================ */
-.finale-modal {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(12px);
-  z-index: 150;
-  display: none;
-  flex-direction: column;
-  padding: 20px 16px 16px;
-  overflow-y: auto;
-}
-
-.finale-modal.active {
-  display: flex;
-}
-
-.finale-box {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.finale-close {
-  align-self: flex-end;
-  color: #cbd5e1;
-  font-size: 20px;
-  cursor: pointer;
-  margin-bottom: 10px;
-  width: 32px; height: 32px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#finale-canvas {
-  width: 100%;
-  border-radius: 8px;
-  border: 1px solid var(--gold-primary);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-  margin-bottom: 14px;
-  display: block;
-}
-
-.finale-input-block {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 14px;
-}
-
-.input-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.input-cell:last-child {
-  margin-bottom: 0;
-}
-
-.input-cell label {
-  font-size: 12px;
-  color: var(--gold-light);
-  width: 65px;
-}
-
-.input-cell input {
-  flex: 1;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  padding: 7px 10px;
-  color: #fff;
-  border-radius: 4px;
-  font-size: 13px;
-  outline: none;
-}
-
-.lead-gen-card {
-  background: linear-gradient(145deg, #24252e, #17181c);
-  border: 1px solid var(--gold-primary);
-  border-radius: 8px;
-  padding: 18px 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-}
-
-.lead-gen-badge {
-  font-size: 10.5px;
-  background: rgba(185, 43, 39, 0.2);
-  color: #f87171;
-  padding: 2px 7px;
-  border-radius: 3px;
-  border: 1px solid rgba(185, 43, 39, 0.4);
-  display: inline-block;
-  margin-bottom: 6px;
-}
-
-.lead-gen-title {
-  font-family: var(--font-serif);
-  font-size: 16px;
-  color: #fff;
-  margin-bottom: 4px;
-}
-
-.lead-gen-desc {
-  font-size: 12px;
-  color: #94a3b8;
-  line-height: 1.5;
+  align-items: flex-start;
   margin-bottom: 12px;
 }
 
-.lead-input {
+.role-pill {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.role-child {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.role-mom {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--color-gold);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+.location-tag {
+  font-size: 12px;
+  color: #9ca3af;
+  letter-spacing: 1px;
+}
+
+.card-title {
+  font-family: var(--font-serif);
+  font-size: 19px;
+  color: #f3f4f6;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.card-subtitle {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+/* 微交互主体验区（居中画布） */
+.interaction-stage {
+  flex: 1;
+  position: relative;
+  background: rgba(10, 11, 13, 0.6);
+  border-radius: 8px;
+  border: 1px dashed rgba(212, 175, 55, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hint-bar {
+  position: absolute;
+  bottom: 8px;
+  background: rgba(0, 0, 0, 0.75);
+  color: var(--color-gold-light);
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  letter-spacing: 1px;
+  pointer-events: none;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  animation: pulseHint 2s infinite;
+}
+
+@keyframes pulseHint {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+/* ============================================================
+   关卡具体交互元素样式
+   ============================================================ */
+
+/* 关卡1：胡开文描金 */
+#ink-canvas {
   width: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid #475569;
-  padding: 10px 12px;
-  border-radius: 4px;
-  color: #fff;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+/* 关卡2：唐模鱼灯 */
+.fish-lantern-box {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.lantern-svg-wrap {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  transition: all 0.5s;
+}
+
+.lantern-glow-bg {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 120px; height: 120px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, var(--color-lantern-glow) 0%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  pointer-events: none;
+}
+
+.lantern-svg-wrap.lit .lantern-glow-bg {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.8);
+}
+
+.touch-ignite-btn {
+  margin-top: 14px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid var(--color-lantern-glow);
+  color: #fcd34d;
+  padding: 8px 18px;
+  border-radius: 20px;
   font-size: 13px;
-  margin-bottom: 10px;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+/* 关卡3：南屏打食桃 */
+.shitao-box {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.mold-container {
+  width: 180px;
+  height: 180px;
+  background: #3e2723;
+  border: 4px solid #5d4037;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5);
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.mold-container.knock {
+  animation: moldKnock 0.3s ease;
+}
+
+@keyframes moldKnock {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+  100% { transform: translateY(0); }
+}
+
+.shitao-cake {
+  width: 110px;
+  height: 110px;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #ede8dc);
+  border-radius: 50% 50% 45% 45% / 60% 60% 40% 40%;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.shitao-cake.popped {
+  transform: scale(1.15) translateY(-10px);
+  box-shadow: 0 18px 30px rgba(0,0,0,0.5);
+}
+
+.red-dot {
+  width: 18px;
+  height: 18px;
+  background: var(--color-vermilion);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  box-shadow: 0 0 6px rgba(185, 43, 39, 0.6);
+}
+
+.red-dot.visible {
+  opacity: 1;
+}
+
+/* 关卡4：短尾猴科考望远镜 */
+.macaque-box {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.scope-viewport {
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  border: 8px solid #27272a;
+  box-shadow: 0 0 0 4px #d4af37, inset 0 0 30px rgba(0,0,0,0.8);
+  overflow: hidden;
+  position: relative;
+  background: #18181b;
+}
+
+.crosshair {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    linear-gradient(to right, transparent 49.5%, rgba(212, 175, 55, 0.4) 50%, transparent 50.5%),
+    linear-gradient(to bottom, transparent 49.5%, rgba(212, 175, 55, 0.4) 50%, transparent 50.5%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.scope-img-layer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: filter 0.2s ease;
+}
+
+.focus-slider-wrap {
+  width: 80%;
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.focus-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: #3f3f46;
   outline: none;
 }
 
-.lead-input:focus {
-  border-color: var(--gold-primary);
+.focus-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--color-gold-glow);
 }
 
-.lead-success-msg {
-  display: none;
-  background: rgba(34, 197, 94, 0.15);
-  border: 1px solid #22c55e;
-  color: #22c55e;
+.stamp-mark {
+  position: absolute;
+  width: 140px;
+  height: 50px;
+  border: 2px solid var(--color-vermilion);
+  color: var(--color-vermilion);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  transform: rotate(-12deg) scale(2);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  pointer-events: none;
+  z-index: 10;
+  background: rgba(185, 43, 39, 0.08);
+}
+
+.stamp-mark.stamped {
+  opacity: 1;
+  transform: rotate(-12deg) scale(1);
+}
+
+/* 反面：母亲享受画卷 */
+.mom-reward-wrap {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mom-visual-frame {
+  flex: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  margin-bottom: 14px;
+  background: #1a1715;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mom-quote-box {
+  background: rgba(20, 18, 17, 0.8);
+  border-left: 3px solid var(--color-gold);
+  padding: 12px 14px;
+  border-radius: 0 6px 6px 0;
+  margin-bottom: 14px;
+}
+
+.mom-quote-text {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1.7;
+  color: #e5e5e5;
+}
+
+.mom-asset-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-gold);
+  margin-top: 6px;
+}
+
+/* 底部操作条 */
+.card-bottom-action {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-secondary {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
   padding: 12px;
   border-radius: 6px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  flex: 1.4;
+  background: linear-gradient(135deg, var(--color-gold), #b38f2a);
+  border: none;
+  color: #121316;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-primary:active, .btn-secondary:active {
+  transform: scale(0.98);
+}
+
+/* ============================================================
+   PAGE 6: 终局生成与档案海报
+   ============================================================ */
+.finale-wrap {
+  width: 100%;
+  height: 100%;
+  padding: 55px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.finale-header {
   text-align: center;
-  font-size: 12.5px;
-  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.finale-title {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  color: #f3f4f6;
+  letter-spacing: 2px;
+}
+
+.finale-sub {
+  font-size: 12px;
+  color: var(--color-gold);
+  margin-top: 4px;
+}
+
+/* 海报容器 */
+.poster-container {
+  width: 100%;
+  background: #18191d;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+  overflow: hidden;
+  margin-bottom: 14px;
+  position: relative;
+}
+
+#poster-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.poster-loading-tip {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--color-gold);
+  font-size: 13px;
+  letter-spacing: 2px;
+}
+
+.finale-inputs {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.input-row:last-child {
+  margin-bottom: 0;
+}
+
+.input-row label {
+  font-size: 12px;
+  color: #cbd5e1;
+  width: 70px;
+}
+
+.input-row input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 8px 12px;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+}
+
+.input-row input:focus {
+  border-color: var(--color-gold);
+}
+
+.finale-action-bar {
+  display: flex;
+  gap: 10px;
+}
+
+/* ============================================================
+   LEAD-GEN MODAL: 特批科研席位审核留资弹窗
+   ============================================================ */
+.modal-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-box {
+  width: 100%;
+  max-width: 360px;
+  background: linear-gradient(145deg, #22242b, #15161a);
+  border: 1px solid var(--color-gold);
+  border-radius: 10px;
+  padding: 24px 20px;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 20px rgba(212, 175, 55, 0.2);
+  animation: modalPop 0.35s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+@keyframes modalPop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 28px; height: 28px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.modal-badge {
+  display: inline-block;
+  background: rgba(185, 43, 39, 0.2);
+  color: #f87171;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(185, 43, 39, 0.4);
+  margin-bottom: 8px;
+}
+
+.modal-title {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  color: #f8fafc;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.modal-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  color: #e2e8f0;
+  margin-bottom: 5px;
+}
+
+.form-group input, .form-group select {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #475569;
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13.5px;
+  outline: none;
+}
+
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--color-gold);
+}
+
+.modal-footer-note {
+  font-size: 11px;
+  color: var(--color-gold);
+  margin-top: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* 提交成功界面 */
+.success-box {
+  display: none;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.success-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.15);
+  border: 2px solid #22c55e;
+  color: #22c55e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin: 0 auto 12px;
 }
 
 </style>
@@ -849,12 +978,16 @@ html, body {
 <body>
 
   <div id="app-viewport">
-    
-    <!-- 1. 顶部全局悬浮导航 -->
-    <header class="top-header">
-      <div class="brand-capsule">
-        <span class="brand-logo">新东方文旅</span>
-        <span class="camp-tag">黄山冬雪奢享营</span>
+    <!-- 背景冬雪粒子层 -->
+    <canvas id="snow-canvas"></canvas>
+
+    <!-- 顶部常驻功能导航 -->
+    <header class="top-nav">
+      <div class="brand-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span>新东方文旅 · 奢享研学</span>
       </div>
       <button class="audio-btn" id="audio-toggle-btn" title="音乐开关">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -865,357 +998,485 @@ html, body {
       </button>
     </header>
 
-    <!-- 2. 开篇扉页：致精致妈妈的一封信 (覆盖层) -->
-    <div id="cover-overlay">
-      <div class="cover-letter-card">
-        <span class="cover-tag">2026 · 新年避世来信</span>
-        <h1 class="cover-title">给亲爱的妈妈：<br>一场彼此成全的冬雪之约</h1>
-        <div class="cover-body">
-          <p>致亲爱的妈妈：</p>
-          <p>在刚结束的期末备战、年终汇报与繁杂家务里，你是否也曾想过：为什么每一次全家旅行，最后都变成了<span class="quote-point">换个城市继续当保姆</span>？</p>
-          <p>真正高品质的亲子关系，从来不是单向的付出与消耗，而是<span class="quote-point">彼此独立、互相成全</span>。</p>
-          <p>今年过年，去徽州。让孩子在深山古宅里亲手捧回非遗大作与自然好奇；而你，终于可以只做回那个优雅、松弛、享有私属时光的自己。</p>
-        </div>
-        <button class="btn-open-scroll" id="btn-open-scroll">
-          <span>展卷 · 开启徽州行止</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- 3. 画卷探索主视口 -->
-    <main id="scroll-container">
-      <div class="scroll-intro-tip">
-        <div class="tip-badge">
-          <span>📜 千里徽州 · 行止画卷</span>
-          <span style="opacity:0.4;">|</span>
-          <span>探访 5 处风物，解锁母子平行生长印谱</span>
-        </div>
-      </div>
-
-      <!-- 动态渲染 5 大站点容器 -->
-      <div id="stations-wrap"></div>
-    </main>
-
-    <!-- 4. 底部常驻：母子风物印谱 -->
-    <footer class="bottom-dock">
-      <div class="dock-header">
-        <div class="dock-title">
-          <span>🏮</span>
-          <span>母子风物印谱</span>
-        </div>
-        <div class="dock-counter">
-          已探访 <strong id="collected-count">0</strong> / 5 处风物
-        </div>
-      </div>
-
-      <div class="seals-row">
-        <div class="seal-slot" id="slot-1">
-          <span class="seal-slot-icon">🏛️</span>
-          <span class="seal-slot-name">八角印</span>
-        </div>
-        <div class="seal-slot" id="slot-2">
-          <span class="seal-slot-icon">🏮</span>
-          <span class="seal-slot-name">鱼灯印</span>
-        </div>
-        <div class="seal-slot" id="slot-3">
-          <span class="seal-slot-icon">🧧</span>
-          <span class="seal-slot-name">食桃印</span>
-        </div>
-        <div class="seal-slot" id="slot-4">
-          <span class="seal-slot-icon">🐒</span>
-          <span class="seal-slot-name">科考印</span>
-        </div>
-        <div class="seal-slot" id="slot-5">
-          <span class="seal-slot-icon">🌲</span>
-          <span class="seal-slot-name">守望印</span>
-        </div>
-      </div>
-
-      <button class="btn-open-finale" id="btn-show-finale">
-        ✨ 徽州风物收录已成 · 启封母子生长档案
-      </button>
-    </footer>
-
-    <!-- 5. 深度解密抽屉 (Reader Drawer) -->
-    <div class="reader-modal" id="reader-modal">
-      <div class="reader-sheet">
-        <div class="sheet-handle-bar">
-          <span style="font-size:12px; color:var(--gold-primary); font-family:var(--font-serif);">徽州风物研学实录</span>
-          <button class="sheet-close-btn" id="btn-close-sheet">✕</button>
-        </div>
-
-        <div class="sheet-body-scroll">
-          <div class="sheet-header-img">
-            <img id="modal-img" src="" alt="风物实录">
+    <!-- ==========================================
+         STAGE 0: 扉页信笺 (Opening)
+         ========================================== -->
+    <section class="stage active" id="stage-0">
+      <div class="opening-wrap">
+        <div class="envelope-card">
+          <div class="letter-header">
+            <span class="letter-tag">2026 · 新年避世来信</span>
+            <h1 class="letter-title">给亲爱的妈妈：<br>一场彼此成全的冬雪之约</h1>
           </div>
-          <h2 class="sheet-title" id="modal-title"></h2>
-          <p class="sheet-tag-line" id="modal-tag"></p>
-
-          <!-- 模块一：大语文与历史反常识 -->
-          <div class="deep-section">
-            <div class="deep-section-title history">
-              <span>📖</span>
-              <span>大语文与历史反常识解密</span>
-            </div>
-            <p class="deep-section-content" id="modal-history"></p>
+          <div class="letter-body">
+            <p>致亲爱的妈妈：</p>
+            <p>在刚结束的期末复习、年终汇报与琐碎家务里，你是否也曾想过：为什么每一次亲子旅行，最后都变成了<span class="highlight">换个城市继续当保姆</span>？</p>
+            <p>真正高品质的亲子关系，从来不是单向的付出与消耗，而是<span class="highlight">彼此独立、互相成全</span>。</p>
+            <p>今年过年，去徽州。让孩子在深山古宅里亲手捧回非遗大作与自然好奇；而你，终于可以只做回那个优雅、松弛、享有私属时光的自己。</p>
           </div>
-
-          <!-- 模块二：孩子带回的研学实证 -->
-          <div class="deep-section">
-            <div class="deep-section-title child">
-              <span>🎓</span>
-              <span>【孩子收获】带回家的硬核资产</span>
-            </div>
-            <p class="deep-section-content" id="modal-child"></p>
+          <div class="letter-signature">
+            <span>—— 新东方文旅 · 黄山冬雪营导览</span>
           </div>
-
-          <!-- 模块三：母亲享有的专属松弛 -->
-          <div class="deep-section">
-            <div class="deep-section-title mom">
-              <span>☕</span>
-              <span>【母亲奢享】专属优雅时刻</span>
-            </div>
-            <p class="deep-section-content" id="modal-mom"></p>
-          </div>
-
-          <button class="btn-collect-seal" id="btn-collect-seal">
-            🏮 盖上朱印：收录至风物印谱
+          <button class="btn-seal" id="open-letter-btn">
+            <span>踏入这场冬雪之约</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
           </button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- 6. 终局结营档案海报与留资弹窗 (Finale Modal) -->
-    <div class="finale-modal" id="finale-modal">
-      <div class="finale-box">
-        <div class="finale-close" id="btn-close-finale">✕</div>
+    <!-- ==========================================
+         STAGE 1: 关卡一·胡开文墨厂 (Gold Tracing)
+         ========================================== -->
+    <section class="stage" id="stage-1">
+      <div class="level-container">
+        <div class="level-progress-bar">
+          <div class="progress-steps">
+            <span class="progress-dot active"></span>
+            <span class="progress-dot"></span>
+            <span class="progress-dot"></span>
+            <span class="progress-dot"></span>
+          </div>
+          <span class="level-meta">DAY 2 · 歙县古城</span>
+        </div>
+
+        <div class="flip-card-viewport">
+          <div class="flip-card-inner" id="card-inner-1">
+            <!-- 正面：孩子描金 -->
+            <div class="flip-face flip-front">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">胡开文墨厂 · 屏息描金</h2>
+                  <p class="card-subtitle">一两黄金一两墨 · 清乾隆三十年工艺</p>
+                </div>
+                <span class="role-pill role-child">孩子 · 东方匠心</span>
+              </div>
+              <div class="interaction-stage">
+                <canvas id="ink-canvas"></canvas>
+                <div class="hint-bar" id="ink-hint">👉 请用手指沿凹槽滑动，为墨锭描上真金</div>
+              </div>
+              <div class="card-bottom-action">
+                <button class="btn-primary" id="btn-flip-1" style="display:none; width:100%;">查看此时母亲的专属时光 ➔</button>
+              </div>
+            </div>
+            <!-- 反面：母亲享受 -->
+            <div class="flip-face flip-back">
+              <div class="mom-reward-wrap">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">黄梅戏下午茶 · 一盏徽州茶</h2>
+                    <p class="card-subtitle">古徽州府治 · 偷得浮生半日闲</p>
+                  </div>
+                  <span class="role-pill role-mom">母亲 · 优雅松弛</span>
+                </div>
+                <div class="mom-visual-frame">
+                  <svg width="220" height="150" viewBox="0 0 240 160">
+                    <rect width="240" height="160" fill="#201c18" rx="8"/>
+                    <!-- 窗框与黄梅戏剪影示意 -->
+                    <path d="M20 20 h200 v120 h-200 z" fill="#141210" stroke="#d4af37" stroke-width="1"/>
+                    <circle cx="120" cy="70" r="30" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-dasharray="4,4"/>
+                    <!-- 茶盏 -->
+                    <ellipse cx="120" cy="110" rx="20" ry="6" fill="#8e5d32"/>
+                    <path d="M104 108 Q120 135 136 108" fill="#a47148"/>
+                    <path d="M116 95 Q120 80 124 95" stroke="#f3e5ab" stroke-width="1.5" fill="none" opacity="0.6"/>
+                    <text x="120" y="45" font-family="serif" font-size="12" fill="#d4af37" text-anchor="middle">一曲《天仙配》 · 一盏黄山毛峰</text>
+                  </svg>
+                </div>
+                <div class="mom-quote-box">
+                  <p class="mom-quote-text">“当孩子在国家级传承人指导下屏息描金、体悟千年匠心；此时的你，移步古戏台前，伴着清冽茶香，静静听完一整出婉转的黄梅戏。”</p>
+                  <div class="mom-asset-tag">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>无痛托管 · 专属 VIP 文化下午茶</span>
+                  </div>
+                </div>
+                <div class="card-bottom-action">
+                  <button class="btn-primary" id="btn-next-1" style="width:100%;">前往下一站：唐模夜色 ➔</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         STAGE 2: 关卡二·唐模鱼灯 (Fish Lantern)
+         ========================================== -->
+    <section class="stage" id="stage-2">
+      <div class="level-container">
+        <div class="level-progress-bar">
+          <div class="progress-steps">
+            <span class="progress-dot done"></span>
+            <span class="progress-dot active"></span>
+            <span class="progress-dot"></span>
+            <span class="progress-dot"></span>
+          </div>
+          <span class="level-meta">DAY 2 · 唐模古村</span>
+        </div>
+
+        <div class="flip-card-viewport">
+          <div class="flip-card-inner" id="card-inner-2">
+            <!-- 正面：孩子扎鱼灯点亮 -->
+            <div class="flip-face flip-front">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">唐模古村 · 鳌鱼飞天</h2>
+                  <p class="card-subtitle">中国水口第一村 · 从做灯到夜游闭环</p>
+                </div>
+                <span class="role-pill role-child">孩子 · 非遗手作</span>
+              </div>
+              <div class="interaction-stage">
+                <div class="fish-lantern-box">
+                  <div class="lantern-svg-wrap" id="fish-lantern-visual">
+                    <div class="lantern-glow-bg"></div>
+                    <svg width="180" height="150" viewBox="0 0 200 160">
+                      <!-- 鱼身竹篾骨架 -->
+                      <ellipse cx="100" cy="80" rx="65" ry="40" fill="none" stroke="#d4af37" stroke-width="3"/>
+                      <path d="M165 80 L195 50 L185 80 L195 110 Z" fill="none" stroke="#d4af37" stroke-width="3"/>
+                      <circle cx="55" cy="72" r="6" fill="#d4af37"/>
+                      <path d="M70 60 Q100 40 130 60" fill="none" stroke="rgba(212,175,55,0.6)" stroke-width="2"/>
+                      <path d="M70 100 Q100 120 130 100" fill="none" stroke="rgba(212,175,55,0.6)" stroke-width="2"/>
+                      <!-- 鳞片手绘装饰 -->
+                      <path d="M85 75 Q95 65 105 75" fill="none" stroke="#e11d48" stroke-width="2.5"/>
+                      <path d="M100 85 Q110 75 120 85" fill="none" stroke="#e11d48" stroke-width="2.5"/>
+                    </svg>
+                  </div>
+                  <button class="touch-ignite-btn" id="ignite-lantern-btn">长按 1 秒 · 点亮鱼腹烛光</button>
+                </div>
+                <div class="hint-bar" id="lantern-hint">长按上方按钮，为古巷巡游点燃第一盏灯</div>
+              </div>
+              <div class="card-bottom-action">
+                <button class="btn-primary" id="btn-flip-2" style="display:none; width:100%;">查看此时母亲的专属时光 ➔</button>
+              </div>
+            </div>
+            <!-- 反面：母亲享受 -->
+            <div class="flip-face flip-back">
+              <div class="mom-reward-wrap">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">青石板巷 · 牵手发光的河</h2>
+                    <p class="card-subtitle">徽州水口园林 · 夜游温情闭环</p>
+                  </div>
+                  <span class="role-pill role-mom">母亲 · 温情时刻</span>
+                </div>
+                <div class="mom-visual-frame">
+                  <svg width="220" height="150" viewBox="0 0 240 160">
+                    <rect width="240" height="160" fill="#0f1115" rx="8"/>
+                    <!-- 马头墙黑夜轮廓 -->
+                    <path d="M10 60 L40 60 L40 40 L80 40 L80 20 L120 20 L120 140 L10 140 Z" fill="#1b1d22"/>
+                    <path d="M230 70 L200 70 L200 50 L160 50 L160 30 L130 30 L130 140 L230 140 Z" fill="#1b1d22"/>
+                    <!-- 青石板小径倒影 -->
+                    <path d="M100 160 L140 160 L125 100 L115 100 Z" fill="#f59e0b" opacity="0.3"/>
+                    <!-- 母子牵手剪影 -->
+                    <circle cx="112" cy="85" r="5" fill="#fcd34d"/>
+                    <rect x="110" y="90" width="5" height="18" fill="#fcd34d"/>
+                    <circle cx="126" cy="78" r="6" fill="#fcd34d"/>
+                    <rect x="123" y="84" width="7" height="24" fill="#fcd34d"/>
+                    <!-- 牵手连线 -->
+                    <line x1="114" y1="96" x2="124" y2="92" stroke="#fcd34d" stroke-width="2"/>
+                    <!-- 手中鱼灯 -->
+                    <circle cx="104" cy="98" r="8" fill="#f59e0b" filter="drop-shadow(0 0 8px #f59e0b)"/>
+                  </svg>
+                </div>
+                <div class="mom-quote-box">
+                  <p class="mom-quote-text">“入夜鼓点响起，青石板巷亮起发光的河。你无需催促他收起手机，他提着自己白天亲手扎好的鱼灯，眼里闪着光，主动牵起你的手汇入巡游队伍。”</p>
+                  <div class="mom-asset-tag">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>无痛陪伴 · 高光亲子朋友圈大片</span>
+                  </div>
+                </div>
+                <div class="card-bottom-action">
+                  <button class="btn-primary" id="btn-next-2" style="width:100%;">前往下一站：南屏老宅 ➔</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         STAGE 3: 关卡三·南屏老宅 (Shitao Pastry)
+         ========================================== -->
+    <section class="stage" id="stage-3">
+      <div class="level-container">
+        <div class="level-progress-bar">
+          <div class="progress-steps">
+            <span class="progress-dot done"></span>
+            <span class="progress-dot done"></span>
+            <span class="progress-dot active"></span>
+            <span class="progress-dot"></span>
+          </div>
+          <span class="level-meta">DAY 3 · 黟县南屏</span>
+        </div>
+
+        <div class="flip-card-viewport">
+          <div class="flip-card-inner" id="card-inner-3">
+            <!-- 正面：孩子打食桃 -->
+            <div class="flip-face flip-front">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">南屏古村 · 敲打食桃</h2>
+                  <p class="card-subtitle">80根木柱叙秩堂 · 百年老宅的真年俗</p>
+                </div>
+                <span class="role-pill role-child">孩子 · 传统年礼</span>
+              </div>
+              <div class="interaction-stage">
+                <div class="shitao-box">
+                  <div class="mold-container" id="shitao-mold">
+                    <div class="shitao-cake" id="shitao-cake">
+                      <div class="red-dot" id="red-dot"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="hint-bar" id="shitao-hint">👉 点击深色木模进行“敲击脱模”</div>
+              </div>
+              <div class="card-bottom-action">
+                <button class="btn-primary" id="btn-flip-3" style="display:none; width:100%;">查看此时母亲的专属时光 ➔</button>
+              </div>
+            </div>
+            <!-- 反面：母亲享受 -->
+            <div class="flip-face flip-back">
+              <div class="mom-reward-wrap">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">老宅天井 · 暖阳私家年宴</h2>
+                    <p class="card-subtitle">百年老宅深处 · 纯粹徽州年味</p>
+                  </div>
+                  <span class="role-pill role-mom">母亲 · 沐光私宴</span>
+                </div>
+                <div class="mom-visual-frame">
+                  <svg width="220" height="150" viewBox="0 0 240 160">
+                    <rect width="240" height="160" fill="#181512" rx="8"/>
+                    <!-- 天井四方光柱 -->
+                    <polygon points="70 0, 170 0, 195 160, 45 160" fill="url(#sunbeam)" opacity="0.35"/>
+                    <defs>
+                      <linearGradient id="sunbeam" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#fef08a" stop-opacity="0.8"/>
+                        <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    <!-- 老宅八仙桌 -->
+                    <rect x="85" y="105" width="70" height="35" fill="#451a03" rx="3"/>
+                    <circle cx="120" cy="115" r="14" fill="#991b1b"/>
+                    <text x="120" y="85" font-family="serif" font-size="12" fill="#fef08a" text-anchor="middle">天井漏下的光，就是老宅里的年味</text>
+                  </svg>
+                </div>
+                <div class="mom-quote-box">
+                  <p class="mom-quote-text">“在这个春节，你彻底告别了走亲戚的繁琐礼节与油烟油腻。围坐百年老宅天井，吃一桌热气腾腾的私家年宴。那一束从天井漏下的冬阳，就是最奢侈的松弛。”</p>
+                  <div class="mom-asset-tag">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>免洗手作羹汤 · 深度沉浸式老宅年宴</span>
+                  </div>
+                </div>
+                <div class="card-bottom-action">
+                  <button class="btn-primary" id="btn-next-3" style="width:100%;">前往下一站：深山科考 ➔</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         STAGE 4: 关卡四·短尾猴科考 (Macaque Scope)
+         ========================================== -->
+    <section class="stage" id="stage-4">
+      <div class="level-container">
+        <div class="level-progress-bar">
+          <div class="progress-steps">
+            <span class="progress-dot done"></span>
+            <span class="progress-dot done"></span>
+            <span class="progress-dot done"></span>
+            <span class="progress-dot active"></span>
+          </div>
+          <span class="level-meta">DAY 4 · 浮溪科研基地</span>
+        </div>
+
+        <div class="flip-card-viewport">
+          <div class="flip-card-inner" id="card-inner-4">
+            <!-- 正面：孩子科考 -->
+            <div class="flip-face flip-front">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">短尾猴基地 · 行为学取样</h2>
+                  <p class="card-subtitle">特批进入不对外开放 · 40余年科研圣地</p>
+                </div>
+                <span class="role-pill role-child">孩子 · 生态科考</span>
+              </div>
+              <div class="interaction-stage">
+                <div class="macaque-box">
+                  <div class="scope-viewport">
+                    <div class="crosshair"></div>
+                    <div class="stamp-mark" id="stamp-mark">国家科考取样完成</div>
+                    <div class="scope-img-layer" id="scope-img" style="filter: blur(8px);">
+                      <svg width="180" height="180" viewBox="0 0 200 200">
+                        <!-- 冬雪树枝与猴群剪影 -->
+                        <path d="M10 160 Q80 120 190 140" stroke="#71717a" stroke-width="12" fill="none"/>
+                        <!-- 猴妈妈与小猴理毛 -->
+                        <ellipse cx="90" cy="115" rx="22" ry="26" fill="#a16207"/>
+                        <circle cx="85" cy="85" r="16" fill="#a16207"/>
+                        <ellipse cx="120" cy="125" rx="14" ry="16" fill="#ca8a04"/>
+                        <circle cx="124" cy="105" r="11" fill="#ca8a04"/>
+                        <!-- 积雪覆盖 -->
+                        <path d="M60 145 Q80 140 100 145" stroke="#ffffff" stroke-width="4" fill="none"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="focus-slider-wrap">
+                    <span style="font-size:11px; color:#a1a1aa;">模糊</span>
+                    <input type="range" min="0" max="100" value="20" class="focus-slider" id="focus-slider">
+                    <span style="font-size:11px; color:#a1a1aa;">清晰</span>
+                  </div>
+                  <button class="btn-seal" id="stamp-btn" style="display:none; padding:8px 16px; font-size:12px; margin-top:8px;">盖上行为学取样印章</button>
+                </div>
+                <div class="hint-bar" id="macaque-hint">滑动调焦轮，寻找丛林中的野生短尾猴...</div>
+              </div>
+              <div class="card-bottom-action">
+                <button class="btn-primary" id="btn-flip-4" style="display:none; width:100%;">查看此时母亲的专属时光 ➔</button>
+              </div>
+            </div>
+            <!-- 反面：母亲享受 -->
+            <div class="flip-face flip-back">
+              <div class="mom-reward-wrap">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">玉屏峰 · 悬崖云端咖啡</h2>
+                    <p class="card-subtitle">VIP免排队索道 · 黄山国宝迎客松</p>
+                  </div>
+                  <span class="role-pill role-mom">母亲 · 巅峰雅集</span>
+                </div>
+                <div class="mom-visual-frame">
+                  <svg width="220" height="150" viewBox="0 0 240 160">
+                    <rect width="240" height="160" fill="#121316" rx="8"/>
+                    <!-- 云海翻涌 -->
+                    <path d="M0 120 Q60 90 120 110 T240 100 L240 160 L0 160 Z" fill="#3f3f46" opacity="0.6"/>
+                    <path d="M0 135 Q70 120 140 130 T240 125 L240 160 L0 160 Z" fill="#e4e4e7" opacity="0.8"/>
+                    <!-- 悬崖与迎客松 -->
+                    <polygon points="170 160, 240 70, 240 160" fill="#18181b"/>
+                    <path d="M190 85 Q160 80 140 90" stroke="#15803d" stroke-width="6" fill="none"/>
+                    <text x="100" y="45" font-family="serif" font-size="12" fill="#d4af37">海拔 1600 米的从容与留白</text>
+                  </svg>
+                </div>
+                <div class="mom-quote-box">
+                  <p class="mom-quote-text">“当孩子与科研专家探索物种演化与家谱网络，你已乘 VIP 专车直达索道登顶。避开拥挤人群，在悬崖云端咖啡馆里，静对千年迎客松，享有难得的放空与从容。”</p>
+                  <div class="mom-asset-tag">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>VIP通道零排队 · 山巅五钻私享奢宿</span>
+                  </div>
+                </div>
+                <div class="card-bottom-action">
+                  <button class="btn-primary" id="btn-next-4" style="width:100%;">登临黄山之巅 · 生成结营档案 ➔</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         STAGE 5: 终局日出与生成档案 (Grand Finale)
+         ========================================== -->
+    <section class="stage" id="stage-5">
+      <div class="finale-wrap">
+        <div class="finale-header">
+          <h1 class="finale-title">黄山之巅 · 岁岁安康</h1>
+          <p class="finale-sub">2026 寒假 · 母子平行生长档案已就绪</p>
+        </div>
+
+        <div class="finale-inputs">
+          <div class="input-row">
+            <label for="input-child-name">孩子姓名：</label>
+            <input type="text" id="input-child-name" value="子轩" placeholder="输入孩子昵称">
+          </div>
+          <div class="input-row">
+            <label for="input-wish">新年期许：</label>
+            <input type="text" id="input-wish" value="开阔眼界，岁岁安康" placeholder="写下一句新年愿望">
+          </div>
+        </div>
+
+        <div class="poster-container">
+          <canvas id="poster-canvas"></canvas>
+        </div>
+
+        <div class="finale-action-bar">
+          <button class="btn-secondary" id="save-poster-btn">长按海报保存</button>
+          <button class="btn-primary" id="open-modal-btn">申请特批科研席位</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         LEAD-GEN MODAL: 特批科研席位审核表单
+         ========================================== -->
+    <div class="modal-overlay" id="lead-modal">
+      <div class="modal-box">
+        <span class="modal-close" id="close-modal-btn">✕</span>
         
-        <div style="text-align:center; margin-bottom:14px;">
-          <h2 style="font-family:var(--font-serif); font-size:22px; color:#f8fafc; letter-spacing:1px;">徽州年岁 · 母子平行生长档案</h2>
-          <p style="font-size:12px; color:var(--gold-primary); margin-top:4px;">研学资产已全部核定归卷</p>
-        </div>
+        <div id="form-area">
+          <span class="modal-badge">特批申请制 · 单营限量15组</span>
+          <h2 class="modal-title">黄山野生灵长类基地 · 席位审核</h2>
+          <p class="modal-desc">由于国家科研保护区承载量限制，请提交基本信息，研学管家将在 48 小时内为您完成资质预审并锁定名额。</p>
 
-        <div class="finale-input-block">
-          <div class="input-cell">
-            <label>学员姓名：</label>
-            <input type="text" id="inp-child-name" value="子轩" placeholder="孩子昵称">
-          </div>
-          <div class="input-cell">
-            <label>新岁期许：</label>
-            <input type="text" id="inp-wish" value="见天地万物，知古今风骨" placeholder="写下一句新年寄语">
-          </div>
-        </div>
-
-        <canvas id="finale-canvas"></canvas>
-        <p style="font-size:11px; color:#94a3b8; text-align:center; margin-bottom:16px;">💡 可在上方生成的大图上长按保存，分享至朋友圈/小红书</p>
-
-        <!-- 留资卡片 -->
-        <div class="lead-gen-card">
-          <span class="lead-gen-badge">特批申请制 · 单营限量15组</span>
-          <h3 class="lead-gen-title">黄山野生灵长类基地 · 席位审核</h3>
-          <p class="lead-gen-desc">国家灵长类科研保护区每日严格限流。请填写家长手机号，研学规划师将在 48 小时内为您保留特批资格，并寄送《行前文化立体手账》（内含 ¥700 早鸟立减礼）。</p>
-
-          <form id="scroll-lead-form">
-            <div id="lead-form-fields">
-              <input type="tel" class="lead-input" id="inp-phone" placeholder="请输入11位家长联系手机号" maxlength="11" required>
-              <button type="submit" class="btn-open-scroll" style="width:100%; padding:12px; font-size:13.5px;">
-                立即锁定 48 小时优先审核资格
-              </button>
+          <form id="lead-form">
+            <div class="form-group">
+              <label>孩子目前年级 / 年龄</label>
+              <select id="select-grade">
+                <option value="小学1-3年级 (6-9岁)">小学低段 (6-9岁)</option>
+                <option value="小学4-6年级 (10-12岁)" selected>小学高段 (10-12岁)</option>
+                <option value="初中段 (13-15岁)">初中段 (13-15岁)</option>
+              </select>
             </div>
-            <div class="lead-success-msg" id="lead-success-msg">
-              ✓ 特批名额优先审核已锁定！<br>
-              研学管家将在 24 小时内与您电话确认出行细节。
+            <div class="form-group">
+              <label>家长联系手机号（仅用于锁定席位）</label>
+              <input type="tel" id="input-phone" placeholder="请输入11位家长手机号码" maxlength="11" required>
             </div>
+            <button type="submit" class="btn-seal" style="width:100%; margin-top:14px;">
+              <span>立即锁定 48 小时优先审核资格</span>
+            </button>
+            <p class="modal-footer-note">🎁 提交后赠送《徽州研学行前文化立体手账》（内含 ¥700 早鸟抵扣券）</p>
           </form>
         </div>
 
+        <div class="success-box" id="success-area">
+          <div class="success-icon">✓</div>
+          <h3 style="font-family:var(--font-serif); color:#f3f4f6; margin-bottom:8px;">名额预审锁定成功</h3>
+          <p style="font-size:12px; color:#94a3b8; line-height:1.6; margin-bottom:16px;">
+            您的特批研学资格编号已记录。<br>高级研学顾问将在 24 小时内与您电话确认出行细节，并寄送《行前立体手账》。
+          </p>
+          <button class="btn-primary" onclick="document.getElementById('lead-modal').classList.remove('active');" style="width:100%;">返回海报</button>
+        </div>
       </div>
     </div>
 
   </div>
 
-  
   <script>
 /**
- * 徽州过大年·黄山冬雪亲子营 深度风物知识库与站点数据
- */
-const STATIONS_DATA = [
-  {
-    id: "station-1",
-    day: "DAY 2",
-    city: "歙县 · 古徽州府治",
-    title: "第一站：墨香牌坊 · 文脉发祥之始",
-    summary: "全国唯一八角石坊的科举密码，与两百六十年松烟墨香的东方守望。",
-    bgGradient: "linear-gradient(180deg, #1c1a17 0%, #121110 100%)",
-    hotspots: [
-      {
-        id: "hs-1-1",
-        name: "许国石坊 · 八角立柱之谜",
-        tag: "建筑力学 & 科举史话",
-        icon: "🏛️",
-        thumb: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Xuguoshifang_5173.jpg/800px-Xuguoshifang_5173.jpg",
-        sealName: "文峰八角印",
-        historyStory: "建于明万历十二年（1584年），比巴黎凯旋门早了整整200年。按照明代规制，人臣牌坊最多为四柱三间，许国因平定云南有功被封少保，万历帝许其立坊。许国巧思营建八脚石坊，采用青色茶园石，四面雕刻百鹿、仙鹤、飞豹，每一幅都在暗喻'先学后臣'的仕途清白与忠君气节。这是中国现存唯一的八柱石坊，也是明代石雕艺术的巅峰。",
-        childGain: "站在八角牌坊之下，由文博学者带领解剖明代榫卯力学，破译每一面暗喻许国功绩的石雕动物图腾，在课本之外理解古代读书人的精神风骨。",
-        momRelax: "无需在烈日或寒风中催促打卡。移步古城老茶楼，听一曲地道的国家级非遗黄梅戏《天仙配》，在清冽的黄山毛峰茶香中，享受没有家务打扰的悠然午后。"
-      },
-      {
-        id: "hs-1-2",
-        name: "胡开文墨厂 · 一两黄金一两墨",
-        tag: "首批国家级非遗",
-        icon: "🖋️",
-        thumb: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Inksticks_with_intricate_carvings.jpg/800px-Inksticks_with_intricate_carvings.jpg",
-        sealName: "乾隆墨宝印",
-        historyStory: "创于清乾隆三十年（1765年），胡开文徽墨在1915年巴拿马万国博览会斩获金奖。古法制墨需以百年老黄山松炼取纯净松烟，拌入鹿胶、麝香、梅片与真金金箔，经历千锤百炼数千下锤打方能入模。所谓'一点如漆，万载存真'，历代书法大家非胡开文墨不书。",
-        childGain: "走进弥漫松烟香气的老作坊，孩子屏息握笔，在非遗大师手把手传授下，亲手为定制墨锭雕刻描金，完成一件带有家族名字、可传世收藏的真正非遗大作。",
-        momRelax: "伴游导师全权接管孩子制作安全与工序，妈妈坐在古色古香的墨堂天井旁，静听落墨生香，拍照发圈，留下一组极具文化质感的纪实大片。"
-      }
-    ]
-  },
-  {
-    id: "station-2",
-    day: "DAY 2 晚间",
-    city: "徽州区 · 唐模古村",
-    title: "第二站：唐模水口 · 长夜如河的鱼灯",
-    summary: "唐朝模范村的水口生机，入夜千灯穿巷游入水墨倒影。",
-    bgGradient: "linear-gradient(180deg, #13171d 0%, #0a0d12 100%)",
-    hotspots: [
-      {
-        id: "hs-2-1",
-        name: "唐模水口园林 · 中国第一水口村",
-        tag: "水利地理 & 宗族风水",
-        icon: "🌊",
-        thumb: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Yixian_Hongcun_2016.09.09_18-17-55.jpg/800px-Yixian_Hongcun_2016.09.09_18-17-55.jpg",
-        sealName: "唐朝模范印",
-        historyStory: "唐模始建于唐朝，因汪氏先祖汪思立为表忠君之意、仿效唐朝长安规制营建村落而得名'唐模'。徽州人极重水口，唐模的水口园林历经数百年修筑，古树蔽日、回澜廊桥跨水而立，不仅形成'水聚天心、财富不外流'的宗族风水，更是古人防洪排涝的微型生态工程水系。",
-        childGain: "探秘被建筑学者称为'中国水口园林第一村'的空间营造，看古人如何巧妙把桥、亭、坊、林融为一体，解码古代村落自给自足的水生态智慧。",
-        momRelax: "漫步在青石板与百年枫杨树林荫之下，微风拂面，水声潺潺。感受没有商业喧嚣与网红打卡的静谧古徽州，治愈经年累月的城市内耗。"
-      },
-      {
-        id: "hs-2-2",
-        name: "鳌鱼飞天鱼灯 · 古巷流光巡游",
-        tag: "非遗巡游完整闭环",
-        icon: "🏮",
-        thumb: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Yixian_Hongcun_2016.09.09_18-17-55.jpg/800px-Yixian_Hongcun_2016.09.09_18-17-55.jpg",
-        sealName: "鳌鱼飞天印",
-        historyStory: "徽州鱼灯距今有600余年历史，源于汪氏宗族对'年年有余、鲤鱼跃龙门'的期盼。鱼灯以竹为骨，以棉纸为鳞，白日成器，夜幕点燃。当入夜祠堂鼓点骤响，无数盏鱼灯游弋穿梭于狭窄的白墙黛瓦马头墙巷道，灯火在水圳倒影中流光溢彩，宛若神龙出水。",
-        childGain: "从白天的竹篾扶骨架、棉纸绘鳞，到夜晚亲手提灯入队，完成从手作到民俗巡游的完整闭环，在锣鼓震天中深刻体会中国民俗的生命力。",
-        momRelax: "今夜你不需要大声叮嘱孩子'看好路/收起手机'。孩子眼里闪着骄傲的光，主动牵起你的手汇入流光的长河，收获这趟旅程中最动人、最值得珍藏的母子同框记忆。"
-      }
-    ]
-  },
-  {
-    id: "station-3",
-    day: "DAY 3",
-    city: "黟县 · 南屏与宏村",
-    title: "第三站：天井年宴 · 800年仿生牛形活水",
-    summary: "张艺谋《菊豆》老宅里的真年俗，与永乐年间汪氏先祖的水利奇观。",
-    bgGradient: "linear-gradient(180deg, #181512 0%, #0e0d0b 100%)",
-    hotspots: [
-      {
-        id: "hs-3-1",
-        name: "南屏叶氏宗祠 · 解签入门吃年酒",
-        tag: "中国古祠堂建筑博物馆",
-        icon: "🧧",
-        thumb: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Yixian_Hongcun_2016.09.09_18-17-55.jpg/800px-Yixian_Hongcun_2016.09.09_18-17-55.jpg",
-        sealName: "南屏食桃印",
-        historyStory: "南屏完整保留着8座宋元明清古祠堂。其中叶氏宗祠叙秩堂占地近2000平米，80根粗大木柱撑起巍峨天顶，1989年张艺谋电影《菊豆》全片80%在此取景。这里的过年不是景区表演：乡民依然遵循老礼，提点心、解签入门拜早年；用雕花木模敲出寓意'早早得利'的雪白食桃。",
-        childGain: "跟着徽州宗族老礼数解签走亲戚，挽起袖子揉米粉入模、亲手'敲'出食桃点朱红，提笔写一副春联贴上老宅门楣，懂得一粥一饭背后的敬畏。",
-        momRelax: "彻底告别过年洗手做羹汤的操劳和油烟！围坐百年老宅天井之下，吃一桌热腾腾、慢火煨制的地道徽州私家年宴。那一束从天井漏下的冬阳，就是最奢侈的松弛。"
-      },
-      {
-        id: "hs-3-2",
-        name: "宏村牛形水系 · 仿生水利奇迹",
-        tag: "世界文化遗产 · 仿生建筑活教材",
-        icon: "🐂",
-        thumb: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Hongcun_20141110.JPG/800px-Hongcun_20141110.JPG",
-        sealName: "宏村仿生印",
-        historyStory: "建于南宋，宏村在明永乐年间由汪氏先祖请风水与水利大师规划。运用神奇的仿生学原理建造了'牛形村落'：雷岗山为牛首、参天古木为牛角、错落民居为牛躯、九曲水圳为牛肠、如半月的月沼为牛胃、南湖为牛肚。水渠绕每家每户门前而过，满足防火、饮用、洗涤与农田灌溉四大功能，历经数百年生生不息。",
-        childGain: "跟随建筑研学导师拿着工程示意图错峰入村，解剖'为什么家家门前水圳常年清澈'、'为什么月沼必须修成半月而不是满月'（月满则亏），学懂古代工程美学与哲学。",
-        momRelax: "错峰入村避开旅行团拥挤。在晨光熹微的月沼池畔，黑白马头墙倒映如天然水墨长卷，随手一拍就是国家地理级的风光大片。"
-      }
-    ]
-  },
-  {
-    id: "station-4",
-    day: "DAY 4",
-    city: "黄山浮溪 · 国家级科研基地",
-    title: "第四站：人类近亲 · 40年不对外开放的科考深山",
-    summary: "特批深入灵长类野外研究基地，像科学家一样记录短尾猴家谱。",
-    bgGradient: "linear-gradient(180deg, #101614 0%, #090e0c 100%)",
-    hotspots: [
-      {
-        id: "hs-4-1",
-        name: "黄山短尾猴研究基地 · 科学家的山林",
-        tag: "全球八大灵长类野外基地之一",
-        icon: "🐒",
-        thumb: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Mount_Huangshan-110970.jpg/800px-Mount_Huangshan-110970.jpg",
-        sealName: "灵长科考印",
-        historyStory: "黄山短尾猴是国家二级重点保护野生动物，基因与社会结构和人类高度相似。1983年，安徽大学与日本京都大学在此联合建立野外研究基地，历经40余年长期追踪，建立了详尽的野生猴群族谱。这里不对普通游客开放，是国家严肃的科研保护重地。",
-        childGain: "特批穿戴科考装备进入科研基地，在野外生态学者带领下，使用专业科研单筒望远镜做行为学取样（焦距对准记录'理毛'社交和'架桥'纽带），亲手完成一份沉甸甸的短尾猴家谱观察报告。",
-        momRelax: "完全放心地将孩子交给大学科考团队。你坐在山谷科研站的暖炉茶坊边，远眺冬日黄山苍茫林海，享有彻底属于自己的两个小时宁静时光。"
-      },
-      {
-        id: "hs-4-2",
-        name: "玉屏峰国宝迎客松 · 对话守松人",
-        tag: "世界自然与文化双遗产",
-        icon: "🌲",
-        thumb: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Ying_Ke_Pine.JPG/800px-Ying_Ke_Pine.JPG",
-        sealName: "古松守望印",
-        historyStory: "迎客松扎根玉屏峰悬崖绝壁已有千年，是整个中华民族好客包容的精神图腾。鲜为人知的是，自上世纪80年代起，黄山为迎客松设立了全国唯一的专门岗位——'守松人'。第十九任守松人日复一日记录气温、湿度、风力与松针舒展，像守护亲人一样守护古树。",
-        childGain: "VIP免排队乘索道直上海拔1600米玉屏峰，面对面聆听守松人讲述'一人守护一棵树数十载'的坚守，在孩子心中埋下一颗关于责任与敬畏的种子。",
-        momRelax: "VIP直通尊享通道免除寒冬排队之苦，移步山巅悬崖云端私享茶室，坐在离云海最近的落地窗前，品尝特调咖啡与热茶，俯瞰千山雪浪。"
-      }
-    ]
-  },
-  {
-    id: "station-5",
-    day: "DAY 5 - 6",
-    city: "黄山之巅 · 北海与狮子峰",
-    title: "第五站：云海日出 · 课本里的黄山与非遗结营",
-    summary: "狮子峰前看猴子观海，云海之巅亲手制一支毛笔向新岁祈福。",
-    bgGradient: "linear-gradient(180deg, #181920 0%, #0d0e13 100%)",
-    hotspots: [
-      {
-        id: "hs-5-1",
-        name: "狮子峰猴子观海 · 课本走入现实",
-        tag: "语文课本印证 · 冬雪雾凇第五绝",
-        icon: "☁️",
-        thumb: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Mount_Huangshan-110970.jpg/800px-Mount_Huangshan-110970.jpg",
-        sealName: "雪海奇石印",
-        historyStory: "还记得小学语文课本里的《黄山奇石》吗？'在一座陡峭的山峰上，有一只猴子，它两只胳膊抱着腿，一动不动地蹲在山头，望着翻滚的云海……'这便是北海狮子峰的'猴子观海'。冬日的北海是黄山雪景最盛之时，雾凇凝结在奇松树冠如琉璃冰晶，云海发生率高达全年的70%。",
-        childGain: "亲手拿着小学课本对照眼前的天然奇观，发现课本文字变成了眼前的真实世界。在研学导师指导下做地质成因分析，大语文与自然地理融会贯通。",
-        momRelax: "入住山顶携程五钻云麓北海宾馆两晚，酒店提供免费加厚保暖羽绒服，零负重看雪。清晨在海拔1600米观日出破云，在万丈霞光中写下新一年的全家心愿。"
-      },
-      {
-        id: "hs-5-2",
-        name: "山顶亲子非遗手工制笔 · 结营受勋",
-        tag: "文房四宝闭环 · 官方结营证书",
-        icon: "📜",
-        thumb: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Inksticks_with_intricate_carvings.jpg/800px-Inksticks_with_intricate_carvings.jpg",
-        sealName: "山巅结营印",
-        historyStory: "从山下的古法徽墨、水乡鱼灯，到山巅的手工徽笔。徽笔制作讲究齐、整、平、直，以紫毫与羊毫梳理捆扎。在黄山云端亲手制成一支属于自己的毛笔，象征着文人求学之路在天地自然间获得圆满。",
-        childGain: "在山顶亲手扎制一支非遗毛笔，用在山下描金的墨与亲制的笔，在结营典礼上庄重签下自己的名字，捧回官方颁发的高规格研学结营证书。",
-        momRelax: "孩子在聚精会神制笔结营，妈妈在窗旁体验篆香点茶，沉浸于宋式文人雅趣。6天的疲惫与烦恼彻底涤清，收获一个更有见识、更懂感恩的孩子。"
-      }
-    ]
-  }
-];
-
-/**
- * 【千里徽州 · 行止画卷】交互控制器
- * 原生 ES6 驱动，无网络外链依赖，实现深度漫游与风物探索
+ * 【徽州过大年·黄山冬雪亲子营】交互式 H5 核心脚本
+ * 纯原生 ES6 实现，零外部依赖，极速加载与全端兼容
  */
 
-// 1. 纯算法 Web Audio 合成器
-class AmbientAudio {
+// ==========================================
+// 1. 音频合成器 (Web Audio API 无损生成纯正东方音效)
+// ==========================================
+class AudioSynthesizer {
   constructor() {
     this.ctx = null;
-    this.isPlaying = false;
-    this.timer = null;
+    this.bgmPlaying = false;
+    this.bgmTimer = null;
   }
 
   init() {
@@ -1228,7 +1489,8 @@ class AmbientAudio {
     }
   }
 
-  playTone(freq, type = 'sine', duration = 1.5, gainVal = 0.12) {
+  // 播放单音调（类似古琴/编钟的清脆空灵音）
+  playTone(freq, type = 'sine', duration = 1.2, maxGain = 0.15) {
     if (!this.ctx) return;
     try {
       const osc = this.ctx.createOscillator();
@@ -1236,7 +1498,7 @@ class AmbientAudio {
       osc.type = type;
       osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
       gain.gain.setValueAtTime(0.001, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(gainVal, this.ctx.currentTime + 0.08);
+      gain.gain.exponentialRampToValueAtTime(maxGain, this.ctx.currentTime + 0.05);
       gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
       osc.connect(gain);
       gain.connect(this.ctx.destination);
@@ -1245,39 +1507,83 @@ class AmbientAudio {
     } catch(e) {}
   }
 
-  playStamp() {
-    this.playTone(160, 'triangle', 0.25, 0.4);
-    setTimeout(() => this.playTone(880, 'sine', 0.5, 0.1), 80);
-  }
-
+  // 描金时金粉落金声 (高频闪烁微晶音)
   playChime() {
-    const notes = [523.25, 659.25, 783.99, 1046.5];
-    const n = notes[Math.floor(Math.random() * notes.length)];
-    this.playTone(n, 'sine', 0.8, 0.08);
+    const freqs = [1046.5, 1318.5, 1567.98, 2093];
+    const f = freqs[Math.floor(Math.random() * freqs.length)];
+    this.playTone(f, 'sine', 0.6, 0.08);
   }
 
+  // 鱼灯点亮暖流声 (低频温润升调)
+  playLanternGlow() {
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(440, this.ctx.currentTime + 0.8);
+      gain.gain.setValueAtTime(0.01, this.ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime + 0.4);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 1.2);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 1.2);
+    } catch(e) {}
+  }
+
+  // 食桃敲击木模声 (木质钝击音)
+  playWoodKnock() {
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.16);
+    } catch(e) {}
+  }
+
+  // 盖印章声 (短促有力的印章落拓音)
+  playStamp() {
+    this.playTone(180, 'triangle', 0.25, 0.35);
+  }
+
+  // 翻页纸张舒展声
+  playFlip() {
+    this.playTone(330, 'sine', 0.4, 0.1);
+  }
+
+  // 简易东方五音背景环境音循奏 (宫商角徵羽: 261.6, 293.6, 329.6, 392, 440)
   startBGM() {
     this.init();
-    this.isPlaying = true;
-    const chords = [220, 261.6, 293.6, 329.6, 392, 440, 523.2];
+    this.bgmPlaying = true;
+    const pentatonic = [220, 261.6, 293.6, 329.6, 392, 440, 523.2];
     const loop = () => {
-      if (!this.isPlaying) return;
-      const note = chords[Math.floor(Math.random() * chords.length)];
-      this.playTone(note, 'sine', 3.2, 0.035);
-      const delay = Math.random() * 2200 + 1600;
-      this.timer = setTimeout(loop, delay);
+      if (!this.bgmPlaying) return;
+      const note = pentatonic[Math.floor(Math.random() * pentatonic.length)];
+      this.playTone(note, 'sine', 2.8, 0.04);
+      const nextTime = (Math.random() * 2000) + 1800;
+      this.bgmTimer = setTimeout(loop, nextTime);
     };
     loop();
   }
 
   stopBGM() {
-    this.isPlaying = false;
-    if (this.timer) clearTimeout(this.timer);
+    this.bgmPlaying = false;
+    if (this.bgmTimer) clearTimeout(this.bgmTimer);
   }
 
-  toggle() {
+  toggleBGM() {
     this.init();
-    if (this.isPlaying) {
+    if (this.bgmPlaying) {
       this.stopBGM();
       return false;
     } else {
@@ -1287,407 +1593,600 @@ class AmbientAudio {
   }
 }
 
-const audio = new AmbientAudio();
+const audio = new AudioSynthesizer();
 
-// 2. 状态机
-const ScrollApp = {
-  collectedSeals: new Set(),
-  activeHotspot: null,
-  childName: "子轩",
-  wishText: "见天地万物，知古今风骨",
+// ==========================================
+// 2. 背景冬雪微粒渲染器 (Canvas Snow)
+// ==========================================
+function initSnowCanvas() {
+  const canvas = document.getElementById('snow-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let width = canvas.width = canvas.parentElement.clientWidth;
+  let height = canvas.height = canvas.parentElement.clientHeight;
 
-  init() {
-    this.renderStations();
-    this.bindEvents();
-  },
+  window.addEventListener('resize', () => {
+    width = canvas.width = canvas.parentElement.clientWidth;
+    height = canvas.height = canvas.parentElement.clientHeight;
+  });
 
-  // 动态渲染 5 大站点与 10 大热点卡片
-  renderStations() {
-    const container = document.getElementById('stations-wrap');
-    if (!container || !STATIONS_DATA) return;
-
-    let html = '';
-    STATIONS_DATA.forEach((station, sIdx) => {
-      html += `
-        <section class="station-section" id="${station.id}">
-          <div class="station-meta-bar">
-            <span class="day-tag">${station.day}</span>
-            <span class="city-tag">${station.city}</span>
-          </div>
-          <h2 class="station-title">${station.title}</h2>
-          <p class="station-summary">${station.summary}</p>
-          
-          <div class="hotspot-cards">
-            ${station.hotspots.map((hs) => `
-              <div class="hotspot-card" id="card-${hs.id}" onclick="ScrollApp.openHotspot('${station.id}', '${hs.id}')">
-                <div class="hotspot-image-wrap">
-                  <img src="${hs.thumb}" alt="${hs.name}" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Yixian_Hongcun_2016.09.09_18-17-55.jpg/800px-Yixian_Hongcun_2016.09.09_18-17-55.jpg'">
-                  <div class="hotspot-img-overlay"></div>
-                  <span class="hotspot-pill-tag">${hs.tag}</span>
-                  <span class="hotspot-status-badge status-unread" id="badge-${hs.id}">✨ 待探访</span>
-                </div>
-                <div class="hotspot-content-body">
-                  <div class="hotspot-header-row">
-                    <h3 class="hotspot-name">${hs.icon} ${hs.name}</h3>
-                  </div>
-                  <p class="hotspot-peek">${hs.historyStory}</p>
-                  <div class="hotspot-footer-action">
-                    <span>点击进入深度研学解密 ➔</span>
-                    <span style="color:#cbd5e1;">收纳「${hs.sealName}」</span>
-                  </div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
-        </section>
-      `;
+  const flakes = [];
+  const flakeCount = 40;
+  for (let i = 0; i < flakeCount; i++) {
+    flakes.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: Math.random() * 2 + 1,
+      speedY: Math.random() * 0.8 + 0.4,
+      speedX: Math.random() * 0.4 - 0.2,
+      opacity: Math.random() * 0.6 + 0.2
     });
+  }
 
-    container.innerHTML = html;
-  },
-
-  // 打开深度解密抽屉
-  openHotspot(stationId, hsId) {
-    audio.init();
-    audio.playChime();
-    const station = STATIONS_DATA.find(s => s.id === stationId);
-    if (!station) return;
-    const hs = station.hotspots.find(h => h.id === hsId);
-    if (!hs) return;
-
-    this.activeHotspot = hs;
-
-    document.getElementById('modal-img').src = hs.thumb;
-    document.getElementById('modal-title').innerText = `${hs.icon} ${hs.name}`;
-    document.getElementById('modal-tag').innerText = `【${station.city} · ${station.day}】 · ${hs.tag}`;
-    document.getElementById('modal-history').innerText = hs.historyStory;
-    document.getElementById('modal-child').innerText = hs.childGain;
-    document.getElementById('modal-mom').innerText = hs.momRelax;
-
-    const btnSeal = document.getElementById('btn-collect-seal');
-    if (this.collectedSeals.has(hs.sealName)) {
-      btnSeal.innerHTML = `✓ 已将「${hs.sealName}」收录入印谱`;
-      btnSeal.style.background = '#15803d';
-    } else {
-      btnSeal.innerHTML = `🏮 盖上朱印：收录「${hs.sealName}」至印谱`;
-      btnSeal.style.background = 'linear-gradient(135deg, #b92b27, #8e1c18)';
+  function render() {
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#ffffff';
+    for (let f of flakes) {
+      ctx.beginPath();
+      ctx.globalAlpha = f.opacity;
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fill();
+      f.y += f.speedY;
+      f.x += f.speedX;
+      if (f.y > height) {
+        f.y = -5;
+        f.x = Math.random() * width;
+      }
+      if (f.x > width) f.x = 0;
+      if (f.x < 0) f.x = width;
     }
+    requestAnimationFrame(render);
+  }
+  render();
+}
 
-    document.getElementById('reader-modal').classList.add('active');
-  },
+// ==========================================
+// 3. 全局应用状态机
+// ==========================================
+const AppState = {
+  currentStage: 0, // 0: 信笺, 1: 描金, 2: 鱼灯, 3: 食桃, 4: 科考, 5: 终局
+  childName: '子轩',
+  wishText: '开阔眼界，岁岁安康',
+  levelProgress: [false, false, false, false],
 
-  // 盖章收纳进印谱
-  collectCurrentSeal() {
-    if (!this.activeHotspot) return;
-    const hs = this.activeHotspot;
-    audio.playStamp();
-
-    this.collectedSeals.add(hs.sealName);
-
-    // 更新卡片状态
-    const card = document.getElementById(`card-${hs.id}`);
-    const badge = document.getElementById(`badge-${hs.id}`);
-    if (card) card.classList.add('collected');
-    if (badge) {
-      badge.className = 'hotspot-status-badge status-done';
-      badge.innerHTML = '✓ 已收录';
-    }
-
-    // 更新印谱底部 Dock
-    this.updatePassportUI();
-
-    // 更新弹窗按钮
-    const btnSeal = document.getElementById('btn-collect-seal');
-    btnSeal.innerHTML = `✓ 已将「${hs.sealName}」收录入印谱`;
-    btnSeal.style.background = '#15803d';
-
-    setTimeout(() => {
-      document.getElementById('reader-modal').classList.remove('active');
-    }, 400);
-  },
-
-  updatePassportUI() {
-    const count = this.collectedSeals.size;
-    document.getElementById('collected-count').innerText = count;
-
-    // 映射印章槽位
-    const sealSlots = [
-      { id: 'slot-1', name: '文峰八角印', icon: '🏛️' },
-      { id: 'slot-2', name: '鳌鱼飞天印', icon: '🏮' },
-      { id: 'slot-3', name: '南屏食桃印', icon: '🧧' },
-      { id: 'slot-4', name: '灵长科考印', icon: '🐒' },
-      { id: 'slot-5', name: '古松守望印', icon: '🌲' }
-    ];
-
-    sealSlots.forEach((slot) => {
-      const el = document.getElementById(slot.id);
-      if (this.collectedSeals.has(slot.name)) {
-        el.classList.add('unlocked');
+  goToStage(stageIndex) {
+    this.currentStage = stageIndex;
+    document.querySelectorAll('.stage').forEach((el, idx) => {
+      if (idx === stageIndex) {
+        el.classList.add('active');
+        el.style.opacity = '0';
+        setTimeout(() => el.style.opacity = '1', 20);
+      } else {
+        el.classList.remove('active');
+        el.style.opacity = '0';
       }
     });
+    audio.playFlip();
 
-    // 收集满 3 个及以上即可开启终局生成海报
-    if (count >= 3) {
-      const btnFinale = document.getElementById('btn-show-finale');
-      btnFinale.style.display = 'block';
-      btnFinale.innerText = `✨ 徽州风物收录已成 (${count}/5) · 生成母子生长档案`;
-    }
-  },
-
-  // 渲染终局高精生长档案
-  renderFinalePoster() {
-    const canvas = document.getElementById('finale-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width = 750;
-    const h = canvas.height = 1200;
-
-    // 1. 底衬：宣纸墨金渐变底
-    ctx.fillStyle = '#141519';
-    ctx.fillRect(0, 0, w, h);
-
-    // 外金边
-    ctx.strokeStyle = '#d4af37';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(26, 26, w - 52, h - 52);
-
-    ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(34, 34, w - 68, h - 68);
-
-    // 2. 题头与气韵
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#b92b27';
-    ctx.font = 'bold 18px serif';
-    ctx.fillText('新 東 方 文 旅 · 寒 假 奢 享 研 學 營', w / 2, 78);
-
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = 'bold 34px serif';
-    ctx.fillText('2026 徽州年岁 · 母子平行生长档案', w / 2, 128);
-
-    ctx.fillStyle = '#d4af37';
-    ctx.font = '15px serif';
-    ctx.fillText('好的亲子关系，是互相成全，而不是互相消耗', w / 2, 162);
-
-    // 3. 用户专属信息
-    ctx.fillStyle = '#1f2128';
-    ctx.roundRect(50, 185, w - 100, 60, 8);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
-    ctx.stroke();
-
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#f1f5f9';
-    ctx.font = 'bold 16px sans-serif';
-    ctx.fillText(`学员档案：${this.childName} 同学及其母亲`, 70, 222);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#fbbf24';
-    ctx.font = '14px sans-serif';
-    ctx.fillText(`新岁期许：“${this.wishText}”`, w - 70, 222);
-
-    // 4. 双侧资产成果对比矩阵
-    const colY = 265;
-    const colW = 310;
-
-    // 左栏：孩子带回的硬核成果
-    ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
-    ctx.roundRect(50, colY, colW, 580, 8);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-    ctx.stroke();
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = 'bold 18px serif';
-    ctx.fillText('【孩子带回的 4 大硬核资产】', 50 + colW / 2, colY + 36);
-
-    const childAssets = [
-      { t: '明代榫卯力学与石坊密码', d: '解剖比凯旋门早200年的八角立柱' },
-      { t: '胡开文古法描金墨锭', d: '1765年工艺，亲手描金永久珍藏' },
-      { t: '唐模发光鱼灯与南屏食桃', d: '扎篾入巷巡游，打模点红传统年礼' },
-      { t: '宏村牛形仿生水利图谱', d: '800年水利活教材，读懂古代工程' },
-      { t: '40年灵长类科研观察表', d: '不对外开放保护区，行为学真实取样' }
-    ];
-
-    childAssets.forEach((item, i) => {
-      const iy = colY + 80 + i * 98;
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#f8fafc';
-      ctx.font = 'bold 14px serif';
-      ctx.fillText(`${i + 1}. ${item.t}`, 68, iy);
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '12px sans-serif';
-      ctx.fillText(item.d, 68, iy + 22);
-    });
-
-    // 右栏：母亲独享的雅致时光
-    ctx.fillStyle = 'rgba(212, 175, 55, 0.08)';
-    ctx.roundRect(w - 50 - colW, colY, colW, 580, 8);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
-    ctx.stroke();
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#fbbf24';
-    ctx.font = 'bold 18px serif';
-    ctx.fillText('【母亲享有的 4 重奢奢体验】', w - 50 - colW / 2, colY + 36);
-
-    const momAssets = [
-      { t: '黄梅戏下午茶专场', d: '一曲《天仙配》，一盏温润徽州毛峰' },
-      { t: '古巷青石流光夜游', d: '无需催促，孩子主动牵手融入流光' },
-      { t: '老宅天井暖阳年宴', d: '彻底远离洗手做羹汤与油烟应酬' },
-      { t: '玉屏峰悬崖云端私享茶', d: 'VIP免排队直达山巅，静对千年古松' },
-      { t: '山顶2晚五钻云麓宿', d: '免费厚羽绒保暖，高山观新年破云日出' }
-    ];
-
-    momAssets.forEach((item, i) => {
-      const iy = colY + 80 + i * 98;
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#f8fafc';
-      ctx.font = 'bold 14px serif';
-      ctx.fillText(`${i + 1}. ${item.t}`, w - 50 - colW + 18, iy);
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '12px sans-serif';
-      ctx.fillText(item.d, w - 50 - colW + 18, iy + 22);
-    });
-
-    // 5. 风物印章落拓
-    ctx.fillStyle = 'rgba(185, 43, 39, 0.1)';
-    ctx.roundRect(50, 865, w - 100, 160, 8);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(185, 43, 39, 0.35)';
-    ctx.stroke();
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#f87171';
-    ctx.font = 'bold 16px serif';
-    ctx.fillText('【已通关收纳之徽州风物金印】', w / 2, 898);
-
-    const stampList = ['文峰八角印', '鳌鱼飞天印', '南屏食桃印', '灵长科考印', '古松守望印'];
-    stampList.forEach((sName, idx) => {
-      const sx = 105 + idx * 110;
-      const sy = 945;
-      const isHad = this.collectedSeals.has(sName);
-
-      ctx.fillStyle = isHad ? '#b92b27' : 'rgba(255, 255, 255, 0.1)';
-      ctx.strokeStyle = isHad ? '#f87171' : 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 1.5;
-      ctx.roundRect(sx - 42, sy - 20, 84, 40, 4);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = isHad ? '#fff' : '#64748b';
-      ctx.font = '11px serif';
-      ctx.fillText(sName, sx, sy + 5);
-    });
-
-    // 底部专属水印
-    ctx.fillStyle = '#64748b';
-    ctx.font = '12px sans-serif';
-    ctx.fillText('新东方文旅 · 让历史和文化成为鲜活的故事', w / 2, 1140);
-  },
-
-  bindEvents() {
-    // 音频开关
-    const audioBtn = document.getElementById('audio-toggle-btn');
-    if (audioBtn) {
-      audioBtn.addEventListener('click', () => {
-        const on = audio.toggle();
-        if (on) audioBtn.classList.add('playing');
-        else audioBtn.classList.remove('playing');
-      });
-    }
-
-    // 启开画卷
-    const openBtn = document.getElementById('btn-open-scroll');
-    if (openBtn) {
-      openBtn.addEventListener('click', () => {
-        audio.init();
-        audio.startBGM();
-        if (audioBtn) audioBtn.classList.add('playing');
-        document.getElementById('cover-overlay').classList.add('hide');
-      });
-    }
-
-    // 盖章按钮
-    const collectBtn = document.getElementById('btn-collect-seal');
-    if (collectBtn) {
-      collectBtn.addEventListener('click', () => {
-        this.collectCurrentSeal();
-      });
-    }
-
-    // 关闭抽屉
-    const closeSheet = document.getElementById('btn-close-sheet');
-    if (closeSheet) {
-      closeSheet.addEventListener('click', () => {
-        document.getElementById('reader-modal').classList.remove('active');
-      });
-    }
-
-    // 打开终局海报弹窗
-    const openFinaleBtn = document.getElementById('btn-show-finale');
-    const finaleModal = document.getElementById('finale-modal');
-    if (openFinaleBtn && finaleModal) {
-      openFinaleBtn.addEventListener('click', () => {
-        audio.playStamp();
-        this.renderFinalePoster();
-        finaleModal.classList.add('active');
-      });
-    }
-
-    // 关闭海报弹窗
-    const closeFinale = document.getElementById('btn-close-finale');
-    if (closeFinale && finaleModal) {
-      closeFinale.addEventListener('click', () => {
-        finaleModal.classList.remove('active');
-      });
-    }
-
-    // 姓名愿望实时同步
-    const cInput = document.getElementById('inp-child-name');
-    const wInput = document.getElementById('inp-wish');
-    if (cInput && wInput) {
-      cInput.addEventListener('input', (e) => {
-        this.childName = e.target.value || '子轩';
-        this.renderFinalePoster();
-      });
-      wInput.addEventListener('input', (e) => {
-        this.wishText = e.target.value || '见天地万物，知古今风骨';
-        this.renderFinalePoster();
-      });
-    }
-
-    // 留资表单提交
-    const leadForm = document.getElementById('scroll-lead-form');
-    if (leadForm) {
-      leadForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const phone = document.getElementById('inp-phone').value.trim();
-        if (!/^1[3-9]\d{9}$/.test(phone)) {
-          alert('请正确填写11位家长手机号码，以便研学顾问为您预留特批名额');
-          return;
-        }
-
-        const data = {
-          child: this.childName,
-          phone: phone,
-          wish: this.wishText,
-          sealsCount: this.collectedSeals.size,
-          submitAt: new Date().toLocaleString()
-        };
-        localStorage.setItem('hz_scroll_lead', JSON.stringify(data));
-
-        audio.playStamp();
-        document.getElementById('lead-form-fields').style.display = 'none';
-        document.getElementById('lead-success-msg').style.display = 'block';
-      });
-    }
+    // 根据不同页面初始化特定交互
+    if (stageIndex === 1) initInkCanvas();
+    if (stageIndex === 5) renderFinalePoster();
   }
 };
 
+// ==========================================
+// 4. 关卡一：胡开文墨厂·描金 Canvas 逻辑
+// ==========================================
+let inkInitialized = false;
+function initInkCanvas() {
+  if (inkInitialized) return;
+  const canvas = document.getElementById('ink-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * 2;
+  canvas.height = rect.height * 2;
+  ctx.scale(2, 2);
+
+  const w = rect.width;
+  const h = rect.height;
+
+  // 绘制底图：墨黑墨锭轮廓与暗凹槽
+  function drawBaseInk() {
+    ctx.clearRect(0, 0, w, h);
+
+    // 墨锭主体
+    ctx.fillStyle = '#1c1c1f';
+    ctx.strokeStyle = '#38383e';
+    ctx.lineWidth = 3;
+    const pad = 24;
+    ctx.beginPath();
+    ctx.roundRect(pad, pad, w - pad * 2, h - pad * 2, 16);
+    ctx.fill();
+    ctx.stroke();
+
+    // 墨锭顶部祥云金边装饰线
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(pad + 8, pad + 8, w - pad * 2 - 16, h - pad * 2 - 16, 10);
+    ctx.stroke();
+
+    // 凹槽龙纹/楷书“徽墨·胡开文”暗纹
+    ctx.font = 'bold 22px serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#2a2b30';
+    ctx.fillText('胡 開 文', w / 2, h / 2 - 35);
+    ctx.font = '14px serif';
+    ctx.fillText('一兩黃金一兩墨 · 乾隆三十年', w / 2, h / 2 + 10);
+
+    // 绘制龙形凹槽引导虚线
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.25)';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.arc(w / 2, h / 2 + 50, 40, 0.2 * Math.PI, 1.8 * Math.PI);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  drawBaseInk();
+
+  let isDrawing = false;
+  let strokeCount = 0;
+  let levelDone = false;
+
+  function handleTrace(x, y) {
+    if (levelDone) return;
+    // 绘制耀眼金色描金粉末
+    ctx.strokeStyle = '#f59e0b';
+    ctx.fillStyle = '#fef3c7';
+    ctx.shadowColor = '#d4af37';
+    ctx.shadowBlur = 10;
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    strokeCount++;
+    if (strokeCount % 4 === 0) {
+      audio.playChime();
+    }
+
+    if (strokeCount > 45 && !levelDone) {
+      levelDone = true;
+      AppState.levelProgress[0] = true;
+      document.getElementById('ink-hint').innerHTML = '✨ 描金圆满！正在为你翻开母亲时刻...';
+      document.getElementById('ink-hint').style.color = '#34d399';
+      document.getElementById('btn-flip-1').style.display = 'block';
+      setTimeout(() => {
+        flipCard('card-inner-1');
+      }, 900);
+    }
+  }
+
+  const getPos = (e) => {
+    const r = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return { x: clientX - r.left, y: clientY - r.top };
+  };
+
+  canvas.addEventListener('mousedown', (e) => { isDrawing = true; const p = getPos(e); handleTrace(p.x, p.y); });
+  canvas.addEventListener('mousemove', (e) => { if (isDrawing) { const p = getPos(e); handleTrace(p.x, p.y); } });
+  window.addEventListener('mouseup', () => { isDrawing = false; });
+
+  canvas.addEventListener('touchstart', (e) => { isDrawing = true; const p = getPos(e); handleTrace(p.x, p.y); }, {passive: true});
+  canvas.addEventListener('touchmove', (e) => { if (isDrawing) { const p = getPos(e); handleTrace(p.x, p.y); } }, {passive: true});
+  window.addEventListener('touchend', () => { isDrawing = false; });
+
+  inkInitialized = true;
+}
+
+// ==========================================
+// 5. 关卡二：唐模鱼灯·长按点亮
+// ==========================================
+let lanternIgnited = false;
+let ignitePressTimer = null;
+
+function setupFishLantern() {
+  const btn = document.getElementById('ignite-lantern-btn');
+  const lanternWrap = document.getElementById('fish-lantern-visual');
+  const hint = document.getElementById('lantern-hint');
+
+  function startIgnite() {
+    if (lanternIgnited) return;
+    btn.innerText = '🔥 正在聚拢烛火...';
+    ignitePressTimer = setTimeout(() => {
+      lanternIgnited = true;
+      lanternWrap.classList.add('lit');
+      audio.playLanternGlow();
+      AppState.levelProgress[1] = true;
+      hint.innerHTML = '✨ 鳌鱼游古巷，长夜连成河！';
+      hint.style.color = '#fbbf24';
+      btn.innerText = '已点亮 · 鳌鱼飞天';
+      btn.style.background = '#d97706';
+      document.getElementById('btn-flip-2').style.display = 'block';
+      setTimeout(() => {
+        flipCard('card-inner-2');
+      }, 1000);
+    }, 700);
+  }
+
+  function stopIgnite() {
+    if (ignitePressTimer && !lanternIgnited) {
+      clearTimeout(ignitePressTimer);
+      btn.innerText = '长按 1 秒 · 点亮鱼腹烛光';
+    }
+  }
+
+  btn.addEventListener('mousedown', startIgnite);
+  btn.addEventListener('mouseup', stopIgnite);
+  btn.addEventListener('mouseleave', stopIgnite);
+  btn.addEventListener('touchstart', startIgnite, {passive: true});
+  btn.addEventListener('touchend', stopIgnite);
+}
+
+// ==========================================
+// 6. 关卡三：南屏老宅·打食桃双击脱模
+// ==========================================
+let shitaoKnocked = 0;
+let shitaoStamped = false;
+
+function setupShitao() {
+  const mold = document.getElementById('shitao-mold');
+  const cake = document.getElementById('shitao-cake');
+  const dot = document.getElementById('red-dot');
+  const hint = document.getElementById('shitao-hint');
+
+  mold.addEventListener('click', () => {
+    if (shitaoStamped) return;
+
+    if (shitaoKnocked < 2) {
+      shitaoKnocked++;
+      audio.playWoodKnock();
+      mold.classList.add('knock');
+      setTimeout(() => mold.classList.remove('knock'), 300);
+
+      if (shitaoKnocked === 1) {
+        hint.innerHTML = '已松动！再敲击一次模具...';
+      } else if (shitaoKnocked === 2) {
+        cake.classList.add('popped');
+        hint.innerHTML = '脱模成功！轻点桃尖，点染一抹吉利朱红';
+        hint.style.color = '#f87171';
+      }
+    } else {
+      // 已经敲出，点击点上红点
+      shitaoStamped = true;
+      dot.classList.add('visible');
+      audio.playStamp();
+      AppState.levelProgress[2] = true;
+      hint.innerHTML = '✨ 食桃圆满，早早得利！年味已到';
+      hint.style.color = '#34d399';
+      document.getElementById('btn-flip-3').style.display = 'block';
+      setTimeout(() => {
+        flipCard('card-inner-3');
+      }, 900);
+    }
+  });
+}
+
+// ==========================================
+// 7. 关卡四：黄山短尾猴·滑动对焦与科考盖章
+// ==========================================
+let macaqueStamped = false;
+
+function setupMacaque() {
+  const slider = document.getElementById('focus-slider');
+  const imgLayer = document.getElementById('scope-img');
+  const stamp = document.getElementById('stamp-mark');
+  const stampBtn = document.getElementById('stamp-btn');
+  const hint = document.getElementById('macaque-hint');
+
+  slider.addEventListener('input', (e) => {
+    if (macaqueStamped) return;
+    const val = parseInt(e.target.value);
+    // 在 70 到 85 之间最佳聚焦
+    const dist = Math.abs(val - 78);
+    const blurPx = Math.max(0, (dist * 0.4)).toFixed(1);
+    imgLayer.style.filter = `blur(${blurPx}px)`;
+
+    if (dist <= 6) {
+      hint.innerHTML = '🎯 焦点清晰！母猴正在给小猴理毛，点击盖章采样';
+      hint.style.color = '#fbbf24';
+      stampBtn.style.display = 'block';
+    } else {
+      hint.innerHTML = '滑动对焦轮，寻找丛林中的短尾猴...';
+      hint.style.color = '#f3e5ab';
+      stampBtn.style.display = 'none';
+    }
+  });
+
+  stampBtn.addEventListener('click', () => {
+    if (macaqueStamped) return;
+    macaqueStamped = true;
+    stamp.classList.add('stamped');
+    audio.playStamp();
+    AppState.levelProgress[3] = true;
+    hint.innerHTML = '✨ 行为学观察取样完成！已归入国家科考档案';
+    hint.style.color = '#34d399';
+    stampBtn.style.display = 'none';
+    document.getElementById('btn-flip-4').style.display = 'block';
+    setTimeout(() => {
+      flipCard('card-inner-4');
+    }, 1000);
+  });
+}
+
+// 翻卡通用函数
+function flipCard(cardId) {
+  const card = document.getElementById(cardId);
+  if (card) {
+    card.classList.toggle('flipped');
+    audio.playFlip();
+  }
+}
+
+// ==========================================
+// 8. 终局海报渲染器 (Canvas 动态合成生长档案)
+// ==========================================
+function renderFinalePoster() {
+  const canvas = document.getElementById('poster-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width = 750;
+  const h = canvas.height = 1100;
+
+  // 1. 底色：温润古雅宣纸微粒背景
+  ctx.fillStyle = '#17181c';
+  ctx.fillRect(0, 0, w, h);
+
+  // 内框金边
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(24, 24, w - 48, h - 48);
+
+  ctx.strokeStyle = 'rgba(212, 175, 55, 0.4)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(32, 32, w - 64, h - 64);
+
+  // 2. 头部题字
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#b92b27';
+  ctx.font = 'bold 20px serif';
+  ctx.fillText('新 東 方 文 旅 · 寒 假 奢 享 研 學', w / 2, 75);
+
+  ctx.fillStyle = '#f3f4f6';
+  ctx.font = 'bold 36px serif';
+  ctx.fillText('2026 徽州年岁 · 母子平行生长档案', w / 2, 125);
+
+  ctx.fillStyle = '#d4af37';
+  ctx.font = '16px serif';
+  ctx.fillText('好的亲子关系，是互相成全，而不是互相消耗', w / 2, 160);
+
+  // 3. 孩子与母亲姓名栏
+  ctx.fillStyle = '#22252c';
+  ctx.roundRect(50, 185, w - 100, 60, 8);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
+  ctx.stroke();
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#e2e8f0';
+  ctx.font = '16px sans-serif';
+  ctx.fillText(`学员档案：${AppState.childName} 及其母亲`, 70, 222);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = '#fbbf24';
+  ctx.fillText(`新年期许：“${AppState.wishText}”`, w - 70, 222);
+
+  // 4. 双侧资产成果对比矩阵
+  const colY = 275;
+  const colW = 310;
+
+  // 左栏：孩子带回的硬核成果
+  ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
+  ctx.roundRect(50, colY, colW, 580, 8);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+  ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = 'bold 18px serif';
+  ctx.fillText('【孩子带回的 4 大硬核资产】', 50 + colW / 2, colY + 36);
+
+  const childAssets = [
+    { title: '胡开文描金墨锭', desc: '1765年老厂古法工艺，亲手描金收藏' },
+    { title: '唐模发光鱼灯', desc: '扎竹篾填鱼鳞，入夜古巷巡游闭环' },
+    { title: '南屏食桃与手书楹联', desc: '百年老宅脱模点红，传统年礼真传' },
+    { title: '国家级短尾猴科考档案', desc: '40年不对外开放基地，行为学取样表' },
+    { title: '黄山之巅非遗毛笔', desc: '海拔1600米手工制笔 + 结营证书' }
+  ];
+
+  childAssets.forEach((item, i) => {
+    const itemY = colY + 80 + i * 98;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 15px serif';
+    ctx.fillText(`${i + 1}. ${item.title}`, 70, itemY);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(item.desc, 70, itemY + 22);
+  });
+
+  // 右栏：母亲独享的雅致时光
+  ctx.fillStyle = 'rgba(212, 175, 55, 0.08)';
+  ctx.roundRect(w - 50 - colW, colY, colW, 580, 8);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
+  ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = 'bold 18px serif';
+  ctx.fillText('【母亲享有的 4 重奢奢体验】', w - 50 - colW / 2, colY + 36);
+
+  const momAssets = [
+    { title: '黄梅戏下午茶专场', desc: '一曲《天仙配》，一盏温润徽州毛峰' },
+    { title: '老巷流光温情陪伴', desc: '提灯古巷夜游，孩子主动牵你的手' },
+    { title: '老宅天井私家年宴', desc: '无任何家务应酬，沐光享正宗年味' },
+    { title: '玉屏峰悬崖云端咖啡', desc: 'VIP免排队上山，悬崖边看松涛云海' },
+    { title: '山顶2晚五钻北海宿', desc: '高山点茶篆香，配免费厚羽绒观雪' }
+  ];
+
+  momAssets.forEach((item, i) => {
+    const itemY = colY + 80 + i * 98;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = 'bold 15px serif';
+    ctx.fillText(`${i + 1}. ${item.title}`, w - 50 - colW + 20, itemY);
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '12px sans-serif';
+    ctx.fillText(item.desc, w - 50 - colW + 20, itemY + 22);
+  });
+
+  // 底部荣誉印信
+  ctx.strokeStyle = '#b92b27';
+  ctx.lineWidth = 2;
+  ctx.fillStyle = 'rgba(185, 43, 39, 0.15)';
+  ctx.roundRect(w / 2 - 140, 885, 280, 60, 6);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#f87171';
+  ctx.font = 'bold 16px serif';
+  ctx.fillText('国家级科研特批营 · 认证入编', w / 2, 915);
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = '#cbd5e1';
+  ctx.fillText('限量 15 组家庭 · 48小时优先通道', w / 2, 933);
+
+  // 底部版权落款
+  ctx.fillStyle = '#64748b';
+  ctx.font = '11px sans-serif';
+  ctx.fillText('新东方文旅 · 让历史和文化成为鲜活的故事', w / 2, 1020);
+}
+
+// ==========================================
+// 9. DOM 事件与初始化绑定
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-  ScrollApp.init();
+  // 1. 初始化冬雪背景
+  initSnowCanvas();
+
+  // 2. 音频控制按钮
+  const audioBtn = document.getElementById('audio-toggle-btn');
+  if (audioBtn) {
+    audioBtn.addEventListener('click', () => {
+      const isPlaying = audio.toggleBGM();
+      if (isPlaying) {
+        audioBtn.classList.add('playing');
+      } else {
+        audioBtn.classList.remove('playing');
+      }
+    });
+  }
+
+  // 3. 信笺启封按钮
+  const sealBtn = document.getElementById('open-letter-btn');
+  if (sealBtn) {
+    sealBtn.addEventListener('click', () => {
+      audio.init();
+      if (!audio.bgmPlaying) {
+        audio.startBGM();
+        if (audioBtn) audioBtn.classList.add('playing');
+      }
+      AppState.goToStage(1);
+    });
+  }
+
+  // 4. 关卡一翻转与进入关卡二
+  document.getElementById('btn-flip-1').addEventListener('click', () => flipCard('card-inner-1'));
+  document.getElementById('btn-next-1').addEventListener('click', () => AppState.goToStage(2));
+
+  // 5. 关卡二设置
+  setupFishLantern();
+  document.getElementById('btn-flip-2').addEventListener('click', () => flipCard('card-inner-2'));
+  document.getElementById('btn-next-2').addEventListener('click', () => AppState.goToStage(3));
+
+  // 6. 关卡三设置
+  setupShitao();
+  document.getElementById('btn-flip-3').addEventListener('click', () => flipCard('card-inner-3'));
+  document.getElementById('btn-next-3').addEventListener('click', () => AppState.goToStage(4));
+
+  // 7. 关卡四设置
+  setupMacaque();
+  document.getElementById('btn-flip-4').addEventListener('click', () => flipCard('card-inner-4'));
+  document.getElementById('btn-next-4').addEventListener('click', () => AppState.goToStage(5));
+
+  // 8. 终局输入框与海报更新
+  const childInput = document.getElementById('input-child-name');
+  const wishInput = document.getElementById('input-wish');
+  if (childInput && wishInput) {
+    childInput.addEventListener('input', (e) => {
+      AppState.childName = e.target.value || '子轩';
+      renderFinalePoster();
+    });
+    wishInput.addEventListener('input', (e) => {
+      AppState.wishText = e.target.value || '开阔眼界，岁岁安康';
+      renderFinalePoster();
+    });
+  }
+
+  // 9. 留资弹窗逻辑
+  const modal = document.getElementById('lead-modal');
+  const openModalBtn = document.getElementById('open-modal-btn');
+  const closeModalBtn = document.getElementById('close-modal-btn');
+  const leadForm = document.getElementById('lead-form');
+  const formArea = document.getElementById('form-area');
+  const successArea = document.getElementById('success-area');
+
+  if (openModalBtn) {
+    openModalBtn.addEventListener('click', () => {
+      modal.classList.add('active');
+    });
+  }
+
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', () => {
+      modal.classList.remove('active');
+    });
+  }
+
+  if (leadForm) {
+    leadForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const phone = document.getElementById('input-phone').value.trim();
+      const grade = document.getElementById('select-grade').value;
+
+      if (!/^1[3-9]\d{9}$/.test(phone)) {
+        alert('请输入正确的11位家长手机号码，以便为您保留特批名额');
+        return;
+      }
+
+      // 模拟提交留资数据并持久化
+      const leadData = {
+        childName: AppState.childName,
+        childGrade: grade,
+        phone: phone,
+        wish: AppState.wishText,
+        time: new Date().toLocaleString()
+      };
+      localStorage.setItem('hz_winter_camp_lead', JSON.stringify(leadData));
+
+      audio.playStamp();
+      formArea.style.display = 'none';
+      successArea.style.display = 'block';
+    });
+  }
+
+  // 保存海报按钮 (提示长按)
+  const savePosterBtn = document.getElementById('save-poster-btn');
+  if (savePosterBtn) {
+    savePosterBtn.addEventListener('click', () => {
+      alert('已为您生成高精档案画卷！您可以在海报上长按直接保存图片，或分享至朋友圈/小红书！');
+    });
+  }
 });
 
 </script>
