@@ -67,6 +67,7 @@ export function Hero() {
         <p>6天，从徽州灯火走到黄山冬雪</p>
       </div>
       <div className="hero-product">徽州过大年 · 黄山冬雪亲子六日营</div>
+      <small className="experience-length">留三四分钟，先走进这趟旅行<br />AI行旅意境演绎</small>
     </>
   );
 }

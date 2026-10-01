@@ -96,13 +96,7 @@ export function Closing({ onLead }: { onLead: () => void }) {
       </section>
       <section className="value-section">
         <div className="eyebrow">一家人，都有所获得</div>
-        <h1>
-          一条好路线，
-          <br />
-          不是把景点
-          <br />
-          排在一起。
-        </h1>
+        <h1>把做过、看过的，<br />带回一家人的记忆。</h1>
         <div className="values">
           {valueCopy.map((x) => (
             <div key={x.title}>
@@ -111,11 +105,7 @@ export function Closing({ onLead }: { onLead: () => void }) {
             </div>
           ))}
         </div>
-        <div className="value-outro">
-          <h2>新东方文旅。</h2>
-          <p>把文化变成动作，<br />把知识变成问题，<br />把自然变成观察。</p>
-          <p>让体验与家人的关系，<br />成为一段完整旅行。</p>
-        </div>
+        {state.observation && <div className="value-outro travel-note"><small>刚刚，你留下的一条山林记录</small><p>我看到：{state.observation.discovery}</p><p>我还想知道：{state.observation.question}</p><small>带着这个问题，在真实山林里继续观察。</small></div>}
       </section>
       <section className="result-section">
         <div ref={card} className="result-card" data-testid="result-card">

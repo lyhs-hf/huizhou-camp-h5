@@ -1,5 +1,5 @@
 import { asset } from "../utils/asset";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { useJourney } from "./JourneyContext";
 import type { SceneId, InteractionId } from "../content/types";
 import { sceneNames } from "../content/copy";
@@ -22,6 +22,7 @@ export function App() {
   const [lead, setLead] = useState(false);
   const [mother, setMother] = useState(false);
   const [motherSettled, setMotherSettled] = useState(false);
+  const openMother = useCallback(() => { setMotherSettled(false); setMother(true); }, []);
   const [parallelReady, setParallelReady] = useState(false);
   const [mountainResting, setMountainResting] = useState(false);
   useEffect(() => {
@@ -99,7 +100,7 @@ export function App() {
     <Hero />,
     <Expectations />,
     <FirstRoute />,
-    <Lantern onInfo={() => setKnowledge("lantern")} onMother={() => { setMotherSettled(false); setMother(true); }} />,
+    <Lantern onInfo={() => setKnowledge("lantern")} onMother={openMother} />,
     <Ink onInfo={() => setKnowledge("ink")} />,
     <NewYear onInfo={() => setKnowledge("year")} />,
     <Macaque onInfo={() => setKnowledge("macaque")} />,

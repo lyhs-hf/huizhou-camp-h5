@@ -13,13 +13,20 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
   const [drag, setDrag] = useState({ x: 0, y: 0 });
   const [color, setColor] = useState(0);
   const [holding, setHolding] = useState(false);
+  const [brushMarks, setBrushMarks] = useState<string[]>([]);
+  const brush = useRef<SVGSVGElement>(null);
   const complete = action.complete;
+  useEffect(() => {
+    for (const file of ["night-hand.webp", "lit-final.webp", "mother-theatre-tea.webp"]) {
+      const image = new Image(); image.src = asset("assets/lantern/" + file);
+    }
+  }, []);
   useEffect(() => {
     if (phase !== 3 || action.done) return;
     const image = new Image(); image.src = asset("assets/lantern/mother-theatre-tea.webp");
-    const rest = setTimeout(complete, 2200);
+    const rest = setTimeout(() => { complete(); onMother(); }, 2200);
     return () => clearTimeout(rest);
-  }, [phase, action.done, complete]);
+  }, [phase, action.done, complete, onMother]);
   const resting = phase === 3 && !action.done;
   const origin = useRef<{ x: number; y: number } | null>(null);
   const target = useRef<HTMLDivElement>(null);
@@ -59,6 +66,11 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
   }
   function paint(e: PointerEvent) {
     if (prev.current === null) return;
+    const matrix = brush.current?.getScreenCTM();
+    if (matrix) {
+      const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(matrix.inverse());
+      setBrushMarks(m => [...m.slice(0, -1), m.at(-1) + ` L${p.x} ${p.y}`]);
+    }
     const distance = Math.abs(e.clientX - prev.current);
     prev.current = e.clientX;
     setColor((c) => {
@@ -99,11 +111,13 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
     action.retry();
     setPhase(0);
     setColor(0);
+    setBrushMarks([]);
   }
   return (
     <>
-      <StationHeader id="lantern" quiet={resting} />
+    <StationHeader id="lantern" quiet={resting} introduce={phase === 0} />
       <Stage className={"lantern-stage phase-" + phase + (resting ? " visual-rest" : "")}>
+        {phase === 3 && <svg className="lantern-reflection" viewBox="0 0 300 360" preserveAspectRatio="none" aria-hidden><defs><radialGradient id="lantern-warmth"><stop stopColor="#e6a452" stopOpacity=".52"/><stop offset="1" stopColor="#d49b51" stopOpacity="0"/></radialGradient></defs><ellipse cx="145" cy="190" rx="125" ry="130" fill="url(#lantern-warmth)"/><path d="M130 160 L110 335 L195 335 L178 160Z" fill="url(#lantern-warmth)" opacity=".4"/></svg>}
         <div
           ref={target}
           className="lantern-target"
@@ -117,13 +131,13 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
             />
           ) : (
             <>
-              <img
+              {phase === 1 ? <svg className="painted-paper" viewBox="0 0 780 390" preserveAspectRatio="none" aria-hidden><defs><mask id="fish-paint"><rect width="780" height="390" fill="black"/>{brushMarks.map((d, i) => <path key={i} d={d} fill="none" stroke="white" strokeWidth="115" strokeLinecap="round"/>)}</mask></defs><image href={asset("assets/lantern/unlit.webp")} width="780" height="390" style={{ filter: "grayscale(1)" }}/><image href={asset("assets/lantern/unlit.webp")} width="780" height="390" mask="url(#fish-paint)"/></svg> : <img
                 className="lantern-base"
                 style={{ filter: `grayscale(${phase >= 2 ? 0 : 1 - color})` }}
                 src={asset("assets/lantern/unlit.webp")}
                 alt="纸面贴合的鳌鱼鱼灯"
                 draggable={false}
-              />
+              />}
               <img
                 className="lantern-color"
                 style={{ opacity: phase === 3 ? 1 : 0 }}
@@ -131,6 +145,9 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
                 alt="暖光透过手绘鱼灯"
                 draggable={false}
               />
+              {phase === 1 && <svg ref={brush} className="paint-guide" data-testid="paint" viewBox="0 0 780 390" preserveAspectRatio="none" role="button" tabIndex={0} aria-label="轻划灯纸，为鱼灯添色"
+                onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setBrushMarks(m => [...m, `M80 ${100 + m.length * 90} H700`]); setColor(c => { const n = Math.min(1, c + .34); if (n === 1) setPhase(2); return n; }); } }}
+                onPointerDown={e => { action.start(); prev.current = e.clientX; e.currentTarget.setPointerCapture(e.pointerId); const m = e.currentTarget.getScreenCTM(); if (m) { const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse()); setBrushMarks(v => [...v, `M${p.x} ${p.y}`]); } }} onPointerMove={paint} onPointerUp={e => { paint(e); prev.current = null; action.unlock(); }} onPointerCancel={() => { prev.current = null; action.unlock(); }} />}
             </>
           )}
         </div>
@@ -158,33 +175,6 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
             <span>灯纸</span>
           </button>
         )}
-        {phase === 1 && (
-          <svg
-            className="paint-guide"
-            data-testid="paint"
-            viewBox="0 0 300 130"
-            role="button" tabIndex={0}
-            aria-label="轻划灯纸，为鱼灯添色"
-            onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setColor(c => { const n = Math.min(1, c + .34); if (n === 1) setPhase(2); return n; }); } }}
-            onPointerDown={(e) => {
-              action.start();
-              prev.current = e.clientX;
-              e.currentTarget.setPointerCapture(e.pointerId);
-            }}
-            onPointerMove={paint}
-            onPointerUp={() => {
-              prev.current = null;
-              action.unlock();
-            }}
-            onPointerCancel={() => {
-              prev.current = null;
-              action.unlock();
-            }}
-          >
-            <path d="M50 75 Q120 15 245 68" />
-            <circle cx="50" cy="75" r="4" />
-          </svg>
-        )}
         {phase === 2 && (
           <button
             className={"light-button " + (holding ? "holding" : "")}
@@ -204,7 +194,7 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
             <span />
           </button>
         )}
-        {phase < 3 && (
+        {phase < 3 && !(phase === 1 && color > 0) && (
           <div className="stage-hint">
             {
               [

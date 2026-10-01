@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import type { InteractionId } from "../content/types";
 import { useJourney } from "../app/JourneyContext";
 import { stationCopy } from "../content/copy";
-export function StationHeader({ id, quiet = false }: { id: InteractionId; quiet?: boolean }) {
+export function StationHeader({ id, quiet = false, introduce = false }: { id: InteractionId; quiet?: boolean; introduce?: boolean }) {
   return (
     <div className={"station-heading" + (quiet ? " quiet-heading" : "")}>
       <div className="eyebrow">
@@ -13,7 +13,7 @@ export function StationHeader({ id, quiet = false }: { id: InteractionId; quiet?
             : "DAY 2 · 指尖的一站"}
       </div>
       <h1>{stationCopy[id].title}</h1>
-      {id === "year" && <p>而是在老宅里，把年真正过一遍。</p>}
+      {introduce && <p className="scene-reason">{stationCopy[id].context}</p>}
     </div>
   );
 }

@@ -69,6 +69,8 @@ export function LeadSheet({ onClose }: { onClose: () => void }) {
             演示提交已完成。
             <br />
             联系方式没有保存，也未发送给真实客服。
+            <br />
+            当前为作品演示环境，未产生真实咨询或资料发送。
           </p>
           <button className="primary" onClick={onClose}>
             回到我的行旅卷

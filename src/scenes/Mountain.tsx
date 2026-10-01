@@ -6,13 +6,22 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
   const { dispatch } = useJourney();
   const [height, setHeight] = useState(0);
   const [settled, setSettled] = useState(false);
+  const [arrived, setArrived] = useState(false);
   const above = height >= .85;
   useEffect(() => {
-    setSettled(false); onRest(above);
+    const opening = setTimeout(() => setHeight(1), 80);
+    const landing = setTimeout(() => setArrived(true), 2000);
+    return () => { clearTimeout(opening); clearTimeout(landing); };
+  }, []);
+  useEffect(() => {
+    onRest(!arrived || above && !settled);
+  }, [arrived, above, settled, onRest]);
+  useEffect(() => {
+    setSettled(false);
     if (!above) return;
-    const timer = setTimeout(() => { setSettled(true); onRest(false); }, 1800);
-    return () => { clearTimeout(timer); onRest(false); };
-  }, [above, onRest]);
+    const timer = setTimeout(() => setSettled(true), 1800);
+    return () => clearTimeout(timer);
+  }, [above]);
   const origin = useRef<{ y: number; value: number } | null>(null);
   const reduced = useReducedMotion();
   const drag = (e: PointerEvent) => {
@@ -30,7 +39,7 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
   return (
     <>
       <div
-        className={"mountain-art" + (above && !settled ? " peak-rest" : "")}
+        className={"mountain-art arriving" + (!arrived || above && !settled ? " peak-rest" : "")}
         data-interaction
         role="slider"
         tabIndex={0}
@@ -102,7 +111,7 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
         <p>
           玉屏景区 · 迎客松
           <br />
-          守松相关文化内容
+          在迎客松前，认识黄山的松
         </p>
         <span>北海区域</span>
       </div>

@@ -1,14 +1,17 @@
 import { asset } from "../utils/asset";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useInteraction } from "../hooks/useInteraction";
+import { useJourney } from "../app/JourneyContext";
 import { Stage, StationHeader, StationFinish, StationTools } from "../components/Station";
 type Phase = "search" | "focus" | "observe" | "record" | "rest" | "done";
 export function Macaque({ onInfo }: { onInfo: () => void }) {
   const action = useInteraction("macaque", "山", "macaque");
+  const { state, dispatch } = useJourney();
   const [phase, setPhase] = useState<Phase>(action.done ? "done" : "search");
   const [view, setView] = useState({ x: 0, y: 0 });
   const [focus, setFocus] = useState(action.done ? 1 : 0);
-  const [entry, setEntry] = useState("");
+  const [entry, setEntry] = useState(state.observation?.discovery ?? "");
+  const [question, setQuestion] = useState(state.observation?.question ?? "");
   const search = useRef<{ x: number; y: number; view: typeof view } | null>(null);
   const wheel = useRef<{ x: number; focus: number } | null>(null);
   const complete = action.complete;
@@ -23,7 +26,7 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
   function releaseWheel() { wheel.current = null; action.unlock(); if (focus > .85) setPhase("observe"); }
   const quiet = phase === "observe" || phase === "rest";
   return <>
-    <StationHeader id="macaque" quiet={phase === "rest"} />
+    <StationHeader id="macaque" quiet={phase === "rest"} introduce={phase === "search" && view.x === 0 && view.y === 0} />
     <Stage className={"macaque-stage field-observation phase-" + phase + (phase === "rest" ? " visual-rest" : "")}>
       <div className={"binocular " + (phase === "search" ? "search-window" : "") + (phase === "observe" ? " breathing-forest" : "")} data-testid="binocular">
         {phase === "search" ? <>
@@ -50,13 +53,15 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
           <div style={{ transform: `translateX(${focus * 22}px)` }} /><span />
         </div><div className="stage-hint">慢慢调焦，让眼前清晰</div>
       </>}
-      {phase === "observe" && <p className="observe-pause" role="status">别急着点。<br />先看三秒。</p>}
-      {phase === "record" && <div className="field-notebook" data-testid="field-notebook"><h2>黄山短尾猴 · 野外观察</h2><p>我刚刚注意到：</p><div>{["它在哪里", "它在做什么", "它周围有什么"].map(x => <button key={x} onClick={() => { setEntry(x); setPhase("rest"); }}><span aria-hidden>○</span>{x}</button>)}</div></div>}
-      {(phase === "rest" || action.done) && <div className="recorded-dimension"><svg viewBox="0 0 100 30" aria-hidden><path d="M10 17 L17 23 L29 8 M38 14 Q60 10 87 16 M40 22 L80 23" pathLength="100" /></svg><span>{entry || "观察已收好"}</span></div>}
+      {phase === "observe" && <p className="observe-pause" role="status">先看三秒：<br />它坐在哪儿，身体怎样放着？</p>}
+      {phase === "record" && <div className="field-notebook" data-testid="field-notebook"><h2>山林观察记录</h2><p>{entry ? "看见之后，我还想知道：" : "只记录这张画面能看见的事。"}</p>
+        {!entry ? <div>{["它坐在岩石上。", "它的前肢靠近身体。"].map(x => <button key={x} onClick={() => setEntry(x)}><span aria-hidden>○</span>我看到{x}</button>)}</div> : <><p className="record-fact">我看到：{entry}</p><div>{["它会一直停在这里吗？", "它为什么选这个落脚处？"].map(x => <button key={x} onClick={() => { setQuestion(x); dispatch({ type: "observation", discovery: entry, question: x }); setPhase("rest"); }}><span aria-hidden>○</span>{x}</button>)}</div></>}
+      </div>}
+      {(phase === "rest" || action.done) && <div className="recorded-dimension"><span>我看到：{entry}<br /><small>我还想知道：{question}</small></span></div>}
     </Stage>
     {action.done && <StationFinish id="macaque" />}
     <StationTools done={action.done} quiet={quiet || phase === "record"} progressKey={phase} onInfo={onInfo}
-      onRetry={() => { action.retry(); setPhase("search"); setView({ x: 0, y: 0 }); setFocus(0); setEntry(""); }}
+      onRetry={() => { action.retry(); setPhase("search"); setView({ x: 0, y: 0 }); setFocus(0); setEntry(""); setQuestion(""); }}
       onAssist={() => { if (phase === "search") { setView({ x: -105, y: 35 }); setPhase("focus"); } else if (phase === "focus") { setFocus(1); setPhase("observe"); } }}
       assistLabel={phase === "search" ? "帮助寻找山林中的身影" : "慢慢调清楚"} />
   </>;

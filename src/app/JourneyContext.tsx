@@ -16,6 +16,7 @@ interface JourneyState {
   leadState: LeadState;
   locked: boolean;
   direction: number;
+  observation: { discovery: string; question: string } | null;
 }
 type Action =
   | { type: "scene"; scene: SceneId }
@@ -25,6 +26,7 @@ type Action =
   | { type: "retry"; id: InteractionId }
   | { type: "sound"; value: boolean }
   | { type: "result" }
+  | { type: "observation"; discovery: string; question: string }
   | { type: "lead"; value: LeadState };
 const initial: JourneyState = {
   currentScene: 0,
@@ -36,6 +38,7 @@ const initial: JourneyState = {
   leadState: "idle",
   locked: false,
   direction: 1,
+  observation: null,
 };
 function reducer(state: JourneyState, action: Action): JourneyState {
   switch (action.type) {
@@ -64,6 +67,8 @@ function reducer(state: JourneyState, action: Action): JourneyState {
       return { ...state, soundEnabled: action.value };
     case "result":
       return { ...state, resultGenerated: true };
+    case "observation":
+      return { ...state, observation: { discovery: action.discovery, question: action.question } };
     case "lead":
       return { ...state, leadState: action.value };
   }

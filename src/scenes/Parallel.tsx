@@ -2,9 +2,10 @@ import { asset } from "../utils/asset";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useJourney } from "../app/JourneyContext";
 import { track } from "../analytics";
+import { coverStroke } from "../utils/strokeCoverage.mjs";
 type Choice = "tea" | "incense" | "view";
 type Phase = "split" | "choose" | "moment" | "rejoin" | "done";
-const incensePath = "M118 188 H178";
+const incensePath = "M390 535 H333 V512 H446 V561 H307 V486 H478 V577";
 export function Parallel({ ready, onReady }: { ready: boolean; onReady: (value: boolean) => void }) {
   const { dispatch } = useJourney();
   const [phase, setPhase] = useState<Phase>(ready ? "done" : "split");
@@ -14,14 +15,14 @@ export function Parallel({ ready, onReady }: { ready: boolean; onReady: (value: 
   const [settled, setSettled] = useState(false);
   const [beat, setBeat] = useState(ready ? 2 : 0);
   const [ripples, setRipples] = useState<{ x: number; y: number }[]>([]);
-  const [wipes, setWipes] = useState<string[]>([]);
   const [stroke, setStroke] = useState(0);
+  const [covered, setCovered] = useState<number[]>([]);
+  const [teaTip, setTeaTip] = useState({ x: 150, y: 220 });
   const box = useRef<HTMLDivElement>(null);
   const ritual = useRef<SVGSVGElement>(null); const incense = useRef<SVGPathElement>(null);
   const bins = useRef(new Set<number>());
   const motion = useRef<{ x: number; y: number; length: number; line: string; at: number } | null>(null);
   const origin = useRef<{ x: number; split: number } | null>(null);
-  const wipedDistance = useRef(0);
   const teaProgress = useRef(0);
   const teaStartedAt = useRef<number | null>(null);
   useEffect(() => {
@@ -37,7 +38,7 @@ export function Parallel({ ready, onReady }: { ready: boolean; onReady: (value: 
   }, [phase, onReady]);
   useEffect(() => () => { dispatch({ type: "lock", value: false }); }, [dispatch]);
   function release() { origin.current = null; dispatch({ type: "lock", value: false }); track("parent_child_slider", { childRatio: Math.round(split) }); }
-  function select(value: Choice) { setChoice(value); setPhase("moment"); setEngaged(false); setSettled(false); setWipes([]); setStroke(0); wipedDistance.current = 0; teaProgress.current = 0; teaStartedAt.current = null; bins.current.clear(); track("mother_moment_select", { choice: value }); }
+  function select(value: Choice) { setChoice(value); setPhase("moment"); setEngaged(value === "view"); setSettled(false); setCovered([]); setStroke(0); teaProgress.current = 0; teaStartedAt.current = null; bins.current.clear(); track("mother_moment_select", { choice: value }); }
   function point(e: PointerEvent) { const m = ritual.current?.getScreenCTM(); return m ? new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse()) : null; }
   function down(e: PointerEvent) {
     if (engaged) return;
@@ -46,27 +47,24 @@ export function Parallel({ ready, onReady }: { ready: boolean; onReady: (value: 
     if (choice === "tea" && Math.hypot((p.x - 150) / 65, (p.y - 220) / 32) > 1.6) { dispatch({ type: "lock", value: false }); return; }
     if (choice === "tea" && teaStartedAt.current === null) teaStartedAt.current = performance.now();
     motion.current = { x: p.x, y: p.y, length: 0, line: `M${p.x} ${p.y}`, at: performance.now() };
-    if (choice === "view") setWipes(w => [...w, motion.current!.line]);
     if (choice === "tea") setRipples([{ x: 150, y: 220 }]);
   }
   function move(e: PointerEvent) {
     const p = point(e); if (!p || !motion.current || engaged) return;
     const d = Math.hypot(p.x - motion.current.x, p.y - motion.current.y);
+    const previous = { x: motion.current.x, y: motion.current.y };
     motion.current.length += d; motion.current.x = p.x; motion.current.y = p.y;
     if (choice === "tea") {
       teaProgress.current += d;
+      setTeaTip({ x: Math.max(115, Math.min(185, p.x)), y: Math.max(205, Math.min(235, p.y)) });
       setStroke(Math.min(1, teaProgress.current / 120));
       if (teaProgress.current >= 120 && performance.now() - (teaStartedAt.current ?? performance.now()) >= 600) setEngaged(true);
     } else if (choice === "incense" && incense.current) {
-      let nearest = 0, distance = Infinity; const length = incense.current.getTotalLength();
-      for (let i = 0; i < 24; i++) { const q = incense.current.getPointAtLength(length * i / 23); const delta = Math.hypot(q.x - p.x, q.y - p.y); if (delta < distance) { nearest = i; distance = delta; } }
-      if (distance < 14) bins.current.add(nearest);
-      setStroke(bins.current.size / 24); if (bins.current.size >= 18) setEngaged(true);
-    } else if (choice === "view") {
-      motion.current.line += ` L${p.x} ${p.y}`;
-      setWipes(w => [...w.slice(0, -1), motion.current!.line]);
-      wipedDistance.current += d;
-      if (wipedDistance.current > 380) setEngaged(true);
+      const length = incense.current.getTotalLength();
+      const samples = Array.from({ length: 100 }, (_, i) => incense.current!.getPointAtLength(length * i / 99));
+      const progress = coverStroke(samples, previous, p, 18, bins.current);
+      setCovered([...bins.current]); setStroke(progress);
+      if (progress >= .9) setEngaged(true);
     }
   }
   function up() { if (choice === "tea" && motion.current && teaProgress.current >= 120 && performance.now() - (teaStartedAt.current ?? performance.now()) >= 600) setEngaged(true); motion.current = null; dispatch({ type: "lock", value: false }); }
@@ -86,16 +84,16 @@ export function Parallel({ ready, onReady }: { ready: boolean; onReady: (value: 
       <img className="mother-choice-art" src={asset("assets/parallel/parent.webp")} alt="窗前的一盏茶与山景" />
       <div className="mother-slips" data-interaction>{([["tea", "点茶"], ["incense", "篆香"], ["view", "什么都不做，只看山"]] as const).map(([value, label]) => <button key={value} onClick={() => select(value)}>{label}<span aria-hidden> ↗</span></button>)}</div>
     </> : <div className={"private-moment " + choice + (engaged ? " engaged" : "")} data-interaction>
-      <img src={choice === "view" ? asset("assets/mountain/panorama.webp") : choice === "tea" ? asset("assets/parallel/tea-final.webp") : asset("assets/parallel/incense-final.webp")} alt={choice === "view" ? "窗外黄山冬景" : choice === "tea" ? "窗前的茶器与茶筅" : "冬景前的一方香灰与香篆"} />
-      <svg ref={ritual} preserveAspectRatio={choice === "view" ? "none" : "xMidYMid slice"} viewBox="0 0 300 330" className="ritual-surface" data-testid="mother-ritual" aria-disabled={engaged} role="button" tabIndex={0} aria-label={choice === "tea" ? "缓缓划过茶面，让茶筅带起水纹" : choice === "incense" ? "沿香篆路径慢慢划过" : "慢慢擦开窗面雾气"}
-        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
-        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (engaged) return; if (choice === "tea") { teaProgress.current += 40; setStroke(Math.min(1, teaProgress.current / 120)); setRipples([{ x: 150, y: 220 }]); if (teaProgress.current >= 120) setEngaged(true); } else if (choice === "incense") { setStroke(s => { const n = Math.min(1, s + .25); if (n >= .75) setEngaged(true); return n; }); } else { setWipes(w => { const n = [...w, `M40 ${70 + w.length * 85} H260`]; wipedDistance.current += 160; if (wipedDistance.current > 380) setEngaged(true); return n; }); } } }}>
-        {choice === "tea" && stroke > 0 && <path className="tea-foam" d="M135 220 Q143 213 155 217 Q170 223 158 227 Q145 230 140 222" style={{ transform: `rotate(${Math.sin(stroke * Math.PI * 4) * 12}deg)` }} />}
+      <img src={choice === "view" ? asset("assets/mountain/panorama.webp") : choice === "tea" ? asset("assets/parallel/tea-final.webp") : asset("assets/parallel/incense-blank.webp")} alt={choice === "view" ? "窗外黄山冬景" : choice === "tea" ? "窗前的茶器与茶筅" : "冬景前的一方平整香灰，香迹由指尖形成"} />
+      {choice === "view" ? <svg className="window-atmosphere" viewBox="0 0 300 330" preserveAspectRatio="none" aria-hidden><defs><linearGradient id="window-cloud"><stop stopColor="#f2f2ea" stopOpacity="0"/><stop offset=".5" stopColor="#f2f2ea" stopOpacity=".18"/><stop offset="1" stopColor="#f2f2ea" stopOpacity="0"/></linearGradient></defs><path fill="url(#window-cloud)" d="M-80 180 Q70 150 170 180 T400 180 V280 H-80Z"/></svg> : <svg ref={ritual} preserveAspectRatio="xMidYMid slice" viewBox={choice === "incense" ? "0 0 780 859" : "0 0 300 330"} className="ritual-surface" data-testid="mother-ritual" aria-disabled={engaged} role="button" tabIndex={0} aria-label={choice === "tea" ? "缓缓划过茶面，让茶筅带起水纹" : "沿香篆路径慢慢划过"}
+        onPointerDown={down} onPointerMove={move} onPointerUp={e => { move(e); up(); }} onPointerCancel={() => { motion.current = null; dispatch({ type: "lock", value: false }); }}
+        onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (engaged) return; if (choice === "tea") { teaProgress.current += 40; setStroke(Math.min(1, teaProgress.current / 120)); setRipples([{ x: 150, y: 220 }]); if (teaProgress.current >= 120) setEngaged(true); } else { setStroke(s => { const n = Math.min(1, s + .34); setCovered(Array.from({ length: Math.round(n * 100) }, (_, i) => i)); if (n >= 1) setEngaged(true); return n; }); } } }}>
+        {choice === "tea" && stroke > 0 && <g className="tea-material"><ellipse cx="150" cy="220" rx="53" ry="19" fill="#ece8cd" opacity={stroke * .3}/>{Array.from({ length: 28 }, (_, i) => <circle key={i} cx={150 + Math.cos(i * 2.4) * (10 + i * 1.2)} cy={220 + Math.sin(i * 2.4) * (4 + i * .38)} r={.5 + i % 3 * .35} fill="#f5f0d9" opacity={stroke * .65}/>)}</g>}
+        {choice === "tea" && stroke > 0 && !engaged && <g className="tea-whisk" transform={`translate(${teaTip.x} ${teaTip.y}) rotate(-20)`}><path d="M0 -9 L0 -47" stroke="#8d7045" strokeWidth="4"/>{[-6,-3,0,3,6].map(x => <path key={x} d={`M0 -14 Q${x * 2} -3 ${x} 8`} fill="none" stroke="#c3ad7d" strokeWidth=".8"/>)}</g>}
         {choice === "tea" && ripples.map((r, i) => <g key={i} className="tea-ripple">{[0, 1, 2].map(j => <ellipse key={j} cx={r.x} cy={r.y} rx={14 + j * 9} ry={6 + j * 4} style={{ animationDelay: j * .35 + "s" }} />)}</g>)}
-        {choice === "incense" && <><path ref={incense} d={incensePath} className="incense-guide" /><path d={incensePath} className="incense-drawn" pathLength="100" strokeDasharray="100" strokeDashoffset={100 - stroke * 100} />{engaged && <path className="quiet-smoke" d="M150 180 C175 145 120 125 155 80 C170 60 150 50 150 30" />}</>}
-        {choice === "view" && <><defs><mask id="window-wipe"><rect width="300" height="330" fill="white" />{wipes.map((d, i) => <path key={i} d={d} stroke="black" strokeWidth="78" strokeLinecap="round" fill="none" />)}</mask></defs><rect className="window-mist" width="300" height="330" fill="#E0E3DF" mask="url(#window-wipe)" /></>}
-      </svg>
-      {!engaged && <p className="moment-note">{choice === "tea" ? "缓缓划过茶面" : choice === "incense" ? "沿着香篆，慢慢划过" : "用指尖，缓缓擦开窗面"}</p>}
+        {choice === "incense" && <><defs><mask id="formed-incense"><rect width="780" height="859" fill="black" />{covered.map(i => { const p = incense.current?.getPointAtLength(incense.current.getTotalLength() * i / 99); return p && <circle key={i} cx={p.x} cy={p.y} r="10" fill="white"/>; })}</mask></defs><path ref={incense} d={incensePath} className="incense-guide" /><path d={incensePath} className="incense-drawn" mask={engaged ? undefined : "url(#formed-incense)"} />{engaged && <path className="quiet-smoke" d="M478 577 C510 515 440 490 480 435 C505 395 450 365 480 320" />}</>}
+      </svg>}
+      {!engaged && stroke === 0 && <p className="moment-note">{choice === "tea" ? "茶筅轻动，看看茶面怎样变化" : "沿灰面回纹轻划，留下一缕香"}</p>}
       {settled && <button className="keep-moment" onClick={() => { setPhase("rejoin"); dispatch({ type: "lock", value: false }); }}>收好这一小时<span aria-hidden> →</span></button>}
     </div>}
     {phase === "split" && <><p className="divider-hint">向右，孩子画面展开 · 向左，大人画面展开</p><button className="mother-enter" onClick={() => setPhase("choose")}>把这一小时，留给自己<span aria-hidden> →</span></button></>}

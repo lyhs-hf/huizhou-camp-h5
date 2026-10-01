@@ -1,6 +1,7 @@
 import { asset } from "../utils/asset";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useInteraction } from "../hooks/useInteraction";
+import { coverStroke } from "../utils/strokeCoverage.mjs";
 import { Stage, StationHeader, StationFinish, StationTools } from "../components/Station";
 const segments = [
   "M140 280 C172 257 143 243 159 219 L140 206",
@@ -41,17 +42,9 @@ export function Ink({ onInfo }: { onInfo: () => void }) {
     const point = new DOMPoint(e.clientX, e.clientY).matrixTransform(matrix.inverse());
     const start = previousPoint.current ?? point;
     previousPoint.current = point;
-    const vx = point.x - start.x, vy = point.y - start.y;
-    const strokeLengthSquared = vx * vx + vy * vy;
     const length = path.getTotalLength();
-    // Cover the swept brush stroke, including space between pointer events.
-    // Sparse mouse / touch events must not require pixel-perfect sampling.
-    for (let i = 0; i < 40; i++) {
-      const p = path.getPointAtLength(length * i / 39);
-      const t = strokeLengthSquared === 0 ? 0 : Math.max(0, Math.min(1,
-        ((p.x - start.x) * vx + (p.y - start.y) * vy) / strokeLengthSquared));
-      if (Math.hypot(p.x - start.x - t * vx, p.y - start.y - t * vy) < 12) bins.current.add(i);
-    }
+    const samples = Array.from({ length: 40 }, (_, i) => path.getPointAtLength(length * i / 39));
+    coverStroke(samples, start, point, 12, bins.current);
     setTraces(Array.from(bins.current, i => {
       const p = path.getPointAtLength(length * i / 39);
       return { x: p.x, y: p.y };
@@ -73,7 +66,7 @@ export function Ink({ onInfo }: { onInfo: () => void }) {
   }
   const quiet = phase === "rest";
   return <>
-    <StationHeader id="ink" quiet={quiet} />
+    <StationHeader id="ink" quiet={quiet} introduce={phase === "discover"} />
     <Stage className={"ink-stage ink-world phase-" + phase + (quiet ? " visual-rest" : "")}>
       <div className="ink-object" style={{ transform: `rotate(${angle}deg) scale(${phase === "rest" || action.done ? 1.035 : 1})` }}>
         <img src={asset("assets/ink/ink.webp")} alt="有细腻浮雕纹样的徽墨墨锭" draggable={false} />
@@ -89,16 +82,16 @@ export function Ink({ onInfo }: { onInfo: () => void }) {
             if (e.key === "Enter" && phase === "finish") { e.preventDefault(); setAngle(0); setPhase("rest"); }
           }}>
           {segments.map((d, i) => <g key={d}>
-            <path ref={el => { paths.current[i] = el; }} d={d} className="trace-guide" data-segment={i} style={{ opacity: phase === "trace" && i === segment ? .65 : 0 }} />
+            <path ref={el => { paths.current[i] = el; }} d={d} className="trace-guide" data-segment={i} style={{ opacity: phase === "trace" && i === segment ? 1 : 0 }} />
             <path d={d} className="gold-line" style={{ opacity: i < segment || action.done ? 1 : 0 }} />
           </g>)}
-          {traces.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r=".7" fill="#B69A67" />)}
+          {traces.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r="1.2" fill="#C6A568" />)}
         </svg>
         <div className={"ink-side-light " + (quiet ? "sweeping" : "")} style={{ opacity: quiet ? undefined : Math.abs(angle) / 16 }} />
       </div>
-      {!quiet && !action.done && <div className="stage-hint">{phase === "discover" ? "轻轻转动，看看墨面" : phase === "trace" ? "沿着这一段纹样，慢慢描金" : "轻轻一扫，收笔"}</div>}
+      {!quiet && !action.done && (phase !== "trace" || traces.length === 0) && <div className="stage-hint">{phase === "discover" ? "先转动它，看看墨面" : phase === "trace" ? ["沿凸纹，描金从这一枝开始", "金线向上，接住第二枝松", "最后一笔，留在松针间"][segment] : "轻轻收笔，看看刚完成的金纹"}</div>}
     </Stage>
-    {action.done ? <StationFinish id="ink" /> : !quiet && <p className="interaction-note">{phase === "discover" ? "先看看它，不急着落笔。" : phase === "trace" ? "一段，再一段。金线留在墨面。" : "把这一笔，轻轻收好。"}</p>}
+    {action.done ? <StationFinish id="ink" /> : phase === "trace" && <p className="ink-progress" role="status">金纹 · {segment + 1} / 3</p>}
     <StationTools done={action.done} quiet={quiet} progressKey={phase + segment} onInfo={onInfo}
       onRetry={() => { action.retry(); setPhase("discover"); setSegment(0); setAngle(0); bins.current.clear(); previousPoint.current = null; setTraces([]); }}
       onAssist={assist} assistLabel={phase === "discover" ? "帮助发现纹样" : phase === "trace" ? "描好这一段" : "轻轻收笔"} />
