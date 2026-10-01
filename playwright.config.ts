@@ -1,4 +1,6 @@
 import { defineConfig } from "@playwright/test";
+const preview = process.env.PLAYWRIGHT_PREVIEW === "1";
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://127.0.0.1:${preview ? 4173 : 5173}/`;
 export default defineConfig({
   testDir: "./tests",
   testMatch: "**/*.spec.ts",
@@ -13,7 +15,7 @@ export default defineConfig({
     ["json", { outputFile: "test-results/results.json" }],
   ],
   use: {
-    baseURL: "http://127.0.0.1:5173",
+    baseURL,
     hasTouch: true,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
@@ -29,8 +31,8 @@ export default defineConfig({
     },
   ],
   webServer: process.env.PLAYWRIGHT_SKIP_SERVER ? undefined : {
-    command: "npm run dev",
-    url: "http://127.0.0.1:5173",
-    reuseExistingServer: true,
+    command: preview ? "npm run preview -- --host 127.0.0.1 --port 4173 --strictPort" : "npm run dev",
+    url: baseURL,
+    reuseExistingServer: !process.env.CI,
   },
 });

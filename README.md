@@ -45,4 +45,4 @@ npm run playwright
 
 ## Deployment
 
-Production Candidate 使用相对资源路径；运行 `npm run build` 后用 `npm run preview` 验证。GitHub Pages 子目录可通过 `VITE_BASE_PATH=/winter-journey/ npm run build` 指定。仓库 Pages 的 Source 选 GitHub Actions；推送 main 后，部署工作流执行安装、类型检查、Lint、单元测试、构建、Chromium/WebKit 回归，再发布 dist。流程依据 [GitHub Pages 官方说明](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。本地没有配置远端；公开发布仍需仓库和 Pages 权限。
+Production Candidate 使用相对资源路径；`npm run build` 后运行 `PLAYWRIGHT_PREVIEW=1 npm run playwright`，可对生产预览执行双浏览器回归。GitHub Pages 子目录可通过 `VITE_BASE_PATH=/winter-journey/ npm run build` 指定，并以 `PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173/winter-journey/` 测试。仓库 Pages 的 Source 选 GitHub Actions；推送 main 后，工作流执行安装、类型检查、Lint、单元测试、构建，再对实际 dist 的 Pages 子目录运行 Chromium/WebKit 回归，通过后发布。流程依据 [GitHub Pages 官方说明](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。本地没有配置远端；公开发布仍需仓库和 Pages 权限。

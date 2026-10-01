@@ -12,7 +12,7 @@ async function next(page: Page, id: number) {
   if (id === 10 && await page.getByRole("button", { name: "把这一小时，留给自己" }).count()) await motherMoment(page, "tea");
   await page.locator(".continue").click(); await scene(page, id);
 }
-async function open(page: Page) { await page.goto("/"); await scene(page, 1); }
+async function open(page: Page) { await page.goto("./"); await scene(page, 1); }
 async function trace(page: Page, locator: Locator, count = 100) {
   const points = await locator.evaluate((path: SVGPathElement, n: number) => {
     const m = path.getScreenCTM()!, length = path.getTotalLength();

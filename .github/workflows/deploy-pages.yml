@@ -28,6 +28,9 @@ jobs:
           VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run playwright
+        env:
+          PLAYWRIGHT_PREVIEW: "1"
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173${{ steps.pages.outputs.base_path }}/
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
