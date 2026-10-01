@@ -166,6 +166,31 @@ test("07 徽墨观察、三个SVG短段描金与收笔", async ({ page }) => {
   await expect(ink).toHaveAttribute("data-phase","rest"); await expect(page.locator(".continue")).toHaveCount(0);
   await expect(page.getByText("墨香印",{exact:true})).toBeVisible();
 });
+for (const width of [375, 390, 430]) {
+  test(`徽墨 ${width}px 普通稀疏拖动可完成，落笔和偏离纹样不会跳过`, async ({ page }) => {
+    await page.setViewportSize({ width, height: width === 430 ? 932 : width === 390 ? 844 : 812 });
+    await to(page, 5);
+    const ink = page.getByTestId("ink-path");
+    await ink.press("Enter");
+    const b = (await ink.boundingBox())!;
+    await page.mouse.click(b.x + 12, b.y + 12);
+    await page.mouse.move(b.x + 12, b.y + 12); await page.mouse.down();
+    await page.mouse.move(b.x + 12, b.y + b.height - 12, { steps: 4 }); await page.mouse.up();
+    await expect(page.locator(".gold-line").first()).toHaveCSS("opacity", "0");
+    await expect(ink).toHaveAttribute("data-phase", "trace");
+    for (let i = 0; i < 3; i++) {
+      // Eight samples model an ordinary short drag, rather than 100 exact points.
+      await trace(page, page.locator(".trace-guide").nth(i), 8);
+      await expect(page.locator(".gold-line").nth(i)).toHaveCSS("opacity", "1");
+    }
+    await expect(ink).toHaveAttribute("data-phase", "finish");
+    await expect(page.locator(".continue")).toHaveCount(0);
+    await ink.press("Enter");
+    await expect(ink).toHaveAttribute("data-phase", "rest");
+    await expect(page.locator(".continue")).toHaveCount(0);
+    await expect(page.getByText("墨香印", { exact: true })).toBeVisible();
+  });
+}
 test("08 米团入模、三次敲击、点朱与用户主动走进年里", async ({ page }) => {
   await to(page,6); await drag(page,'[data-testid="rice-dough"]','[data-testid="mould-target"]');
   await expect(page.getByTestId("mallet")).toBeVisible();
