@@ -1,6 +1,6 @@
 # FINAL 1.0
 
-状态：待最终验收。以下体验 PASS 指内置浏览器人工走查，不代表 Chromium / WebKit 自动化全部通过。日期：2026-10-01；代码：40db684。
+状态：待最终验收。以下体验 PASS 指内置浏览器人工走查，不代表 Chromium / WebKit 自动化全部通过。日期：2026-10-01；体验代码：40db684；生产回归配置：383bc88。
 
 ## Build
 
@@ -11,6 +11,8 @@ ISSUE — 独立 `npm run preview` 启动被当前执行环境拒绝（`listen E
 ## Tests
 
 PASS — typecheck、lint、unit（1 项测试 / 4 条校验断言）、git diff --check。
+
+PASS — Pages 工作流 YAML 解析；回归改为运行实际 dist 的 Production Preview，并保留 Pages 子目录。生产预览配置下仍收集到全部 84 项测试。
 
 ISSUE — Playwright 已收集 84 项（42 场景 × Chromium / WebKit）；Chromium 启动报 MachPort 权限拒绝，WebKit 在进入页面前退出。完整自动化回归、reduced-motion 和 Safari 验收仍待可运行浏览器的环境，不能计为通过。V2 的历史测试结果不代替 FINAL 回归。
 
@@ -29,7 +31,7 @@ ISSUE — Playwright 已收集 84 项（42 场景 × Chromium / WebKit）；Chro
 
 ## Experience
 
-按独立问题口径处理 22 项；下列 PASS 已做页面视觉或操作复核：
+按独立问题口径处理 23 项（22 项体验、1 项部署验收）；下列体验 PASS 已做页面视觉或操作复核：
 
 | 体验 | 结果与已解决问题 |
 |---|---|
@@ -41,10 +43,11 @@ ISSUE — Playwright 已收集 84 项（42 场景 × Chromium / WebKit）；Chro
 | Mountain | PASS — ⑲ 六层景深统一色调与遮罩，退去多重叠图；峰顶保留 1.8 秒山景停顿。 |
 | Closing | PASS — ⑳ 三段价值章节与留白；㉑ PageDown 正常滚动；六日路线、三种 PNG、表单错误提示及 Demo 成功状态正常。 |
 | 跨场景 | ISSUE — ㉒ 已修改闲置帮助计时：操作锁定时暂停，完成 / 留白时关闭菜单；新增持续按住 8.2 秒的回归用例，执行受浏览器启动限制，尚待验证。 |
+| 部署验收 | ISSUE — ㉓ CI 原先只回归开发服务，现改为实际生产构建和 Pages 子目录；配置验证通过，完整运行仍待可启动浏览器及预览的环境。 |
 
 ## Remaining External Checks
 
-- 当前执行环境允许浏览器测试进程及本地监听端口后，运行全部 84 项回归及独立 Production Preview；未通过前不创建最终发布 Commit / Tag。
+- 当前执行环境允许浏览器测试进程及本地监听端口后，先 `npm run build`，再 `PLAYWRIGHT_PREVIEW=1 npm run playwright` 完成全部 84 项回归及独立 Production Preview；未通过前不创建最终发布 Commit / Tag。
 - 官方 Logo / 品牌使用授权；正式营期、价格与合同事实确认。
 - 真实 CRM、Analytics 接口及正式隐私协议。
 - 微信及 iOS Safari 真机体验。
