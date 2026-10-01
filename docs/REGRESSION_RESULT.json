@@ -1,0 +1,7 @@
+{
+  "command": "npx playwright test --grep '07 |19-20' --reporter=line",
+  "passed": 12,
+  "failed": 0,
+  "durationSeconds": 35.6,
+  "scope": "最后的徽墨几何与全幅小屏 padding 修复，Chromium/WebKit 及五种视口"
+}

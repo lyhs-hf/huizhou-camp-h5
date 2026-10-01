@@ -1,0 +1,44 @@
+# 一卷冬日行旅
+
+《新东方文旅｜徽州过大年·黄山冬雪亲子六日营》本地 H5 成品。Vite、React、TypeScript，11 幕，四个 Pointer 互动，黄山六层视差，亲子分屏，三种个性化 PNG 行旅卷与演示资料表单。
+
+## 启动
+
+需要 Node.js 20.19+ 或 22.12+。
+
+```sh
+npm ci
+npm run dev -- --port 5173
+```
+
+访问 http://localhost:5173 。目前这台电脑上的开发服务器已启动。
+
+```sh
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+npx playwright install chromium webkit
+npm run playwright
+node scripts/visual-qa.mjs
+```
+
+`npm run build` 生成 `dist/`。可部署到支持静态文件的站点根路径；本次没有公开发布。嵌套路径部署需要统一调整内容数据与组件中的 `/assets/` 根路径。`npm run preview` 可预览生产构建。
+
+## 维护位置
+
+- `src/content/`：六日路线、期待选择、知识内容、个性化结果与核心文案。
+- `src/interactions/`：覆纸、添色与长按；徽墨 SVG 描金；木槌与点朱；调焦与观察记录。
+- `src/app/`：内存状态、幕切换、全局与局部手势互斥。
+- `src/components/`：抽屉、焦点管理、表单、互动辅助入口。
+- `src/scenes/`：启程、路线、云端、亲子分屏与归卷。
+- `src/services/`：留资与声音接口；`src/analytics/`：事件接口。
+- `public/assets/`：23 张生成图片，均已转为本地 WebP；品牌文字与纸纹为代码/SVG。
+- `reference/route/`：用户提供的参考截图，未作为页面截图堆叠。
+- `docs/QA_REPORT.md`：实际 QA 发现、修复、检查范围与限制。
+- `docs/INTEGRATION.md`：真实留资、埋点和音频接入位置。
+- `docs/qa/`：各幕初始与完成状态、路线、价值、行旅卷和留资截图。
+
+项目没有真实后端、真实联系人提交、CRM、客服、稀缺营位或持久化联系人。Demo 仅在本次页面内验证流程；关闭抽屉或刷新会释放字段。页面也明确说明生成画面为行旅意境，而非真实团期照片。
+
+图片生成提示词记录在 `docs/IMAGE_PROMPTS.json`。`docs/ASSET_SIZES.json` 记录压缩资源；`docs/asset-sources.local.json` 为本机原始生成素材路径，重新压缩时可用 `node scripts/prepare-assets.mjs 自己的素材清单.json`。运行与构建无需原始 PNG。

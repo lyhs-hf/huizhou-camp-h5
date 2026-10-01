@@ -1,0 +1,186 @@
+[
+  {
+    "key": "hero",
+    "path": "public/assets/hero/hero.webp",
+    "width": 941,
+    "height": 1672,
+    "alpha": false,
+    "bytes": 224174
+  },
+  {
+    "key": "skeleton",
+    "path": "public/assets/lantern/skeleton.webp",
+    "width": 1774,
+    "height": 887,
+    "alpha": true,
+    "bytes": 126390
+  },
+  {
+    "key": "paper",
+    "path": "public/assets/lantern/paper.webp",
+    "width": 1254,
+    "height": 1254,
+    "alpha": true,
+    "bytes": 74310
+  },
+  {
+    "key": "unlit",
+    "path": "public/assets/lantern/unlit.webp",
+    "width": 1774,
+    "height": 887,
+    "alpha": true,
+    "bytes": 76880
+  },
+  {
+    "key": "lit",
+    "path": "public/assets/lantern/lit.webp",
+    "width": 1536,
+    "height": 1024,
+    "alpha": true,
+    "bytes": 83878
+  },
+  {
+    "key": "night",
+    "path": "public/assets/lantern/night.webp",
+    "width": 941,
+    "height": 1672,
+    "alpha": false,
+    "bytes": 213326
+  },
+  {
+    "key": "ink",
+    "path": "public/assets/ink/ink.webp",
+    "width": 1024,
+    "height": 1536,
+    "alpha": true,
+    "bytes": 111742
+  },
+  {
+    "key": "table",
+    "path": "public/assets/new-year/table.webp",
+    "width": 1024,
+    "height": 1536,
+    "alpha": false,
+    "bytes": 165764
+  },
+  {
+    "key": "peach",
+    "path": "public/assets/new-year/peach.webp",
+    "width": 1312,
+    "height": 1199,
+    "alpha": true,
+    "bytes": 62078
+  },
+  {
+    "key": "mallet",
+    "path": "public/assets/new-year/mallet.webp",
+    "width": 1209,
+    "height": 1301,
+    "alpha": true,
+    "bytes": 61986
+  },
+  {
+    "key": "banquet",
+    "path": "public/assets/new-year/banquet.webp",
+    "width": 941,
+    "height": 1672,
+    "alpha": false,
+    "bytes": 216788
+  },
+  {
+    "key": "courtyard",
+    "path": "public/assets/new-year/courtyard.webp",
+    "width": 941,
+    "height": 1672,
+    "alpha": false,
+    "bytes": 225448
+  },
+  {
+    "key": "couplet",
+    "path": "public/assets/new-year/couplet.webp",
+    "width": 1024,
+    "height": 1536,
+    "alpha": false,
+    "bytes": 108234
+  },
+  {
+    "key": "forest",
+    "path": "public/assets/macaque/forest.webp",
+    "width": 941,
+    "height": 1672,
+    "alpha": false,
+    "bytes": 266412
+  },
+  {
+    "key": "macaque",
+    "path": "public/assets/macaque/macaque.webp",
+    "width": 1145,
+    "height": 1374,
+    "alpha": false,
+    "bytes": 137662
+  },
+  {
+    "key": "panorama",
+    "path": "public/assets/mountain/panorama.webp",
+    "width": 941,
+    "height": 1672,
+    "alpha": false,
+    "bytes": 224636
+  },
+  {
+    "key": "child",
+    "path": "public/assets/parallel/child.webp",
+    "width": 941,
+    "height": 1672,
+    "alpha": false,
+    "bytes": 118998
+  },
+  {
+    "key": "parent",
+    "path": "public/assets/parallel/parent.webp",
+    "width": 941,
+    "height": 1672,
+    "alpha": false,
+    "bytes": 160234
+  },
+  {
+    "key": "clouds_layer",
+    "path": "public/assets/mountain/clouds.webp",
+    "width": 2160,
+    "height": 728,
+    "alpha": true,
+    "bytes": 24320
+  },
+  {
+    "key": "snow_layer",
+    "path": "public/assets/mountain/snow.webp",
+    "width": 2115,
+    "height": 743,
+    "alpha": true,
+    "bytes": 48492
+  },
+  {
+    "key": "rocks_layer",
+    "path": "public/assets/mountain/rocks.webp",
+    "width": 1536,
+    "height": 1024,
+    "alpha": true,
+    "bytes": 131288
+  },
+  {
+    "key": "forest_layer",
+    "path": "public/assets/mountain/forest.webp",
+    "width": 2172,
+    "height": 724,
+    "alpha": true,
+    "bytes": 72004
+  },
+  {
+    "key": "pine_layer",
+    "path": "public/assets/mountain/pine.webp",
+    "width": 1774,
+    "height": 887,
+    "alpha": true,
+    "bytes": 145198
+  }
+]
