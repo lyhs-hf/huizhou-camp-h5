@@ -1,6 +1,8 @@
 # 一卷冬日行旅
 
-《新东方文旅｜徽州过大年·黄山冬雪亲子六日营》本地 H5 成品。Vite、React、TypeScript，11 幕，四个 Pointer 互动，黄山六层视差，亲子分屏，三种个性化 PNG 行旅卷与演示资料表单。
+《新东方文旅｜徽州过大年·黄山冬雪亲子六日营》交互 H5 成品。Vite、React、TypeScript，11 幕，四个 Pointer 互动，黄山六层视差，亲子分屏，三种个性化 PNG 行旅卷与演示资料表单。
+
+[公开浏览](https://lyhs-hf.github.io/huizhou-camp-h5/) · 2026-10-01 发布，包含徽墨普通拖动修复。90 项双浏览器生产回归及 4 项公开站点首页 / PNG 导出检查通过。
 
 ## 启动
 
@@ -45,4 +47,4 @@ npm run playwright
 
 ## Deployment
 
-发布仓库为 [lyhs-hf/huizhou-camp-h5](https://github.com/lyhs-hf/huizhou-camp-h5)。Production Candidate 使用相对资源路径；`npm run build` 后运行 `PLAYWRIGHT_PREVIEW=1 npm run playwright`，可对生产预览执行双浏览器回归。该仓库子目录可通过 `VITE_BASE_PATH=/huizhou-camp-h5/ npm run build` 指定，并以 `PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173/huizhou-camp-h5/` 测试；测试会让预览服务使用同一个目录。仓库 Pages 的 Source 选 GitHub Actions；推送 main 后，工作流执行安装、类型检查、Lint、单元测试、构建，再对实际 dist 的 Pages 子目录运行 Chromium/WebKit 回归，通过后发布。流程依据 [GitHub Pages 官方说明](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。首次发布须由仓库管理员开启 Pages；部署结果及实际浏览链接见仓库 Actions。
+发布仓库为 [lyhs-hf/huizhou-camp-h5](https://github.com/lyhs-hf/huizhou-camp-h5)。Production Candidate 使用相对资源路径；`npm run build` 后运行 `PLAYWRIGHT_PREVIEW=1 npm run playwright`，可对生产预览执行双浏览器回归。该仓库子目录可通过 `VITE_BASE_PATH=/huizhou-camp-h5/ npm run build` 指定，并以 `PLAYWRIGHT_BASE_URL=http://127.0.0.1:4173/huizhou-camp-h5/` 测试；测试会让预览服务使用同一个目录。仓库 Pages 的 Source 选 GitHub Actions；推送 main 后，工作流执行安装、类型检查、Lint、单元测试、构建，再对实际 dist 的 Pages 子目录运行 Chromium/WebKit 回归，通过后发布。流程依据 [GitHub Pages 官方说明](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。Pages 已开启并完成公开部署；后续推送 main 将自动执行上述检查并更新站点。部署结果见仓库 Actions。
