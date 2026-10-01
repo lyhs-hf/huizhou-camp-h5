@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { InteractionId } from "../content/types";
+import { useJourney } from "../app/JourneyContext";
 import { stationCopy } from "../content/copy";
 export function StationHeader({ id, quiet = false }: { id: InteractionId; quiet?: boolean }) {
   return (
@@ -33,16 +34,18 @@ export function StationTools({ done, onRetry, onAssist, onInfo, assistLabel = "�
   done: boolean; onRetry: () => void; onAssist: () => void; onInfo: () => void;
   assistLabel?: string; progressKey?: string | number; quiet?: boolean;
 }) {
+  const { state: { locked } } = useJourney();
   const [waiting, setWaiting] = useState(false);
   const [requested, setRequested] = useState(false);
   const [menu, setMenu] = useState(false);
   useEffect(() => {
     setWaiting(false);
-    if (done || quiet) return;
+    if (done || quiet || locked) return;
     const timer = setTimeout(() => setWaiting(true), 8000);
     return () => clearTimeout(timer);
-  }, [done, progressKey, quiet]);
-  const canHelp = !done && (waiting || requested) && !quiet;
+  }, [done, progressKey, quiet, locked]);
+  useEffect(() => { if (done || quiet) setMenu(false); }, [done, quiet]);
+  const canHelp = !done && (waiting || requested) && !quiet && !locked;
   return <div className={"station-tools editorial-tools" + (quiet ? " quiet-tools" : "")} data-interaction>
     <button className="knowledge-button" onClick={(e) => { e.currentTarget.focus(); onInfo(); }}>
       这一站，孩子在经历什么？<span aria-hidden>＋</span>

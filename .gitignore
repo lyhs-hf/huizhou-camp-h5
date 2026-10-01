@@ -2,3 +2,10 @@ node_modules/
 dist/
 test-results/
 .DS_Store
+
+docs/playwright-report/
+docs/qa/
+docs/asset-sources.local.json
+.env
+.env.*
+!.env.example

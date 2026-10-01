@@ -3,13 +3,14 @@ export default defineConfig({
   testDir: "./tests",
   testMatch: "**/*.spec.ts",
   fullyParallel: true,
+  outputDir: "test-results/artifacts",
   workers: 3,
   timeout: 90000,
   expect: { timeout: 10000 },
   reporter: [
     ["list"],
-    ["html", { open: "never", outputFolder: "docs/playwright-report" }],
-    ["json", { outputFile: "docs/test-results.json" }],
+    ["html", { open: "never", outputFolder: "test-results/report" }],
+    ["json", { outputFile: "test-results/results.json" }],
   ],
   use: {
     baseURL: "http://127.0.0.1:5173",
@@ -27,7 +28,7 @@ export default defineConfig({
       use: { browserName: "webkit", viewport: { width: 375, height: 812 } },
     },
   ],
-  webServer: {
+  webServer: process.env.PLAYWRIGHT_SKIP_SERVER ? undefined : {
     command: "npm run dev",
     url: "http://127.0.0.1:5173",
     reuseExistingServer: true,

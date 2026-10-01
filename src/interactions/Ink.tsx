@@ -1,3 +1,4 @@
+import { asset } from "../utils/asset";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useInteraction } from "../hooks/useInteraction";
 import { Stage, StationHeader, StationFinish, StationTools } from "../components/Station";
@@ -19,7 +20,7 @@ export function Ink({ onInfo }: { onInfo: () => void }) {
   const complete = action.complete;
   useEffect(() => {
     if (phase !== "rest") return;
-    const t = setTimeout(() => { setPhase("done"); complete(); }, 1800);
+    const t = setTimeout(() => { setPhase("done"); complete(); }, 2200);
     return () => clearTimeout(t);
   }, [phase, complete]);
   function finishSegment() {
@@ -66,16 +67,17 @@ export function Ink({ onInfo }: { onInfo: () => void }) {
   return <>
     <StationHeader id="ink" quiet={quiet} />
     <Stage className={"ink-stage ink-world phase-" + phase + (quiet ? " visual-rest" : "")}>
-      <div className="ink-object" style={{ transform: `rotate(${angle}deg)` }}>
-        <img src="/assets/ink/ink.webp" alt="有细腻浮雕纹样的徽墨墨锭" draggable={false} />
+      <div className="ink-object" style={{ transform: `rotate(${angle}deg) scale(${phase === "rest" || action.done ? 1.035 : 1})` }}>
+        <img src={asset("assets/ink/ink.webp")} alt="有细腻浮雕纹样的徽墨墨锭" draggable={false} />
         <svg viewBox="0 0 300 330" className="ink-trace" data-testid="ink-path" data-phase={phase}
-          role="button" tabIndex={phase === "trace" || phase === "rest" || phase === "done" ? -1 : 0}
+          role="button" tabIndex={phase === "rest" || phase === "done" ? -1 : 0}
           aria-label={phase === "discover" ? "左右轻转，发现墨面纹样" : phase === "finish" ? "轻扫收笔，让侧光掠过墨面" : "沿墨锭纹样分段描金"}
           onPointerDown={e => { if (quiet || action.done) return; action.start(); origin.current = { x: e.clientX, last: e.clientX, distance: 0 }; e.currentTarget.setPointerCapture(e.pointerId); }}
           onPointerMove={draw} onPointerUp={release} onPointerCancel={() => { origin.current = null; action.unlock(); }}
           onKeyDown={e => {
             if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && phase === "discover") { e.preventDefault(); setAngle(e.key === "ArrowLeft" ? -4 : 4); }
             if (e.key === "Enter" && phase === "discover") { e.preventDefault(); setPhase("trace"); }
+            if (e.key === "Enter" && phase === "trace") { e.preventDefault(); finishSegment(); }
             if (e.key === "Enter" && phase === "finish") { e.preventDefault(); setAngle(0); setPhase("rest"); }
           }}>
           {segments.map((d, i) => <g key={d}>
@@ -91,6 +93,6 @@ export function Ink({ onInfo }: { onInfo: () => void }) {
     {action.done ? <StationFinish id="ink" /> : !quiet && <p className="interaction-note">{phase === "discover" ? "先看看它，不急着落笔。" : phase === "trace" ? "一段，再一段。金线留在墨面。" : "把这一笔，轻轻收好。"}</p>}
     <StationTools done={action.done} quiet={quiet} progressKey={phase + segment} onInfo={onInfo}
       onRetry={() => { action.retry(); setPhase("discover"); setSegment(0); setAngle(0); bins.current.clear(); setTraces([]); }}
-      onAssist={assist} assistLabel={phase === "discover" ? "帮助发现纹样" : phase === "trace" ? "辅助描好这一段" : "辅助收笔"} />
+      onAssist={assist} assistLabel={phase === "discover" ? "帮助发现纹样" : phase === "trace" ? "描好这一段" : "轻轻收笔"} />
   </>;
 }

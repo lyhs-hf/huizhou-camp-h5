@@ -1,3 +1,4 @@
+import { asset } from "../utils/asset";
 import { useRef, useState, useEffect } from "react";
 import { useJourney } from "./JourneyContext";
 import type { SceneId, InteractionId } from "../content/types";
@@ -20,11 +21,13 @@ export function App() {
   const [knowledge, setKnowledge] = useState<InteractionId | null>(null);
   const [lead, setLead] = useState(false);
   const [mother, setMother] = useState(false);
+  const [motherSettled, setMotherSettled] = useState(false);
   const [parallelReady, setParallelReady] = useState(false);
   const [mountainResting, setMountainResting] = useState(false);
   useEffect(() => {
     if (!mother) return;
-    const timer = setTimeout(() => setMother(false), 5000);
+    setMotherSettled(false);
+    const timer = setTimeout(() => setMotherSettled(true), 2500);
     return () => clearTimeout(timer);
   }, [mother]);
   const [toast, setToast] = useState("");
@@ -69,6 +72,7 @@ export function App() {
   }, [toast]);
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
+      if (scene === 10) return;
       if (
         modal ||
         state.locked ||
@@ -95,7 +99,7 @@ export function App() {
     <Hero />,
     <Expectations />,
     <FirstRoute />,
-    <Lantern onInfo={() => setKnowledge("lantern")} onMother={() => setMother(true)} />,
+    <Lantern onInfo={() => setKnowledge("lantern")} onMother={() => { setMotherSettled(false); setMother(true); }} />,
     <Ink onInfo={() => setKnowledge("ink")} />,
     <NewYear onInfo={() => setKnowledge("year")} />,
     <Macaque onInfo={() => setKnowledge("macaque")} />,
@@ -195,9 +199,10 @@ export function App() {
         {lead && <LeadSheet onClose={() => setLead(false)} />}
         {mother && <Sheet titleId="mother-title" onClose={() => setMother(false)}>
           <div className="mother-interlude">
-            <img src="/assets/lantern/mother-theatre-tea.webp" alt="古戏台前，一盏徽州茶与妈妈的片刻停留意境" />
+            <img src={asset("assets/lantern/mother-theatre-tea.webp")} alt="古戏台前，一盏徽州茶与妈妈的片刻停留意境" />
             <h2 id="mother-title">孩子在灯纸上添颜色。<br />你不必坐在旁边等。</h2>
             <p>一盏徽州茶，<br />一曲黄梅戏。</p>
+            {motherSettled && <button className="mother-leave" onClick={() => setMother(false)}>继续行旅<span aria-hidden> →</span></button>}
           </div>
         </Sheet>}
       </main>

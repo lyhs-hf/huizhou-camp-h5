@@ -1,3 +1,4 @@
+import { asset } from "../utils/asset";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useInteraction } from "../hooks/useInteraction";
 import { Stage, StationHeader, StationFinish, StationTools } from "../components/Station";
@@ -27,8 +28,7 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
       <div className={"binocular " + (phase === "search" ? "search-window" : "") + (phase === "observe" ? " breathing-forest" : "")} data-testid="binocular">
         {phase === "search" ? <>
           <div className="search-world" style={{ transform: `translate(${view.x}px,${view.y}px)` }}>
-            <img className="forest" src="/assets/macaque/forest.webp" alt="比望远镜窗口更宽的冬日山林" />
-            <img className="search-subject" src="/assets/macaque/macaque.webp" alt="林间非中央位置的短尾猴" />
+            <img className="forest" src={asset("assets/macaque/search-final.webp")} alt="更宽的冬日山林视野，短尾猴停在右侧岩石上" />
           </div>
           <div className="search-view" data-testid="search-view" role="group" aria-label="拖动望远镜视野，在林间寻找" tabIndex={0}
             onPointerDown={e => { action.start(); search.current = { x: e.clientX, y: e.clientY, view }; e.currentTarget.setPointerCapture(e.pointerId); }}
@@ -36,9 +36,9 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
             onPointerUp={() => { search.current = null; action.unlock(); if (near) setPhase("focus"); }} onPointerCancel={() => { search.current = null; action.unlock(); }}
             onKeyDown={e => { if (e.key.startsWith("Arrow")) { e.preventDefault(); setView(v => ({ x: Math.max(-165, Math.min(80, v.x + (e.key === "ArrowRight" ? 20 : e.key === "ArrowLeft" ? -20 : 0))), y: Math.max(-75, Math.min(75, v.y + (e.key === "ArrowDown" ? 20 : e.key === "ArrowUp" ? -20 : 0))) })); } else if (e.key === "Enter" && near) { e.preventDefault(); setPhase("focus"); } }} />
         </> : <>
-          <img className="forest" src="/assets/macaque/forest.webp" alt="冬季山林" />
-          <img className="macaque-sharp" src="/assets/macaque/macaque.webp" alt="山林中自然侧身停驻的短尾猴" style={{ opacity: focus }} />
-          <img className="macaque-blurred" src="/assets/macaque/macaque.webp" alt="" style={{ opacity: 1 - focus }} />
+          <img className="forest" src={asset("assets/macaque/forest.webp")} alt="冬季山林" />
+          <img className="macaque-sharp" src={asset("assets/macaque/macaque.webp")} alt="山林中自然侧身停驻的短尾猴" style={{ opacity: focus }} />
+          <img className="macaque-blurred" src={asset("assets/macaque/macaque.webp")} alt="" style={{ opacity: 1 - focus }} />
         </>}
         <span className="crosshair" aria-hidden />
       </div>
@@ -50,14 +50,14 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
           <div style={{ transform: `translateX(${focus * 22}px)` }} /><span />
         </div><div className="stage-hint">慢慢调焦，让眼前清晰</div>
       </>}
-      {phase === "observe" && <p className="observe-pause" role="status">别急着点。先看三秒。</p>}
-      {phase === "record" && <div className="field-notebook" data-testid="field-notebook"><h2>记下一件你刚刚注意到的事</h2><div>{["位置", "姿态", "周围环境"].map(x => <button key={x} onClick={() => { setEntry(x); setPhase("rest"); }}>{x}<span aria-hidden> ·</span></button>)}</div></div>}
-      {(phase === "rest" || action.done) && <div className="recorded-dimension">{entry ? `已收录：${entry}` : "观察已收好"}</div>}
+      {phase === "observe" && <p className="observe-pause" role="status">别急着点。<br />先看三秒。</p>}
+      {phase === "record" && <div className="field-notebook" data-testid="field-notebook"><h2>黄山短尾猴 · 野外观察</h2><p>我刚刚注意到：</p><div>{["它在哪里", "它在做什么", "它周围有什么"].map(x => <button key={x} onClick={() => { setEntry(x); setPhase("rest"); }}><span aria-hidden>○</span>{x}</button>)}</div></div>}
+      {(phase === "rest" || action.done) && <div className="recorded-dimension"><svg viewBox="0 0 100 30" aria-hidden><path d="M10 17 L17 23 L29 8 M38 14 Q60 10 87 16 M40 22 L80 23" pathLength="100" /></svg><span>{entry || "观察已收好"}</span></div>}
     </Stage>
     {action.done && <StationFinish id="macaque" />}
-    <StationTools done={action.done} quiet={quiet} progressKey={phase} onInfo={onInfo}
+    <StationTools done={action.done} quiet={quiet || phase === "record"} progressKey={phase} onInfo={onInfo}
       onRetry={() => { action.retry(); setPhase("search"); setView({ x: 0, y: 0 }); setFocus(0); setEntry(""); }}
       onAssist={() => { if (phase === "search") { setView({ x: -105, y: 35 }); setPhase("focus"); } else if (phase === "focus") { setFocus(1); setPhase("observe"); } }}
-      assistLabel={phase === "search" ? "帮助寻找山林中的身影" : "辅助调焦"} />
+      assistLabel={phase === "search" ? "帮助寻找山林中的身影" : "慢慢调清楚"} />
   </>;
 }

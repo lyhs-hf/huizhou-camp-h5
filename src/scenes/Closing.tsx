@@ -111,11 +111,11 @@ export function Closing({ onLead }: { onLead: () => void }) {
             </div>
           ))}
         </div>
-        <p className="value-outro">
-          新东方文旅做的，
-          <br />
-          是把分散在徽州、古村、山野与黄山上的体验，重新组织成一段一家人都值得经历的旅程。
-        </p>
+        <div className="value-outro">
+          <h2>新东方文旅。</h2>
+          <p>把文化变成动作，<br />把知识变成问题，<br />把自然变成观察。</p>
+          <p>让体验与家人的关系，<br />成为一段完整旅行。</p>
+        </div>
       </section>
       <section className="result-section">
         <div ref={card} className="result-card" data-testid="result-card">

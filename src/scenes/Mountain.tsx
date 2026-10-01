@@ -1,3 +1,4 @@
+import { asset } from "../utils/asset";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useJourney } from "../app/JourneyContext";
 import { useReducedMotion } from "../hooks/useInteraction";
@@ -9,7 +10,7 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
   useEffect(() => {
     setSettled(false); onRest(above);
     if (!above) return;
-    const timer = setTimeout(() => { setSettled(true); onRest(false); }, 1500);
+    const timer = setTimeout(() => { setSettled(true); onRest(false); }, 1800);
     return () => { clearTimeout(timer); onRest(false); };
   }, [above, onRest]);
   const origin = useRef<{ y: number; value: number } | null>(null);
@@ -29,7 +30,7 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
   return (
     <>
       <div
-        className="mountain-art"
+        className={"mountain-art" + (above && !settled ? " peak-rest" : "")}
         data-interaction
         role="slider"
         tabIndex={0}
@@ -65,7 +66,7 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
       >
         <img
           className="mountain-panorama"
-          src="/assets/mountain/panorama.webp"
+          src={asset("assets/mountain/panorama.webp")}
           alt="黄山冬日峰峦与云海"
           style={{
             transform: `translateY(${reduced ? 0 : height * 20}px) scale(1.12)`,
@@ -75,17 +76,17 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
           <img
             key={layer}
             className={"mountain-layer " + layer}
-            src={"/assets/mountain/" + layer + ".webp"}
+            src={asset("assets/mountain/" + layer + ".webp")}
             alt=""
             draggable={false}
             style={{
               transform: `translateY(${reduced ? 0 : height * (50 + i * 28)}px)`,
-              opacity: layer === "forest" ? 1 - height * 0.7 : layer === "clouds" ? .38 : 1,
+              opacity: layer === "clouds" ? .12 * (1 - height * .5) : (layer === "forest" ? .5 : layer === "pine" ? .25 : .12) * (1 - height),
             }}
           />
         ))}
       </div>
-      <div className="mountain-heading">
+      <div className={"mountain-heading" + (above ? " quiet-heading" : "")}>
         <div className="eyebrow">DAY 4 — DAY 5</div>
         <h1>
           从徽州人间，
@@ -116,7 +117,7 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
           山顶亲子时光
         </p>
       </div>
-      <div className="mountain-instruction" data-interaction>
+      <div className={"mountain-instruction" + (above && !settled ? " quiet-heading" : "")} data-interaction>
         <button onClick={() => setHeight((h) => (h > 0.5 ? 0 : 1))}>
           {height > 0.5 ? "回望山下" : "向上轻推，慢慢入云"}
         </button>

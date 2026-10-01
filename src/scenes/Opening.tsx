@@ -1,3 +1,4 @@
+import { asset } from "../utils/asset";
 import { useEffect } from "react";
 import { useJourney } from "../app/JourneyContext";
 import { expectations } from "../content/copy";
@@ -10,7 +11,7 @@ export function Prologue() {
     const begin = performance.now();
     let settled = false;
     const image = new Image();
-    image.src = "/assets/hero/hero.webp";
+    image.src = asset("assets/hero/hero.webp");
     const finish = () => {
       if (settled) return;
       settled = true;
@@ -45,7 +46,7 @@ export function Hero() {
     <>
       <img
         className="hero-image"
-        src="/assets/hero/hero.webp"
+        src={asset("assets/hero/hero.webp")}
         alt="鱼灯、徽州白墙黛瓦与远处冬雪黄山的行旅意境"
         fetchPriority="high"
       />

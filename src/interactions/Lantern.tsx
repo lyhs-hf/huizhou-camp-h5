@@ -1,3 +1,4 @@
+import { asset } from "../utils/asset";
 import { useState, useRef, useEffect, type PointerEvent } from "react";
 import { useInteraction } from "../hooks/useInteraction";
 import {
@@ -15,7 +16,7 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
   const complete = action.complete;
   useEffect(() => {
     if (phase !== 3 || action.done) return;
-    const image = new Image(); image.src = "/assets/lantern/mother-theatre-tea.webp";
+    const image = new Image(); image.src = asset("assets/lantern/mother-theatre-tea.webp");
     const rest = setTimeout(complete, 2200);
     return () => clearTimeout(rest);
   }, [phase, action.done, complete]);
@@ -110,7 +111,7 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
         >
           {phase === 0 ? (
             <img
-              src="/assets/lantern/skeleton.webp"
+              src={asset("assets/lantern/skeleton-final.webp")}
               alt="鳌鱼鱼灯竹篾骨架"
               draggable={false}
             />
@@ -119,14 +120,14 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
               <img
                 className="lantern-base"
                 style={{ filter: `grayscale(${phase >= 2 ? 0 : 1 - color})` }}
-                src="/assets/lantern/unlit.webp"
+                src={asset("assets/lantern/unlit.webp")}
                 alt="纸面贴合的鳌鱼鱼灯"
                 draggable={false}
               />
               <img
                 className="lantern-color"
                 style={{ opacity: phase === 3 ? 1 : 0 }}
-                src="/assets/lantern/lit.webp"
+                src={asset("assets/lantern/lit-final.webp")}
                 alt="暖光透过手绘鱼灯"
                 draggable={false}
               />
@@ -139,6 +140,7 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
             aria-label="拖动灯纸覆上灯骨"
             data-testid="paper"
             style={{ transform: `translate(${drag.x}px,${drag.y}px)` }}
+            onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setPhase(1); } }}
             onPointerDown={paperDown}
             onPointerMove={paperMove}
             onPointerUp={paperUp}
@@ -149,7 +151,7 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
             }}
           >
             <img
-              src="/assets/lantern/paper.webp"
+              src={asset("assets/lantern/paper.webp")}
               alt="半透明灯纸"
               draggable={false}
             />
@@ -161,7 +163,9 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
             className="paint-guide"
             data-testid="paint"
             viewBox="0 0 300 130"
-            aria-label="沿虚线轻划，为鱼灯添色"
+            role="button" tabIndex={0}
+            aria-label="轻划灯纸，为鱼灯添色"
+            onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setColor(c => { const n = Math.min(1, c + .34); if (n === 1) setPhase(2); return n; }); } }}
             onPointerDown={(e) => {
               action.start();
               prev.current = e.clientX;
@@ -205,7 +209,7 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
             {
               [
                 "轻轻覆上灯纸",
-                "沿虚线轻划，给它添一点颜色",
+                "轻划灯纸，给它添一点颜色",
                 "让灯火，从里面慢慢亮起",
               ][phase]
             }

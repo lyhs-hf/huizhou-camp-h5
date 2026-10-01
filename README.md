@@ -20,10 +20,9 @@ npm run test
 npm run build
 npx playwright install chromium webkit
 npm run playwright
-node scripts/visual-qa.mjs
 ```
 
-`npm run build` 生成 `dist/`。可部署到支持静态文件的站点根路径；本次没有公开发布。嵌套路径部署需要统一调整内容数据与组件中的 `/assets/` 根路径。`npm run preview` 可预览生产构建。
+`npm run build` 生成 `dist/`。可部署到支持静态文件的站点根路径；本次没有公开发布。嵌套路径部署由 Vite base 与统一资源函数处理。`npm run preview` 可预览生产构建。
 
 ## 维护位置
 
@@ -33,12 +32,17 @@ node scripts/visual-qa.mjs
 - `src/components/`：抽屉、焦点管理、表单、互动辅助入口。
 - `src/scenes/`：启程、路线、云端、亲子分屏与归卷。
 - `src/services/`：留资与声音接口；`src/analytics/`：事件接口。
-- `public/assets/`：23 张生成图片，均已转为本地 WebP；品牌文字与纸纹为代码/SVG。
+- `public/assets/`：30 张生成图片，均已转为本地 WebP；品牌文字与纸纹为代码/SVG。
 - `reference/route/`：用户提供的参考截图，未作为页面截图堆叠。
-- `docs/QA_REPORT.md`：实际 QA 发现、修复、检查范围与限制。
+- `docs/FINAL_QA.md`：当前候选版本的实际验收结果与待验证项目。
+- `docs/VERSION_HISTORY.md`：Git 版本与核心变更。
 - `docs/INTEGRATION.md`：真实留资、埋点和音频接入位置。
 - `docs/qa/`：各幕初始与完成状态、路线、价值、行旅卷和留资截图。
 
 项目没有真实后端、真实联系人提交、CRM、客服、稀缺营位或持久化联系人。Demo 仅在本次页面内验证流程；关闭抽屉或刷新会释放字段。页面也明确说明生成画面为行旅意境，而非真实团期照片。
 
 图片生成提示词记录在 `docs/IMAGE_PROMPTS.json`。`docs/ASSET_SIZES.json` 记录压缩资源；`docs/asset-sources.local.json` 为本机原始生成素材路径，重新压缩时可用 `node scripts/prepare-assets.mjs 自己的素材清单.json`。运行与构建无需原始 PNG。
+
+## Deployment
+
+Production Candidate 使用相对资源路径；运行 `npm run build` 后用 `npm run preview` 验证。GitHub Pages 子目录可通过 `VITE_BASE_PATH=/winter-journey/ npm run build` 指定。仓库 Pages 的 Source 选 GitHub Actions；推送 main 后，部署工作流执行安装、类型检查、Lint、单元测试、构建、Chromium/WebKit 回归，再发布 dist。流程依据 [GitHub Pages 官方说明](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。本地没有配置远端；公开发布仍需仓库和 Pages 权限。
