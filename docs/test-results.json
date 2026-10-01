@@ -2,14 +2,14 @@
   "config": {
     "argv": [
       "/usr/local/bin/node",
-      "/Users/mayipeng/Documents/Codex/2026-10-01/1/outputs/winter-journey/node_modules/.bin/playwright",
+      "/workspace/winter-journey/node_modules/.bin/playwright",
       "test",
       "--project=chromium-mobile",
       "-g",
       "07 |08 |09 |V2 妈妈"
     ],
-    "configFile": "/Users/mayipeng/Documents/Codex/2026-10-01/1/outputs/winter-journey/playwright.config.ts",
-    "rootDir": "/Users/mayipeng/Documents/Codex/2026-10-01/1/outputs/winter-journey/tests",
+    "configFile": "/workspace/winter-journey/playwright.config.ts",
+    "rootDir": "/workspace/winter-journey/tests",
     "failOnFlakyTests": false,
     "forbidOnly": false,
     "fullyParallel": true,
@@ -25,7 +25,7 @@
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "/Users/mayipeng/Documents/Codex/2026-10-01/1/outputs/winter-journey/test-results",
+        "outputDir": "/workspace/winter-journey/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -33,7 +33,7 @@
         },
         "id": "chromium-mobile",
         "name": "chromium-mobile",
-        "testDir": "/Users/mayipeng/Documents/Codex/2026-10-01/1/outputs/winter-journey/tests",
+        "testDir": "/workspace/winter-journey/tests",
         "testIgnore": [],
         "testMatch": [
           "**/*.spec.ts"
@@ -41,7 +41,7 @@
         "timeout": 90000
       },
       {
-        "outputDir": "/Users/mayipeng/Documents/Codex/2026-10-01/1/outputs/winter-journey/test-results",
+        "outputDir": "/workspace/winter-journey/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -49,7 +49,7 @@
         },
         "id": "webkit-mobile",
         "name": "webkit-mobile",
-        "testDir": "/Users/mayipeng/Documents/Codex/2026-10-01/1/outputs/winter-journey/tests",
+        "testDir": "/workspace/winter-journey/tests",
         "testIgnore": [],
         "testMatch": [
           "**/*.spec.ts"
