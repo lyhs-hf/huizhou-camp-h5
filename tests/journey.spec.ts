@@ -277,6 +277,8 @@ test("17 提交不持久化且无网络传送联系人", async ({ page }) => {
   expect(transmissions).toEqual([]);
 });
 test("18 刷新不残留手机号", async ({ page }) => {
+  // Two complete journeys include every material and emotional pause.
+  test.setTimeout(180000);
   await lead(page);
   await page.getByLabel(/家长手机号/).fill("13800000000");
   await page.reload();

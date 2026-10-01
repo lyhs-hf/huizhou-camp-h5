@@ -32,6 +32,7 @@ export default defineConfig({
   ],
   webServer: process.env.PLAYWRIGHT_SKIP_SERVER ? undefined : {
     command: preview ? "npm run preview -- --host 127.0.0.1 --port 4173 --strictPort" : "npm run dev",
+    env: preview ? { VITE_BASE_PATH: new URL(baseURL).pathname } : undefined,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
   },
