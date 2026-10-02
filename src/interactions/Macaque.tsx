@@ -1,5 +1,5 @@
 import { asset } from "../utils/asset";
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from "react";
 import { useInteraction } from "../hooks/useInteraction";
 import { useJourney } from "../app/JourneyContext";
 import { StationTools } from "../components/Station";
@@ -26,8 +26,9 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
   const discovered = useRef(action.done);
   const visited = useRef(new Set(seen));
   const gesture = useRef<{ x: number; y: number; lastX: number; lastY: number; distance: number; camera: typeof camera } | null>(null);
+  const pendingLook = useRef<{ x: number; y: number; distance: number } | null>(null);
   useEffect(() => { if (notebook) noteTitle.current?.focus({ preventScroll: true }); }, [notebook]);
-  function observe(x: number, y: number, distance: number) {
+  const observe = useCallback((x: number, y: number, distance: number) => {
     const box = viewport.current!.getBoundingClientRect();
     const body = regions.current[0]!.getBoundingClientRect();
     const visibleWidth = Math.max(0, Math.min(body.right, box.right) - Math.max(body.left, box.left));
@@ -44,9 +45,21 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
       if (!node) return;
       const r = node.getBoundingClientRect();
       if (x < Math.max(r.left, box.left) || x > Math.min(r.right, box.right) || y < Math.max(r.top, box.top) || y > Math.min(r.bottom, box.bottom)) return;
-      visited.current.add(details[i].id); setSeen([...visited.current]); setCaption(details[i].fact);
+      if (!visited.current.has(details[i].id)) {
+        visited.current.add(details[i].id); setSeen([...visited.current]);
+      }
+      setCaption(details[i].fact);
     });
-  }
+  }, []);
+  useLayoutEffect(() => {
+    const look = pendingLook.current;
+    if (!look) return;
+    pendingLook.current = null;
+    // Pointer events can be coalesced before React paints, especially in WebKit.
+    // Read visible details only after the camera transform reached the DOM.
+    observe(look.x, look.y, look.distance);
+    if (!gesture.current && visited.current.has("body") && visited.current.size >= 2) setNotebook(true);
+  }, [camera, observe]);
   function down(e: PointerEvent<HTMLDivElement>) {
     if (notebook || action.done) return;
     action.start(); e.currentTarget.setPointerCapture(e.pointerId);
@@ -61,9 +74,10 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
     const gain = discovered.current ? .22 : 1;
     setCamera({ x: Math.max(halfX, Math.min(1 - halfX, g.camera.x - (e.clientX - g.x) / size.width * gain)), y: Math.max(halfY, Math.min(1 - halfY, g.camera.y - (e.clientY - g.y) / size.height * gain)) });
     setGaze({ x: Math.max(.08, Math.min(.92, (e.clientX - box.left) / box.width)), y: Math.max(.12, Math.min(.88, (e.clientY - box.top) / box.height)) });
-    observe(e.clientX, e.clientY, g.distance);
+    pendingLook.current = { x: e.clientX, y: e.clientY, distance: g.distance };
   }
   function end(cancelled = false) {
+    if (cancelled) pendingLook.current = null;
     gesture.current = null; setLooking(false); action.unlock();
     if (!cancelled && visited.current.has("body") && visited.current.size >= 2) setNotebook(true);
   }
