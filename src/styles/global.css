@@ -116,6 +116,23 @@ svg {
   flex-direction: column;
   touch-action: none;
 }
+.journey-canvas, .journey-canvas * {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.journey-canvas input, .journey-canvas textarea, .journey-canvas [contenteditable="true"] {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
+}
+.ink-world.phase-trace .ink-object { transition: none; }
+.sound-toggle { position:absolute; right:12px; top:calc(10px + env(safe-area-inset-top)); width:44px; height:44px; z-index:35; opacity:.55; color:var(--ink-soft); }
+.sound-toggle svg { width:18px; height:18px; margin:auto; fill:none; stroke:currentColor; stroke-width:1.2; stroke-linecap:round; stroke-linejoin:round; }
+.sound-toggle:focus-visible, .sound-toggle:hover { opacity:1; }
+.immersive-canvas .sound-toggle { color:#faf8f3; filter:drop-shadow(0 1px 3px #10150b80); }
+.sound-toggle.sound-quiet, .immersive-canvas:has(.visual-rest) .sound-toggle { display:none; }
+.journey-canvas:has(.sound-toggle) .scene-header { padding-right:68px; }
 .journey-canvas:after {
   content: "";
   position: absolute;

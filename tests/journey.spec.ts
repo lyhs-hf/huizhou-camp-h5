@@ -206,6 +206,78 @@ test("07 指尖留下局部金纹，成品自动进入静观而非收笔任务",
   await expect(page.getByTestId('ink-path')).toHaveAttribute('data-phase','done');
   expect(await page.locator('mask[id^="ink-leaf-"]').evaluateAll(nodes=>nodes.map(n=>Array.from(n.querySelectorAll('circle')).map(c=>[c.getAttribute('cx'),c.getAttribute('cy')])))).toEqual(marks);
 });
+test("徽墨一笔连续跨过全部凸纹，不被隐藏分段中断", async ({ page }) => {
+  await to(page, 5);
+  const ink = page.getByTestId("ink-path");
+  const b = (await ink.boundingBox())!;
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+  await page.mouse.down(); await page.mouse.move(b.x + b.width / 2 + 55, b.y + b.height / 2, { steps: 12 }); await page.mouse.up();
+  await page.waitForTimeout(1200);
+  const points = await page.locator(".trace-guide").evaluateAll(paths => paths.flatMap(path => {
+    const p = path as SVGPathElement, m = p.getScreenCTM()!, length = p.getTotalLength();
+    return Array.from({ length: 25 }, (_, i) => {
+      const q = p.getPointAtLength(length * i / 24), r = new DOMPoint(q.x, q.y).matrixTransform(m);
+      return { x: r.x, y: r.y };
+    });
+  }));
+  await page.mouse.move(points[0].x, points[0].y); await page.mouse.down();
+  for (const point of points) await page.mouse.move(point.x, point.y);
+  await page.mouse.up();
+  await expect(ink).toHaveAttribute("data-phase", "rest");
+  await expect(page.getByRole("button", { name: "墨香里，走进徽州年" })).toBeVisible();
+  await next(page, 6);
+});
+test("徽墨从上端描起、取消再续画，文字长按不夺走手势", async ({ page, browserName }) => {
+  await to(page, 5);
+  const ink = page.getByTestId("ink-path"); await ink.press("Enter");
+  await expect(page.locator(".stage-hint")).toContainText("可以抬手接着描");
+  const protection = await page.locator(".stage-hint").evaluate(el => ({
+    select: getComputedStyle(el).userSelect,
+    webkit: getComputedStyle(el).getPropertyValue("-webkit-user-select"),
+    callout: getComputedStyle(el).getPropertyValue("-webkit-touch-callout"),
+    supportsCallout: CSS.supports("-webkit-touch-callout", "none"),
+  }));
+  expect(protection.select).toBe("none");
+  if (browserName === "webkit") expect(protection.webkit).toBe("none");
+  if (protection.supportsCallout) expect(protection.callout).toBe("none");
+  expect(await ink.evaluate(el => !el.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true })))).toBe(true);
+  // Genuine hold / drag across the hint must not create a document selection.
+  const hint = (await page.locator(".stage-hint").boundingBox())!;
+  await page.mouse.move(hint.x + 10, hint.y + hint.height / 2); await page.mouse.down();
+  await page.waitForTimeout(850); await page.mouse.move(hint.x + hint.width - 10, hint.y + hint.height / 2, { steps: 5 }); await page.mouse.up();
+  expect(await page.evaluate(() => getSelection()?.toString())).toBe("");
+  // The upper relief is usable before the lower one; cancellation keeps ink.
+  await trace(page, page.locator(".trace-guide").nth(2), 8);
+  expect(await page.locator("#ink-leaf-2 circle").count()).toBeGreaterThanOrEqual(30);
+  const b = (await ink.boundingBox())!;
+  await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2); await page.mouse.down();
+  await ink.dispatchEvent("pointercancel", { pointerId: 1, bubbles: true }); await page.mouse.up();
+  await trace(page, page.locator(".trace-guide").nth(1), 8);
+  await trace(page, page.locator(".trace-guide").nth(0), 8);
+  await expect(page.getByRole("button", { name: "墨香里，走进徽州年" })).toBeVisible();
+  await next(page, 6);
+});
+test("行旅音乐由启程手势播放、静音跨幕保留且刷新不自动播放", async ({ page }) => {
+  await open(page);
+  const music = page.getByTestId("journey-bgm");
+  expect(await music.getAttribute("src")).toBeNull();
+  await next(page, 2);
+  const toggle = page.getByRole("button", { name: "关闭背景音乐" });
+  await expect(toggle).toHaveAttribute("data-playing", "true");
+  const before = await music.evaluate((audio: HTMLAudioElement) => ({ time: audio.currentTime, loop: audio.loop, paused: audio.paused, duration: audio.duration }));
+  expect(before.loop).toBe(true); expect(before.paused).toBe(false); expect(before.duration).toBeGreaterThan(90);
+  await expect.poll(() => music.evaluate((audio: HTMLAudioElement) => audio.currentTime)).toBeGreaterThan(1.5);
+  await toggle.click(); await expect(page.getByRole("button", { name: "开启背景音乐" })).toHaveAttribute("data-playing", "false");
+  const pausedTime = await music.evaluate((audio: HTMLAudioElement) => audio.currentTime);
+  await page.getByRole("button", { name: /亲手做过的中国文化/ }).click(); await next(page, 3);
+  expect(await music.evaluate((audio: HTMLAudioElement) => audio.paused)).toBe(true);
+  await page.getByRole("button", { name: "开启背景音乐" }).click();
+  await expect(page.getByRole("button", { name: "关闭背景音乐" })).toHaveAttribute("data-playing", "true");
+  // WebKit's audio device clock can settle by a few milliseconds on resume.
+  expect(Math.abs(await music.evaluate((audio: HTMLAudioElement) => audio.currentTime) - pausedTime)).toBeLessThan(.2);
+  await page.reload(); await scene(page, 1);
+  expect(await music.getAttribute("src")).toBeNull();
+});
 for (const width of [375, 390, 430]) {
   test(`徽墨 ${width}px 普通稀疏拖动可完成，落笔和偏离纹样不会跳过`, async ({ page }) => {
     await page.setViewportSize({ width, height: width === 430 ? 932 : width === 390 ? 844 : 812 });

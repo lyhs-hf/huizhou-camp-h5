@@ -16,6 +16,7 @@ import { Closing } from "../scenes/Closing";
 import { KnowledgeDrawer } from "../components/KnowledgeDrawer";
 import { LeadSheet } from "../components/LeadSheet";
 import { Sheet } from "../components/Sheet";
+import { useJourneySound } from "../components/JourneySound";
 export function App() {
   const { state, dispatch } = useJourney();
   const scene = state.currentScene;
@@ -29,6 +30,7 @@ export function App() {
   const openMother = useCallback(() => { setMotherSettled(false); setMother(true); }, []);
   const [parallelReady, setParallelReady] = useState(false);
   const [mountainResting, setMountainResting] = useState(false);
+  const music = useJourneySound(scene, (mountainResting && scene === 8) || knowledge !== null || lead || mother);
   useEffect(() => {
     if (!mother) return;
     setMotherSettled(false);
@@ -56,6 +58,19 @@ export function App() {
     return () => clearTimeout(timer);
   }, [scene, state.locked]);
   useEffect(()=>()=>{transitionTimers.current.forEach(clearTimeout);},[]);
+  useEffect(() => {
+    const surface = canvas.current;
+    const protectGesture = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Element && !target.closest('input,textarea,[contenteditable="true"]')) event.preventDefault();
+    };
+    surface?.addEventListener("selectstart", protectGesture);
+    surface?.addEventListener("contextmenu", protectGesture);
+    return () => {
+      surface?.removeEventListener("selectstart", protectGesture);
+      surface?.removeEventListener("contextmenu", protectGesture);
+    };
+  }, []);
   useEffect(()=>{
     const next:Record<number,string[]>={3:["directors-cut/lantern-worktable.webp","lantern/skeleton-final.webp","lantern/unlit.webp"],4:["ink/ink.webp"],5:["new-year/table.webp","new-year/dough-final.webp","directors-cut/year-writing-table.webp"],6:["directors-cut/forest-observation.webp","directors-cut/forest-foreground.webp"],7:["directors-cut/mountain-near.webp","mountain/panorama.webp"],8:["parallel/parent.webp","parallel/child.webp","parallel/tea-final.webp","parallel/incense-blank.webp"]};
     for(const file of next[scene]??[]){const image=new Image();image.src=asset("assets/"+file);}
@@ -67,7 +82,7 @@ export function App() {
       return;
     }
     if (value < 1 || value > 10) return;
-    if (scene === 1 && value > scene) track("journey_start");
+    if (scene === 1 && value > scene) { music.start(); track("journey_start"); }
     if (value === 8) track("mountain_enter");
     transitioning.current = true;
     const arrival=()=>{if(value===8)setMountainResting(true);dispatch({type:"scene",scene:value as SceneId});};
@@ -192,7 +207,7 @@ export function App() {
             inert={modal}
           >
             <span className="chapter-label">
-              {scene === 1 ? "HUÍZHŌU · HUÁNGSHĀN" : sceneNames[scene]}
+              {scene === 1 ? "轻音乐伴你启程" : sceneNames[scene]}
             </span>
             {(coreReady && (scene !== 9 || parallelReady) && (scene !== 8 || !mountainResting)) && <button
               className="continue"
@@ -213,6 +228,7 @@ export function App() {
         {immersive && allowed && !modal && <button className="scene-departure" onClick={() => go(scene + 1)}>
           {scene === 4 ? "灯火之后，走近一锭墨" : scene === 5 ? "墨香里，走进徽州年" : scene === 6 ? "推开门，走向山林" : scene === 7 ? "循着山雾，走向黄山" : scene === 8 ? "把云端的一小时，留给自己" : "收好这一卷"}<span aria-hidden> →</span>
         </button>}
+        {music.element}
         {film && <div className={"film-transition film-"+film.material+" film-"+film.phase} aria-hidden data-testid="film-transition">
           {film.material==="forest"&&<img src={asset("assets/directors-cut/forest-foreground.webp")} alt=""/>}
           {film.material==="mist"&&<svg viewBox="0 0 390 844" preserveAspectRatio="none"><defs><filter id="travel-cloud"><feTurbulence type="fractalNoise" baseFrequency=".009" numOctaves="2" seed="6"/><feColorMatrix type="matrix" values=".3 0 0 0 .7 .3 0 0 0 .73 .3 0 0 0 .71 0 0 0 0 1"/><feGaussianBlur stdDeviation="7"/></filter></defs><rect width="390" height="844" filter="url(#travel-cloud)"/></svg>}
