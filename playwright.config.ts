@@ -12,6 +12,7 @@ export default defineConfig({
   expect: { timeout: 10000 },
   reporter: [
     ["list"],
+    ["github"],
     ["html", { open: "never", outputFolder: "test-results/report" }],
     ["json", { outputFile: "test-results/results.json" }],
   ],

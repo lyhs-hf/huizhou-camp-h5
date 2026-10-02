@@ -59,7 +59,9 @@ async function arrive(page: Page) {
     await page.mouse.move(b.x+b.width*.55,b.y+b.height*.75);await page.mouse.down();
     await page.mouse.move(b.x+b.width*.55,b.y+b.height*.5,{steps:20});await page.mouse.up();
   }
-  await expect(page.locator('.arrival-settled')).toBeVisible();
+  // The uninterrupted cloud, reveal, stillness and caption last 8.2 seconds.
+  // Leave render/decode headroom without skipping any of that viewing time.
+  await expect(page.locator('.arrival-settled')).toBeVisible({timeout:15000});
 }
 async function unfoldPaper(page: Page) {
   const b=(await page.getByTestId('red-paper').boundingBox())!;
@@ -479,7 +481,7 @@ test("17 提交不持久化且无网络传送联系人", async ({ page }) => {
 });
 test("18 刷新不残留手机号", async ({ page }) => {
   // Two complete journeys include every material and emotional pause.
-  test.setTimeout(180000);
+  test.setTimeout(240000);
   await lead(page);
   await page.getByLabel(/家长手机号/).fill("13800000000");
   await page.reload();
