@@ -354,6 +354,13 @@ test("08 年礼材料、红纸展开、墨迹与老宅连续空间",async({page,
   await unfoldPaper(page);await expect(page.locator('.spring-brush').last()).toHaveCSS('stroke-dashoffset','0px');
   await expect(page.locator(".room-camera mask")).toHaveCount(2);
   await roomForward(page);await expect(page.locator('.year-caption')).toContainText('天井里的光');await expect(page.locator('.director-paper')).toHaveClass(/at-door/);
+  const doorway=(await page.locator('.year-page-gesture').boundingBox())!;
+  await page.mouse.move(doorway.x+doorway.width*.2,doorway.y+doorway.height*.45);await page.mouse.down();
+  await page.mouse.move(doorway.x+doorway.width*.8,doorway.y+doorway.height*.45,{steps:12});await page.mouse.up();
+  await expect(page.locator('.room-stack')).toHaveAttribute('data-room','0');
+  await expect(page.locator('.receding-table')).toHaveCount(0);
+  await expect(page.locator('.year-keepsake')).not.toHaveClass(/arriving/);
+  await page.waitForTimeout(1200);await roomForward(page);
   await roomForward(page);await expect(page.locator('.year-caption')).toContainText('年宴');await page.getByRole('button',{name:'把这一席年留在心里'}).click();
   await expect(page.locator('.scene-afterword')).toContainText('一家人的年');await expect(page.locator('.stamp-mark')).toHaveCount(0);
   await touchInput?.detach();
@@ -600,6 +607,7 @@ for (const choice of ["tea", "incense", "view"] as const) test(`FINAL ${choice}�
   await to(page,9);
   await page.getByRole("button",{name:"把这一小时，留给自己"}).click();
   await page.getByRole("button",{name:choice==="tea"?"点茶":choice==="incense"?"篆香":"什么都不做，只看山",exact:true}).click();
+  await expect(page.getByTestId("film-transition")).toHaveCount(0);
   const ritual = page.getByTestId("mother-ritual");
   if(choice==="view") await expect(ritual).toHaveCount(0);
   else { for(let i=0;i<3;i++) await ritual.press("Enter"); }
@@ -659,6 +667,7 @@ for (const [width, height] of [[375, 812], [390, 844], [430, 932]]) {
     await to(page, 9);
     await page.getByRole("button", { name: "把这一小时，留给自己" }).click();
     await page.getByRole("button", { name: "篆香", exact: true }).click();
+    await expect(page.getByTestId("film-transition")).toHaveCount(0);
     const surface = page.getByTestId("mother-ritual");
     const corners = await surface.evaluate((svg: SVGSVGElement) => {
       const m = svg.getScreenCTM()!;

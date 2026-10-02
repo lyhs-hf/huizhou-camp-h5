@@ -16,13 +16,13 @@ import { Closing } from "../scenes/Closing";
 import { KnowledgeDrawer } from "../components/KnowledgeDrawer";
 import { LeadSheet } from "../components/LeadSheet";
 import { Sheet } from "../components/Sheet";
-import { ScenePassage } from "../components/ScenePassage";
+import { ScenePassage, type PassageState } from "../components/ScenePassage";
 import { useJourneySound } from "../components/JourneySound";
 export function App() {
   const { state, dispatch } = useJourney();
   const scene = state.currentScene;
   const reduced = useReducedMotion();
-  const [film, setFilm] = useState<{material:string;phase:"cover"|"uncover"}|null>(null);
+  const [film, setFilm] = useState<PassageState|null>(null);
   const transitionTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const [knowledge, setKnowledge] = useState<InteractionId | null>(null);
   const [lead, setLead] = useState(false);
@@ -87,21 +87,23 @@ export function App() {
     if (value === 8) track("mountain_enter");
     transitioning.current = true;
     const arrival=()=>{if(value===8)setMountainResting(true);dispatch({type:"scene",scene:value as SceneId});};
-    const materials:Record<number,string>={1:"paper",2:"paper",3:"warm",4:"ink",5:"wood",6:"forest",7:"mist",8:"window",9:"paper"};
-    const material=materials[Math.min(scene,value)];
+    const materials:Record<number,string>={1:"paper",2:"paper",3:"paper",4:"warm",5:"ink",6:"wood",7:"forest",8:"mist",9:"window",10:"paper"};
+    const material=materials[value];
+    const bridgeImage=value===6&&state.completedInteractions.includes("year")?"new-year/banquet.webp":undefined;
+    const forestComplete=value===7&&state.completedInteractions.includes("macaque");
     if(!material){arrival();transitionTimers.current.push(setTimeout(()=>{transitioning.current=false;},520));return;}
-    setFilm({material,phase:"cover"});
-    transitionTimers.current.push(setTimeout(()=>{arrival();setFilm({material,phase:"uncover"});
+    setFilm({material,phase:"cover",bridgeImage,forestComplete});
+    transitionTimers.current.push(setTimeout(()=>{arrival();setFilm({material,phase:"uncover",bridgeImage,forestComplete});
       transitionTimers.current.push(setTimeout(()=>{setFilm(null);transitioning.current=false;},reduced?120:850));
     },reduced?80:650));
   }
   useEffect(() => {
-    if (scene > 0) {
+    if (scene > 0 && !film) {
       const title = canvas.current?.querySelector<HTMLElement>("h1");
       title?.setAttribute("tabindex", "-1");
       title?.focus({ preventScroll: true });
     }
-  }, [scene]);
+  }, [scene,film]);
   useEffect(() => {
     if (!toast) return;
     const id = setTimeout(() => setToast(""), 2600);
@@ -182,7 +184,7 @@ export function App() {
         }}
       >
         {scene > 1 && !immersive && (
-          <header className="scene-header" inert={modal}>
+          <header className="scene-header" inert={modal||film!==null}>
             <button aria-label="返回上一幕" onClick={() => go(scene - 1)}>
               ‹
             </button>
@@ -190,7 +192,7 @@ export function App() {
             <small>{String(scene).padStart(2, "0")} / 10</small>
           </header>
         )}
-        {immersive && <button className={"edge-back" + (edgeAwake ? " awake" : "")} aria-label="返回上一幕" inert={modal} onClick={() => go(scene - 1)}>‹</button>}
+        {immersive && <button className={"edge-back" + (edgeAwake ? " awake" : "")} aria-label="返回上一幕" inert={modal||film!==null} onClick={() => go(scene - 1)}>‹</button>}
         <div
           key={scene}
           className={
@@ -198,14 +200,14 @@ export function App() {
             scene +
             (state.direction < 0 ? " backwards" : "")
           }
-          inert={modal}
+          inert={modal||film!==null}
         >
           {content}
         </div>
         {scene > 0 && scene < 10 && !immersive && (
           <footer
             className={"scene-footer " + (scene === 1 ? "hero-footer" : "")}
-            inert={modal}
+            inert={modal||film!==null}
           >
             <span className="chapter-label">
               {scene === 1 ? "轻音乐伴你启程" : sceneNames[scene]}

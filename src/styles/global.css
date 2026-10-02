@@ -2767,24 +2767,7 @@ img.near-pine { opacity:.94; mask-image:linear-gradient(#000 0%,#000 55%,transpa
 .theatre-sheet .mother-leave { position:absolute; bottom:28px; right:28px; color:#faf4e8; }
 /* A material crosses the frame before the next space is revealed. */
 .film-transition { position:absolute; z-index:70; inset:0; overflow:hidden; pointer-events:auto; background:#171a16; }
-.film-cover { animation:film-cover .65s cubic-bezier(.3,.1,.35,1) both; }
-.film-uncover { animation:film-uncover .85s cubic-bezier(.2,.6,.3,1) both; }
-.film-ink { background:radial-gradient(ellipse at 63% 35%,#292c24,#090b09 70%); }
-.film-warm { background:radial-gradient(ellipse at 60% 60%,#c38e4f,#3e2b1e 75%); }
-.film-wood { background:url('/assets/directors-cut/year-writing-table.webp') center/cover; }
-.film-forest { background:linear-gradient(90deg,#1b211d,#39483b,#1b211d); }
-.film-forest > img { width:100%; height:100%; object-fit:cover; filter:blur(3px); }
-.film-mist { background:#e8eeea; }
-.film-mist > svg { width:100%; height:100%; }
-.film-window { background:url('/assets/parallel/parent.webp') center/cover; filter:blur(8px); }
-.film-paper { background:var(--paper); }
-@keyframes film-cover { from { opacity:0; clip-path:ellipse(0 0 at 55% 53%); } to { opacity:1; clip-path:ellipse(110% 110% at 55% 53%); } }
-@keyframes film-uncover { from { opacity:1; } to { opacity:0; } }
-.film-forest.film-cover { animation-name:door-to-forest; }
-.film-mist.film-cover,.film-window.film-cover,.film-paper.film-cover { animation-name:material-cover; }
-@keyframes door-to-forest { from { opacity:0; clip-path:inset(0 50%); } to { opacity:1; clip-path:inset(0); } }
-@keyframes material-cover { from { opacity:0; } to { opacity:1; } }
-@media(prefers-reduced-motion:reduce) { .film-cover,.film-uncover { animation:none; } .scene-4 .lantern-target,.scene-4 .lantern-stage:before,.scene-4 .lantern-worktable { transition:none; } .scene-4 .phase-3 .lantern-target { transform:none; } .film-window { filter:none; } }
+@media(prefers-reduced-motion:reduce) { .scene-4 .lantern-target,.scene-4 .lantern-stage:before,.scene-4 .lantern-worktable { transition:none; } .scene-4 .phase-3 .lantern-target { transform:none; } }
 
 .hero-product { bottom:calc(158px + env(safe-area-inset-bottom)); font-size:13px; }
 .experience-length { bottom:calc(96px + env(safe-area-inset-bottom)); font-size:12px; }
@@ -2808,32 +2791,16 @@ img.near-pine { opacity:.94; mask-image:linear-gradient(#000 0%,#000 55%,transpa
 /* SVG masks retain the material between two spaces; no raster slide swap. */
 .film-transition.svg-passage { background:transparent; animation:none; clip-path:none; filter:none; }
 .svg-passage > svg { width:100%; height:100%; }
-.passage-boundary { transform-origin:500px 500px; }
-.passage-cover { animation:passage-close .65s cubic-bezier(.3,.1,.35,1) both; }
-.passage-uncover { animation:passage-open .85s cubic-bezier(.2,.6,.3,1) both; }
-.boundary-forest,.boundary-window { transform-origin:500px 500px; }
-.boundary-forest.passage-cover,.boundary-window.passage-cover { animation-name:door-close; }
-.boundary-forest.passage-uncover,.boundary-window.passage-uncover { animation-name:door-open; }
-@keyframes passage-close { from{transform:scale(.001)} to{transform:scale(1.5)} }
-@keyframes passage-open { from{transform:scale(.001)} to{transform:scale(1.5)} }
-@keyframes door-close { from{transform:scaleX(.001)} to{transform:scaleX(1)} }
-@keyframes door-open { from{transform:scaleX(.001)} to{transform:scaleX(1)} }
-@media(prefers-reduced-motion:reduce) { .passage-boundary { animation:none; transform:scale(2); } }
-
 .lantern-target .fish-material { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
 .fish-bone { transition:opacity .65s ease; }
 .paper-wrap { transform-origin:390px 195px; transform:scale(.001); transition:transform .65s cubic-bezier(.2,.7,.3,1); }
 .paper-wrap.wrapped { transform:scale(1); }
 .fish-color-settle { transition:opacity .8s ease; }
 .fish-warm-light { transition:opacity 1.5s ease; }
-.year-process .house-space > .receding-table.room-opening { animation:none; opacity:1; }
-.room-aperture { transform:scale(0); animation:room-aperture-open 1.3s cubic-bezier(.22,.6,.3,1) both; }
-@keyframes room-aperture-open { to{transform:scale(1)} }
 .year-keepsake { transform-origin:0 0; animation:keepsake-place 1.3s cubic-bezier(.22,.6,.3,1) both; }
 @keyframes keepsake-place { from{transform:translate(var(--rice-from-x),var(--rice-from-y)) scale(var(--rice-from-scale))} to{transform:rotate(-10deg)} }
 @media(prefers-reduced-motion:reduce) {
   .paper-wrap,.fish-bone,.fish-color-settle,.fish-warm-light { transition:none; }
-  .room-aperture { transform:scale(1); animation:none; }
   .year-keepsake { transform:rotate(-10deg); animation:none; }
 }
 
@@ -2842,3 +2809,29 @@ img.near-pine { opacity:.94; mask-image:linear-gradient(#000 0%,#000 55%,transpa
 .room-door-opening.door-in-hand { transition:none; }
 .room-depth { transition:transform 1.15s cubic-bezier(.2,.6,.15,1); }
 @media(prefers-reduced-motion:reduce) { .room-door-opening,.room-depth { transition:none; } }
+
+/* Match the real next-world material; remove hard geometric wipe boundaries. */
+.material-lens { transform:scale(.001); }
+.lens-cover { animation:material-close .65s cubic-bezier(.35,.15,.4,1) both; }
+.lens-uncover { animation:material-reveal .85s cubic-bezier(.2,.6,.35,1) both; }
+.material-uncover { animation:material-dissolve .85s ease both; }
+@keyframes material-close { from{transform:scale(.001)} to{transform:scale(4.5)} }
+@keyframes material-reveal { from{transform:scale(.001)} to{transform:scale(1.8)} }
+@keyframes material-dissolve { from{opacity:1} to{opacity:0} }
+.passage-vapor { transform:translateY(0); }
+.film-cover .passage-vapor { animation:vapor-lift .65s ease both; }
+@keyframes vapor-lift { from{transform:translateY(80px)} to{transform:translateY(-12px)} }
+.year-keepsake { animation:none; }
+.year-keepsake.arriving { animation:keepsake-place 1.3s cubic-bezier(.22,.6,.3,1) both; }
+.scene-6 .year-step { text-shadow:0 1px 7px #21150eee; }
+@media(prefers-reduced-motion:reduce) {
+  .material-lens { animation:none; transform:scale(5); }
+  .material-uncover,.passage-vapor,.year-keepsake.arriving { animation:none; }
+  .film-uncover .material-world { opacity:0; }
+}
+
+/* The craft desk remains the writing desk. No replacement photo / iris cut. */
+.year-table { transform:scale(1.055); transform-origin:50% 50%; }
+.table-recede { animation:table-camera-back 1.3s cubic-bezier(.22,.6,.3,1) both; }
+@keyframes table-camera-back { from{transform:scale(1.055)} to{transform:scale(1)} }
+@media(prefers-reduced-motion:reduce) { .year-table { transform:none; } .table-recede { animation:none; } }
