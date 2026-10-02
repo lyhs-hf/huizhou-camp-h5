@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useJourney } from "../app/JourneyContext";
 import { asset } from "../utils/asset";
+import { frameProgress } from "../utils/frameProgress.mjs";
 
 export function useJourneySound(scene: number, quiet: boolean) {
   const { state, dispatch } = useJourney();
@@ -63,8 +64,8 @@ export function useJourneySound(scene: number, quiet: boolean) {
     cancelAnimationFrame(fade.current);
     const begin = performance.now(), initial = player.volume;
     const ease = (now: number) => {
-      const fraction = Math.min(1, (now - begin) / 900);
-      player.volume = initial + (targetVolume.current - initial) * fraction;
+      const fraction = frameProgress(now, begin, 900);
+      player.volume = Math.max(0, Math.min(1, initial + (targetVolume.current - initial) * fraction));
       if (fraction < 1) fade.current = requestAnimationFrame(ease);
     };
     fade.current = requestAnimationFrame(ease);

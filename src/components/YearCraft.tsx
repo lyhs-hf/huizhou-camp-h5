@@ -50,7 +50,7 @@ export function YearCraft({phase,hits,offset,held,mould,down,move,up,cancel,pres
     if(phase!=="press")return;
     if(reduced){setMaterial(1);return;}
     const start=performance.now();
-    const soften=(now:number)=>{const t=Math.min(1,(now-start)/500);setMaterial(1-(1-t)**3);if(t<1)frame.current=requestAnimationFrame(soften);};
+    const soften=(now:number)=>{const t=Math.max(0,Math.min(1,(now-start)/500));setMaterial(1-(1-t)**3);if(t<1)frame.current=requestAnimationFrame(soften);};
     frame.current=requestAnimationFrame(soften);
     return()=>cancelAnimationFrame(frame.current);
   },[phase,reduced]);

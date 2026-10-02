@@ -9,6 +9,12 @@ test("contact validation is precise and requires age", () => {
 });
 
 import { coverStroke } from '../src/utils/strokeCoverage.mjs';
+import { frameProgress } from '../src/utils/frameProgress.mjs';
+test('animation remains at its origin for an earlier frame, and settles after suspension', () => {
+  assert.equal(frameProgress(980, 1000, 900), 0);
+  assert.equal(frameProgress(1450, 1000, 900), .5);
+  assert.equal(frameProgress(100000, 1000, 900), 1);
+});
 test('continuous strokes cover sparse events without counting taps or distant strokes', () => {
   const samples = Array.from({length: 21}, (_, i) => ({x: i * 5, y: 0}));
   const covered = new Set();

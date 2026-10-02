@@ -281,6 +281,9 @@ test("徽墨从上端描起、取消再续画，文字长按不夺走手势", as
   await next(page, 6);
 });
 test("行旅音乐由启程手势播放、静音跨幕保留且刷新不自动播放", async ({ page }) => {
+  const errors:string[]=[];page.on("pageerror",error=>errors.push(error.message));
+  // A frame timestamp may precede an effect started later within that frame.
+  await page.addInitScript(()=>{const frame=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=callback=>frame(time=>callback(time-40));});
   await open(page);
   const music = page.getByTestId("journey-bgm");
   expect(await music.getAttribute("src")).toBeNull();
@@ -300,6 +303,7 @@ test("行旅音乐由启程手势播放、静音跨幕保留且刷新不自动�
   expect(Math.abs(await music.evaluate((audio: HTMLAudioElement) => audio.currentTime) - pausedTime)).toBeLessThan(.2);
   await page.reload(); await scene(page, 1);
   expect(await music.getAttribute("src")).toBeNull();
+  expect(errors).toEqual([]);
 });
 for (const width of [375, 390, 430]) {
   test(`徽墨 ${width}px 普通稀疏拖动可完成，落笔和偏离纹样不会跳过`, async ({ page }) => {
