@@ -436,10 +436,39 @@ test("FINAL 黄山仅上推一次穿云，取消安全且完整群峰后三秒�
   await page.waitForTimeout(1000);await expect(page.locator('.cloud-arrival')).toHaveAttribute('data-shot','near');await expect(page.getByRole('slider')).toHaveCount(0);
   await page.mouse.move(b.x+200,b.y+600);await page.mouse.down();await page.mouse.move(b.x+200,b.y+490,{steps:8});await camera.dispatchEvent('pointercancel',{pointerId:1,bubbles:true});await page.mouse.up();
   await expect(page.locator('.cloud-arrival')).toHaveAttribute('data-shot','near');
+  // Measure the rendered quiet interval in the browser. Protocol polling can
+  // observe "summit" late on a busy runner; sleeps after that poll drift.
+  const quietAudit = page.evaluate(() => new Promise<{ milliseconds: number; interruptions: string[] }>((resolve, reject) => {
+    const world = document.querySelector('.cloud-arrival')!;
+    let clearAt = 0, frame = 0;
+    const interruptions = new Set<string>();
+    const timeout = setTimeout(() => { observer.disconnect(); cancelAnimationFrame(frame); reject(new Error('No cloud arrival caption within 15 seconds')); }, 15000);
+    const sample = () => {
+      if (world.getAttribute('data-shot') !== 'summit') return;
+      const cloud = document.querySelector('.arrival-cloud')!;
+      if (Number(getComputedStyle(cloud).opacity) <= .01) {
+        clearAt ||= performance.now();
+        for (const selector of ['.arrival-caption', '.scene-departure', '.edge-back']) {
+          const ui = document.querySelector(selector);
+          if (ui && Number(getComputedStyle(ui).opacity) > .01) interruptions.add(selector);
+        }
+      }
+      frame = requestAnimationFrame(sample);
+    };
+    const observer = new MutationObserver(() => {
+      const shot = world.getAttribute('data-shot');
+      if (shot === 'summit' && !frame) frame = requestAnimationFrame(sample);
+      if (shot === 'caption') {
+        clearTimeout(timeout); cancelAnimationFrame(frame); observer.disconnect();
+        resolve({ milliseconds: clearAt ? performance.now() - clearAt : 0, interruptions: [...interruptions] });
+      }
+    });
+    observer.observe(world, { attributes: true, attributeFilter: ['data-shot'] });
+  }));
   await page.mouse.move(b.x+200,b.y+600);await page.mouse.down();await page.mouse.move(b.x+200,b.y+380,{steps:20});await page.mouse.up();
-  await expect(page.locator('.cloud-arrival')).toHaveAttribute('data-shot','summit');await page.waitForTimeout(1200);
-  await expect(page.locator('.arrival-caption')).toHaveCount(0);await expect(page.locator('.scene-departure')).toHaveCount(0);await expect(page.locator('.edge-back')).toHaveCSS('opacity','0');
-  await page.waitForTimeout(2800);await expect(page.locator('.arrival-caption')).toHaveCount(0);
+  const quiet = await quietAudit;
+  expect(quiet.milliseconds).toBeGreaterThanOrEqual(3000);
+  expect(quiet.interruptions).toEqual([]);
   await expect(page.locator('.arrival-settled')).toBeVisible();await expect(page.locator('.arrival-caption')).toContainText('从徽州人间');
 });
 
