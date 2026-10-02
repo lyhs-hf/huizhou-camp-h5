@@ -127,12 +127,42 @@ svg {
   -webkit-touch-callout: default;
 }
 .ink-world.phase-trace .ink-object { transition: none; }
+.journey-canvas img.saved-preview { -webkit-touch-callout:default; }
 .sound-toggle { position:absolute; right:12px; top:calc(10px + env(safe-area-inset-top)); width:44px; height:44px; z-index:35; opacity:.55; color:var(--ink-soft); }
 .sound-toggle svg { width:18px; height:18px; margin:auto; fill:none; stroke:currentColor; stroke-width:1.2; stroke-linecap:round; stroke-linejoin:round; }
 .sound-toggle:focus-visible, .sound-toggle:hover { opacity:1; }
 .immersive-canvas .sound-toggle { color:#faf8f3; filter:drop-shadow(0 1px 3px #10150b80); }
 .sound-toggle.sound-quiet, .immersive-canvas:has(.visual-rest) .sound-toggle { display:none; }
 .journey-canvas:has(.sound-toggle) .scene-header { padding-right:68px; }
+.craft-board { position:absolute; left:4%; top:33%; width:92%; aspect-ratio:390/380; }
+.craft-wood { width:100%; height:100%; overflow:visible; }
+.craft-shadow { filter:blur(8px); }
+.wood-body { transform-origin:50% 48%; }
+.wood-impact { animation:wood-contact .35s ease-out; transform-origin:50% 55%; }
+.craft-board .craft-cavity-target { left:28.5%; top:14%; width:41.5%; height:50%; transform:none; }
+.craft-board .craft-dough { left:1%; top:66%; width:27%; height:29%; min-height:44px; filter:drop-shadow(4px 8px 4px #291b1240); transition:filter .2s; background:none; }
+.rice-material { width:100%; height:100%; overflow:visible; }
+.hand-down .craft-dough:not(.pressed) .rice-material { transform:scale(1.08,.92); transform-origin:50% 85%; transition:transform .18s; }
+.year-process .craft-board .craft-dough.pressed { left:28.2%; top:9.8%; width:41.5%; height:56%; transform:none; animation:rice-seat .5s ease both; pointer-events:none; }
+.craft-board .craft-mallet { left:70%; top:62%; width:30%; height:34%; min-height:44px; filter:drop-shadow(3px 7px 3px #20160f50); background:none; touch-action:none; }
+.craft-mallet svg { width:100%; height:100%; overflow:visible; }
+.rice-loosening { animation:rice-edge .5s ease both; }
+.wood-away { animation:wood-leave 1s ease both; }
+.craft-board .crafted-peach { position:absolute; left:28.2%; top:9.8%; width:41.5%; height:56%; filter:drop-shadow(3px 8px 5px #261a1045); animation:rice-release 1s ease both; }
+.year-process .craft-board .craft-red-touch { position:absolute; left:calc(49% - 22px); top:calc(39% - 22px); width:44px; height:44px; transform:none; background:none; }
+.year-process .craft-red-touch:after { display:none; }
+.red-brush-tip { position:absolute; top:12px; left:14px; width:12px; height:20px; border-radius:70% 30% 50% 50%; background:#a44030; transform:rotate(-28deg); box-shadow:inset 2px 2px 2px #d75b46; }
+.rice-vermilion { animation:rice-red .65s ease both; transform-origin:101px 125px; }
+.year-keepsake .rice-material { height:auto; aspect-ratio:200/250; }
+@keyframes wood-contact { 0%{transform:translateY(0) rotate(0)} 28%{transform:translateY(4px) rotate(-1.5deg)} 55%{transform:translateY(-2px) rotate(.7deg)} 100%{transform:translateY(0) rotate(0)} }
+@keyframes rice-seat { 0%{opacity:.7;transform:translateY(-12px) scale(.84,.95)} 55%{transform:translateY(3px) scale(1.06,.94)} 100%{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes rice-edge { 0%{translate:0 0} 45%{translate:0 -3px} 100%{translate:0 -1px} }
+.mallet-rebound { animation:mallet-contact .35s ease-out both; transform-origin:0 0; }
+@keyframes mallet-contact { 0%{opacity:1;transform:translateY(-20px) rotate(-18deg)} 28%{opacity:1;transform:translateY(3px) rotate(2deg)} 65%{opacity:.75;transform:translateY(-18px) rotate(-12deg)} 100%{opacity:0;transform:translateY(-25px) rotate(-20deg)} }
+@keyframes wood-leave { 0%{transform:translate(0,0) rotate(0)} 40%{transform:translate(-18px,15px) rotate(-12deg)} 100%{transform:translate(-320px,40px) rotate(-24deg)} }
+@keyframes rice-release { 0%{transform:translateY(0) scale(1);filter:drop-shadow(3px 4px 2px #261a1040)} 45%{transform:translateY(-18px) scale(1.03);filter:drop-shadow(5px 20px 8px #261a1030)} 100%{transform:translateY(7px) scale(1);filter:drop-shadow(3px 8px 5px #261a1045)} }
+@keyframes rice-red { from{opacity:.2;transform:scale(.4)} to{opacity:1;transform:scale(1)} }
+@media(prefers-reduced-motion:reduce) { .craft-red .wood-away,.craft-red-rest .wood-away { transform:translateX(-320px); } }
 .journey-canvas:after {
   content: "";
   position: absolute;
@@ -2376,8 +2406,8 @@ button:focus-visible, [tabindex]:focus-visible, input:focus-visible, select:focu
 .rice-dough { background: none; border-radius: 0; box-shadow: none; width: 92px; height: 68px; top: 69%; left: 13%; }
 .rice-dough img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(1px 3px 2px #211b1724); }
 .rice-dough.pressed { top: 62%; left: calc(48% - 46px); }
-.year-image.hit-2:not(.house-space) > .year-table { animation: wood-loosen .4s ease; }
-.year-image.hit-3:not(.house-space) > .year-table { animation: wood-release .4s ease; }
+
+
 .year-process .peach-loosening { opacity: .7; transform: translateY(8px) rotate(-3deg) scale(.92); transition: transform .4s, opacity .4s; }
 .vermilion-spread { box-shadow: none; }
 .receding-table { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; pointer-events: none; animation: room-unfold 1.2s ease forwards; }
@@ -2765,3 +2795,50 @@ img.near-pine { opacity:.94; mask-image:linear-gradient(#000 0%,#000 55%,transpa
 /* Rasterize cloud grain once; move the cloud layer, never regenerate its filters per frame. */
 .cloud-bank-0,.cloud-bank-1,.cloud-bank-2,.cloud-density { animation:none; }
 .shot-cloud .arrival-cloud { will-change:transform; }
+
+/* The valley air continues after arrival, behind the foreground trees. */
+.summit-atmosphere { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:0; animation:valley-open 2s 1.2s ease both; }
+.valley-cloud { transform-box:fill-box; filter:blur(5px); }
+.distant-cloud { animation:valley-drift 24s ease-in-out infinite alternate; }
+.close-cloud { animation:valley-drift 19s ease-in-out infinite alternate-reverse; }
+@keyframes valley-open { to{opacity:.55} }
+@keyframes valley-drift { from{transform:translate(-20px,8px)} to{transform:translate(22px,-8px)} }
+@media(prefers-reduced-motion:reduce) { .summit-atmosphere { opacity:.3; animation:none; } .valley-cloud { animation:none; filter:none; } }
+
+/* SVG masks retain the material between two spaces; no raster slide swap. */
+.film-transition.svg-passage { background:transparent; animation:none; clip-path:none; filter:none; }
+.svg-passage > svg { width:100%; height:100%; }
+.passage-boundary { transform-origin:500px 500px; }
+.passage-cover { animation:passage-close .65s cubic-bezier(.3,.1,.35,1) both; }
+.passage-uncover { animation:passage-open .85s cubic-bezier(.2,.6,.3,1) both; }
+.boundary-forest,.boundary-window { transform-origin:500px 500px; }
+.boundary-forest.passage-cover,.boundary-window.passage-cover { animation-name:door-close; }
+.boundary-forest.passage-uncover,.boundary-window.passage-uncover { animation-name:door-open; }
+@keyframes passage-close { from{transform:scale(.001)} to{transform:scale(1.5)} }
+@keyframes passage-open { from{transform:scale(.001)} to{transform:scale(1.5)} }
+@keyframes door-close { from{transform:scaleX(.001)} to{transform:scaleX(1)} }
+@keyframes door-open { from{transform:scaleX(.001)} to{transform:scaleX(1)} }
+@media(prefers-reduced-motion:reduce) { .passage-boundary { animation:none; transform:scale(2); } }
+
+.lantern-target .fish-material { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.fish-bone { transition:opacity .65s ease; }
+.paper-wrap { transform-origin:390px 195px; transform:scale(.001); transition:transform .65s cubic-bezier(.2,.7,.3,1); }
+.paper-wrap.wrapped { transform:scale(1); }
+.fish-color-settle { transition:opacity .8s ease; }
+.fish-warm-light { transition:opacity 1.5s ease; }
+.year-process .house-space > .receding-table.room-opening { animation:none; opacity:1; }
+.room-aperture { transform:scale(0); animation:room-aperture-open 1.3s cubic-bezier(.22,.6,.3,1) both; }
+@keyframes room-aperture-open { to{transform:scale(1)} }
+.year-keepsake { transform-origin:0 0; animation:keepsake-place 1.3s cubic-bezier(.22,.6,.3,1) both; }
+@keyframes keepsake-place { from{transform:translate(var(--rice-from-x),var(--rice-from-y)) scale(var(--rice-from-scale))} to{transform:rotate(-10deg)} }
+@media(prefers-reduced-motion:reduce) {
+  .paper-wrap,.fish-bone,.fish-color-settle,.fish-warm-light { transition:none; }
+  .room-aperture { transform:scale(1); animation:none; }
+  .year-keepsake { transform:rotate(-10deg); animation:none; }
+}
+
+.room-camera { display:block; width:100%; height:100%; }
+.room-door-opening { transition:transform 1.15s cubic-bezier(.2,.6,.15,1); }
+.room-door-opening.door-in-hand { transition:none; }
+.room-depth { transition:transform 1.15s cubic-bezier(.2,.6,.15,1); }
+@media(prefers-reduced-motion:reduce) { .room-door-opening,.room-depth { transition:none; } }

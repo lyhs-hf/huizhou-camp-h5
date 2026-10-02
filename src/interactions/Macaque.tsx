@@ -59,7 +59,8 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
     });
   }, [positionCamera]);
   function down(e: PointerEvent<HTMLDivElement>) {
-    if (notebook || action.done) return;
+    if (notebook || action.done || gesture.current || !e.isPrimary) return;
+    e.preventDefault();
     action.start(); e.currentTarget.setPointerCapture(e.pointerId);
     gesture.current = { x: e.clientX, y: e.clientY, lastX: e.clientX, lastY: e.clientY, distance: 0, camera: cameraPosition.current };
     setLooking(true);
@@ -86,7 +87,7 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
   return <div className={"forest-observation" + (found ? " discovered" : "") + (looking ? " looking" : "")} data-interaction data-found={found} data-seen={seen.join(",")}>
     <h1 className="sr-only">进入山林，发现一只短尾猴</h1>
     <div ref={viewport} className="forest-viewport" role="group" aria-label="移动山林视野，近看身体与岩石" tabIndex={0} data-testid="forest-view"
-      onPointerDown={down} onPointerMove={move} onPointerUp={e => { move(e); end(); }} onPointerCancel={() => end(true)}
+      onPointerDown={down} onPointerMove={move} onPointerUp={e => { move(e); end(); }} onPointerCancel={() => end(true)} onLostPointerCapture={()=>{if(gesture.current)end(true);}}
       onKeyDown={e => { if (!notebook && !action.done && e.key.startsWith("Arrow")) {
         e.preventDefault();
         const dx=e.key==="ArrowRight"?.07:e.key==="ArrowLeft"?-.07:0,dy=e.key==="ArrowDown"?.08:e.key==="ArrowUp"?-.08:0;

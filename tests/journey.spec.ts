@@ -15,6 +15,28 @@ async function next(page: Page, id: number) {
   await page.locator(".continue, .scene-departure").click(); await scene(page, id);
 }
 async function open(page: Page) { await page.goto("./"); await scene(page, 1); }
+async function fixedSceneFit(page: Page) {
+  const issues=await page.evaluate(()=>{
+    const main=document.querySelector('main')!,bounds=main.getBoundingClientRect();
+    const fixed=main.getAttribute('data-scene')!=='10';
+    const selectors='h1:not(.sr-only),.stage-hint,.forest-invitation,.forest-caption,.cloud-invitation,.arrival-caption,.parallel-whisper,.divider-hint,.scene-departure,.mother-enter,.moment-note,.keep-moment,.scene-reason,.scene-afterword,.year-caption,.year-step,.parallel-reunion,.observation-page,.mother-slips';
+    const problems:string[]=[];
+    for(const el of main.querySelectorAll<HTMLElement>(selectors)){
+      const box=el.getBoundingClientRect(),style=getComputedStyle(el);
+      if(box.width<2||box.height<2||style.display==='none'||style.visibility==='hidden'||Number(style.opacity)<.05||el.closest('[aria-hidden="true"]'))continue;
+      const label=(el.textContent||el.className).trim().slice(0,34);
+      if(el.scrollWidth>el.clientWidth+1)problems.push(label+': text overflow');
+      const range=document.createRange();range.selectNodeContents(el);
+      for(const r of range.getClientRects()){
+        if(r.width<1||r.height<1)continue;
+        if(r.left<bounds.left-1||r.right>bounds.right+1||(fixed&&(r.top<bounds.top-1||r.bottom>bounds.bottom+1))){problems.push(label+': clipped at screen edge');break;}
+      }
+    }
+    return problems;
+  });
+  expect(issues).toEqual([]);
+}
+
 async function trace(page: Page, locator: Locator, count = 100) {
   const points = await locator.evaluate((path: SVGPathElement, n: number) => {
     const m = path.getScreenCTM()!, length = path.getTotalLength();
@@ -100,6 +122,7 @@ async function completeCore(page: Page, id: number) {
 async function motherMoment(page: Page, choice: "tea" | "incense" | "view") {
   await page.getByRole("button", { name: "把这一小时，留给自己" }).click();
   await page.getByRole("button", { name: choice === "tea" ? "点茶" : choice === "incense" ? "篆香" : "什么都不做，只看山", exact: true }).click();
+  await expect(page.getByTestId("film-transition")).toHaveCount(0);
   if (choice === "tea") {
     await quietTea(page);
   }
@@ -300,16 +323,40 @@ for (const width of [375, 390, 430]) {
     await expect(page.locator(".scene-afterword")).toContainText("真正碰过它");
   });
 }
-test("08 年礼材料、红纸展开、墨迹与老宅连续空间",async({page})=>{
-  await to(page,6);await drag(page,'[data-testid="rice-dough"]','[data-testid="mould-target"]');await expect(page.getByTestId('mallet')).toBeVisible();
-  for(let i=1;i<=3;i++){await drag(page,'[data-testid="mallet"]','[data-testid="mould-target"]');await expect(page.locator('.year-image')).toHaveAttribute('data-hits',String(i));await page.waitForTimeout(380);}
-  await page.getByRole('button',{name:'点一点朱红',exact:true}).click();await expect(page.locator('.red-point')).toBeVisible();
+test("08 年礼材料、红纸展开、墨迹与老宅连续空间",async({page,browserName})=>{
+  await to(page,6);
+  const dough=page.getByTestId('rice-dough'),db=(await dough.boundingBox())!;
+  await expect(dough.locator('img')).toHaveCount(0);
+  await page.mouse.move(db.x+db.width/2,db.y+db.height/2);await page.mouse.down();
+  await page.mouse.move(db.x+db.width/2+30,db.y+db.height/2-30,{steps:5});
+  await dough.dispatchEvent('pointercancel',{pointerId:1,bubbles:true});await page.mouse.up();
+  await expect(page.locator('.year-image')).toHaveAttribute('data-phase','dough');
+  const touchInput=browserName==='chromium'?await page.context().newCDPSession(page):null;
+  async function craftDrag(from:string) {
+    if(!touchInput){await drag(page,from,'[data-testid="mould-target"]');return;}
+    const a=(await page.locator(from).boundingBox())!,b=(await page.getByTestId('mould-target').boundingBox())!;
+    await touchInput.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:a.x+a.width/2,y:a.y+a.height/2,id:1}]});
+    for(let i=1;i<=12;i++)await touchInput.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:(a.x+a.width/2)*(1-i/12)+(b.x+b.width/2)*i/12,y:(a.y+a.height/2)*(1-i/12)+(b.y+b.height/2)*i/12,id:1}]});
+    await touchInput.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  }
+  await craftDrag('[data-testid="rice-dough"]');await expect(page.getByTestId('mallet')).toBeVisible();
+  await expect(page.locator('.mould-rice foreignObject')).toHaveCount(0);
+  const formed=await page.locator('.mould-rice .rice-material > path').first().getAttribute('d');
+  for(let i=1;i<=3;i++){await craftDrag('[data-testid="mallet"]');await expect(page.locator('.year-image')).toHaveAttribute('data-hits',String(i));await page.waitForTimeout(380);}
+  await expect(page.locator('.year-image')).toHaveAttribute('data-phase','red');
+  await expect(page.locator('.crafted-peach .rice-material > path').first()).toHaveAttribute('d',formed!);
+  const red=page.getByRole('button',{name:'点一点朱红',exact:true}),rb=(await red.boundingBox())!,pb=(await page.locator('.crafted-peach').boundingBox())!;
+  expect(Math.abs(rb.x+rb.width/2-pb.x-pb.width/2)).toBeLessThan(22);
+  expect(Math.abs(rb.y+rb.height/2-pb.y-pb.height/2)).toBeLessThan(22);
+  await red.click();await expect(page.locator('.crafted-peach .rice-vermilion')).toBeVisible();
   await expect(page.getByTestId('red-paper')).toBeVisible();await expect(page.getByRole('button',{name:'平安常伴',exact:true})).toHaveCount(0);
   await expect(page.locator('.spring-brush').first()).toHaveCSS('stroke-dashoffset','180px');
   await unfoldPaper(page);await expect(page.locator('.spring-brush').last()).toHaveCSS('stroke-dashoffset','0px');
+  await expect(page.locator(".room-camera mask")).toHaveCount(2);
   await roomForward(page);await expect(page.locator('.year-caption')).toContainText('天井里的光');await expect(page.locator('.director-paper')).toHaveClass(/at-door/);
   await roomForward(page);await expect(page.locator('.year-caption')).toContainText('年宴');await page.getByRole('button',{name:'把这一席年留在心里'}).click();
   await expect(page.locator('.scene-afterword')).toContainText('一家人的年');await expect(page.locator('.stamp-mark')).toHaveCount(0);
+  await touchInput?.detach();
 });
 test("09 移动真实视野发现，只有看过的细节进入札记",async({page})=>{
   await to(page,7);await expect(page.getByRole('slider')).toHaveCount(0);
@@ -317,7 +364,7 @@ test("09 移动真实视野发现，只有看过的细节进入札记",async({pa
   await page.mouse.move(b.x+200,b.y+400);await page.mouse.down();await view.dispatchEvent('pointercancel',{pointerId:1,bubbles:true});await page.mouse.up();
   await expect(page.locator('.forest-observation')).toHaveAttribute('data-found','false');
   await findMacaque(page);await page.waitForTimeout(3500);await expect(page.getByTestId('field-notebook')).toHaveCount(0);
-  await notice(page,'body');await expect(page.getByTestId('field-notebook')).toHaveCount(0);await notice(page,'rock');
+  await notice(page,'body');await expect(page.getByTestId('field-notebook')).toHaveCount(0);await notice(page,'rock');await fixedSceneFit(page);
   await expect(page.getByTestId('field-notebook')).toContainText('前肢收在身前');await expect(page.getByTestId('field-notebook')).toContainText('边缘留着残雪');
   await expect(page.getByTestId('field-notebook')).not.toContainText('松枝伸进了视野');
   await expect(page.getByTestId('field-notebook').getByRole('button')).toHaveCount(1);
@@ -378,6 +425,10 @@ test("13 结果PNG生成且达到3倍分辨率", async ({ page }) => {
   expect(
     await img.evaluate((el: HTMLImageElement) => el.naturalWidth),
   ).toBeGreaterThanOrEqual(990);
+  expect(await img.evaluate(el=>!el.dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,cancelable:true})))).toBe(false);
+  if(await img.evaluate(()=>CSS.supports('-webkit-touch-callout','none'))) {
+    expect(await img.evaluate(el=>getComputedStyle(el).getPropertyValue('-webkit-touch-callout'))).toBe('default');
+  }
 });
 test("14 手机号为空拦截", async ({ page }) => {
   await lead(page);
@@ -452,9 +503,10 @@ for (const [width, height] of [
         const footer = await page.locator(".scene-footer").boundingBox();
         expect(footer!.y + footer!.height).toBeLessThanOrEqual(height + 1);
       }
+      await fixedSceneFit(page);
       if (s === 2)
         await page.getByRole("button", { name: /亲手做过的中国文化/ }).click();
-      if (s < 10) { await completeCore(page, s); await next(page, s + 1); }
+      if (s < 10) { await completeCore(page, s); await fixedSceneFit(page); await next(page, s + 1); }
     }
   });
 for (const [width, height] of [[375, 812], [390, 844], [430, 932]]) test(`21 reduced-motion ${width}px 保持完整可用`, async ({ page }) => {

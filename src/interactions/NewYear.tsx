@@ -1,8 +1,9 @@
 import { asset } from "../utils/asset";
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent, type CSSProperties } from "react";
 import { useInteraction } from "../hooks/useInteraction";
 import { Stage, StationHeader, StationFinish, StationTools } from "../components/Station";
-type Phase = "dough" | "press" | "strike" | "red" | "red-rest" | "paper" | "pages" | "reflection" | "done";
+import { RicePeach, YearCraft } from "../components/YearCraft";
+type Phase = "dough" | "press" | "strike" | "release" | "red" | "red-rest" | "paper" | "pages" | "reflection" | "done";
 export function NewYear({ onInfo }: { onInfo: () => void }) {
   const action = useInteraction("year", "年", "new_year");
   const [phase, setPhase] = useState<Phase>(action.done ? "done" : "dough");
@@ -12,12 +13,20 @@ export function NewYear({ onInfo }: { onInfo: () => void }) {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [opened, setOpened] = useState(action.done);
   const [written, setWritten] = useState(action.done);
+  const [held, setHeld] = useState(false);
   const roomStep = useRef(0);
   const origin = useRef<{ x: number; y: number; at: number } | null>(null);
   const stage = useRef<HTMLDivElement>(null); const mould = useRef<HTMLDivElement>(null);
+  const [size,setSize]=useState({width:375,height:812});
+  useLayoutEffect(()=>{
+    const element=stage.current;if(!element)return;
+    const update=()=>{const r=element.getBoundingClientRect();setSize({width:r.width,height:r.height});};
+    update();const observer=new ResizeObserver(update);observer.observe(element);return()=>observer.disconnect();
+  },[]);
   const lastHit = useRef(-Infinity); const complete = action.complete;
   useEffect(() => {
     if (phase === "press") { const t = setTimeout(() => setPhase("strike"), 550); return () => clearTimeout(t); }
+    if (phase === "release") { const t = setTimeout(() => setPhase("red"), 1000); return () => clearTimeout(t); }
     if (phase === "red-rest") { const t = setTimeout(() => { setPhase("paper"); setShot(0); }, 1650); return () => clearTimeout(t); }
     if (phase === "reflection") {
       const a = setTimeout(() => setBeat(1), 1200), b = setTimeout(() => setBeat(2), 2200), c = setTimeout(() => { setPhase("done"); complete(); }, 3500);
@@ -32,11 +41,11 @@ export function NewYear({ onInfo }: { onInfo: () => void }) {
   function hit() {
     if (performance.now() - lastHit.current < 350) return;
     lastHit.current = performance.now(); setHits(hits + 1);
-    if (hits === 2) setPhase("red");
+    if (hits === 2) setPhase("release");
   }
-  function down(e: PointerEvent) { action.start(); origin.current = { x: e.clientX, y: e.clientY, at: performance.now() }; e.currentTarget.setPointerCapture(e.pointerId); }
+  function down(e: PointerEvent) { if(origin.current||!e.isPrimary)return;e.preventDefault();setHeld(true);action.start(); origin.current = { x: e.clientX, y: e.clientY, at: performance.now() }; e.currentTarget.setPointerCapture(e.pointerId); }
   function move(e: PointerEvent) { if (origin.current) setOffset({ x: e.clientX - origin.current.x, y: e.clientY - origin.current.y }); }
-  function cancel() { origin.current = null; setOffset({ x: 0, y: 0 }); action.unlock(); }
+  function cancel() { origin.current = null;setHeld(false); setOffset({ x: 0, y: 0 }); action.unlock(); }
   function up(e: PointerEvent) {
     if (!origin.current) return;
     const r = mould.current!.getBoundingClientRect();
@@ -57,34 +66,36 @@ export function NewYear({ onInfo }: { onInfo: () => void }) {
       <div ref={stage} className={"year-image hit-" + hits + " " + (inHouse ? "house-space" : "")} data-phase={phase} data-hits={hits}>
         {inHouse ? <>
           <div className="room-stack" data-room={shot}>
-            {["couplet", "courtyard", "banquet"].map((name, i) => <div className={"room-panel " + name} key={name} aria-hidden={i !== shot} style={{ transform: `translateX(calc(${(i - shot) * 100}% + ${offset.x * .45}px))` }}>
-              <img className="year-page" src={asset(i === 0 ? "assets/directors-cut/year-writing-table.webp" : `assets/new-year/${name}.webp`)} alt={["老宅木桌上的红纸与笔墨", "循着光走进老宅天井", "把年礼带到一家人的年宴"][i]} draggable={false} />
-              {i > 0 && <span className="room-threshold" aria-hidden />}
-            </div>)}
+            <svg className="room-camera" viewBox={`0 0 ${size.width} ${size.height}`} preserveAspectRatio="none">
+              <defs>{[1,2].map(i=><mask key={i} id={"room-door-"+i} maskUnits="userSpaceOnUse" x="0" y="0" width={size.width} height={size.height}>
+                <rect width={size.width} height={size.height} fill="black"/>
+                <rect className={"room-door-opening "+(held?"door-in-hand":"")} width={size.width} height={size.height} fill="white" style={{transformOrigin:`${size.width/2}px ${size.height/2}px`,transform:`scaleX(${i<=shot?1:i===shot+1?Math.min(.45,Math.max(0,-offset.x/size.width)):0})`}}/>
+              </mask>)}</defs>
+              {["couplet", "courtyard", "banquet"].map((name,i)=><g key={name} aria-hidden={i!==shot} mask={i?`url(#room-door-${i})`:undefined}>
+                <image className="room-depth" href={asset(i===0?"assets/directors-cut/year-writing-table.webp":`assets/new-year/${name}.webp`)} width={size.width} height={size.height} preserveAspectRatio="xMidYMid slice" role="img" aria-label={["老宅木桌上的红纸与笔墨","循着光走进老宅天井","把年礼带到一家人的年宴"][i]} style={{transformOrigin:`${size.width/2}px ${size.height/2}px`,transform:`scale(${1+Math.max(0,shot-i)*.06})`}}/>
+                {i>0&&<path d={`M6 0V${size.height}M${size.width-6} 0V${size.height}M0 6H${size.width}`} stroke="#453427" strokeOpacity=".45" strokeWidth="12" fill="none"/>}
+              </g>)}
+            </svg>
           </div>
-          {shot === 0 && <img className="receding-table" src={asset("assets/new-year/table.webp")} alt="" />}
-          {shot === 0 && <img className="year-keepsake" src={asset("assets/new-year/peach.webp")} alt="刚刚做好的年礼，留在桌边"/>}
+          {shot === 0 && <svg className="receding-table room-opening" viewBox={`0 0 ${size.width} ${size.height}`} preserveAspectRatio="none" aria-hidden>
+            <defs><mask id="year-room-opening" maskUnits="userSpaceOnUse" x="0" y="0" width={size.width} height={size.height}><rect width={size.width} height={size.height} fill="white"/><circle className="room-aperture" cx={size.width*.5} cy={size.height*.45} r={Math.hypot(size.width,size.height)} fill="black" style={{transformOrigin:`${size.width*.5}px ${size.height*.45}px`}}/></mask></defs>
+            <image href={asset("assets/directors-cut/year-craft-table.webp")} width={size.width} height={size.height} preserveAspectRatio="xMidYMid slice" mask="url(#year-room-opening)"/>
+          </svg>}
+          {shot === 0 && <div className="year-keepsake" style={{"--rice-from-x":size.width*.119+"px","--rice-from-y":-.38*size.height+.0878*size.width+7+"px","--rice-from-scale":size.width*.3818/82} as CSSProperties} role="img" aria-label="刚刚做好的年礼，留在桌边"><RicePeach red name="keepsake-rice"/></div>}
           <div style={{clipPath: opened ? undefined : `inset(0 0 ${Math.max(0,62-Math.hypot(offset.x,offset.y)*.6)}% 0)`}} className={"wish-paper director-paper " + (opened ? "paper-open " : "paper-folded ") + (shot > 0 ? "at-door" : "")} aria-label="展开的红纸上，一笔新春祝愿">
             <svg viewBox="0 0 100 155" aria-hidden><defs><filter id="red-fibers"><feTurbulence type="fractalNoise" baseFrequency=".6 .02" numOctaves="2" seed="7"/><feColorMatrix type="saturate" values="0"/></filter></defs><rect width="100" height="155" filter="url(#red-fibers)" opacity=".12"/>{["M18 36 Q50 32 78 37","M25 51 Q48 46 74 50","M13 69 Q48 62 86 67","M52 19 Q54 59 17 91","M59 63 Q70 83 88 89","M32 91 L34 137 L69 137 L69 90 Z","M35 113 H67"].map((d,i)=><path key={d} className="spring-brush" d={d} style={{animationDelay:i*.18+"s"}}/>)}</svg>
           </div>
-        </> : <img className="year-table" src={asset("assets/new-year/table.webp")} alt="木桌上的传统木模与食桃" draggable={false} />}
-        {(phase === "dough" || phase === "press" || phase === "strike") && <div ref={mould} className="mould-target" data-testid="mould-target" />}
-        {(phase === "dough" || phase === "press") && <button className={"rice-dough " + (phase === "press" ? "pressed" : "")} data-testid="rice-dough" aria-label="拖动或按压米团入模" style={phase === "press" ? undefined : { transform: `translate(${offset.x}px,${offset.y}px)` }} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); setPhase("press"); } }}><img src={asset("assets/new-year/dough-final.webp")} alt="带着微粉感的米粉团" draggable={false} /></button>}
-        {phase === "strike" && <>
-          <div key={hits} className={hits > 0 ? "mould-weight" : ""} />
-          <button className="mallet" data-testid="mallet" aria-label="轻敲木模，三次脱模" style={{ transform: `translate(${offset.x}px,${offset.y}px) rotate(-16deg)` }} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={cancel} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); hit(); } }}><img src={asset("assets/new-year/mallet.webp")} alt="小木槌" draggable={false} /></button>
-        </>}
-        {(hits >= 2 && !inHouse) && <img className={"peach " + (hits === 2 ? "peach-loosening" : "peach-released")} src={asset("assets/new-year/peach.webp")} alt={hits === 2 ? "边缘刚刚松动的食桃" : "完整脱模的食桃"} />}
-        {phase === "red" && <button className="dot-red" aria-label="点一点朱红" onClick={() => setPhase("red-rest")}><span className="sr-only">点一点朱红</span></button>}
-        {phase === "red-rest" && <svg className="red-point vermilion-spread" viewBox="0 0 40 40" aria-hidden><defs><filter id="rice-absorb"><feTurbulence type="fractalNoise" baseFrequency=".16" numOctaves="2" seed="4" result="rice"/><feDisplacementMap in="SourceGraphic" in2="rice" scale="3"/></filter></defs><path d="M20 8 C28 8 33 15 31 23 C30 32 15 33 10 26 C5 18 10 8 20 8Z" fill="#a43e30" filter="url(#rice-absorb)"/></svg>}
+        </> : <><img className="year-table" src={asset("assets/directors-cut/year-craft-table.webp")} alt="老宅里等待年礼的空木桌" draggable={false}/>
+          <YearCraft phase={phase} hits={hits} offset={offset} held={held} mould={mould} down={down} move={move} up={up} cancel={cancel}
+            press={()=>setPhase("press")} hit={hit} dot={()=>setPhase("red-rest")}/></>}
         {phase === "pages" && written && <div className="year-page-gesture" role="group" aria-label="左右轻推，走进年里" tabIndex={0}
-          onPointerDown={down} onPointerMove={move} onPointerCancel={cancel} onPointerUp={e => { if (origin.current) { const dx = e.clientX - origin.current.x; if (Math.abs(dx) > 45) enterRoom(dx < 0 ? 1 : -1); } cancel(); }}
+          onPointerDown={down} onPointerMove={move} onPointerCancel={cancel} onLostPointerCapture={cancel} onPointerUp={e => { if (origin.current) { const dx = e.clientX - origin.current.x; if (Math.abs(dx) > 45) enterRoom(dx < 0 ? 1 : -1); } cancel(); }}
           onKeyDown={e => { if (["ArrowRight", "ArrowLeft"].includes(e.key)) { e.preventDefault(); enterRoom(e.key === "ArrowRight" ? 1 : -1); } }} />}
-        {phase === "paper" && !opened && <button className="red-paper-touch" aria-label="轻拉红纸，展开一份新春祝愿" data-testid="red-paper" onPointerDown={down} onPointerMove={move} onPointerCancel={cancel}
+        {phase === "paper" && !opened && <button className="red-paper-touch" aria-label="轻拉红纸，展开一份新春祝愿" data-testid="red-paper" onPointerDown={down} onPointerMove={move} onPointerCancel={cancel} onLostPointerCapture={cancel}
           onPointerUp={e=>{if(origin.current&&Math.hypot(e.clientX-origin.current.x,e.clientY-origin.current.y)>40)setOpened(true);cancel();}} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();setOpened(true);}}}><span className="sr-only">轻拉红纸，展开一份新春祝愿</span></button>}
         {inHouse && <div className="year-caption">{[phase === "paper" ? "桌边，有一张红纸" : "把新春祝愿，带进年里", "天井里的光", "一家人，围坐一席年宴"][shot]}{phase === "pages" && written && shot < 2 && <small>{shot === 0 ? "向左轻推，带着红纸走进天井" : "再向左，带着祝愿走向年宴"}</small>}</div>}
       </div>
-      {!quiet && !inHouse && <div className="stage-hint">{phase === "dough" ? "把米团，轻轻压入木模" : phase === "press" ? "米团贴进纹样" : phase === "strike" ? ["轻敲木模，感受它的分量", "再一下，年礼慢慢松动", "最后一下，把年礼敲出来"][hits] : "点一点朱红"}</div>}
+      {!quiet && !inHouse && <div className="stage-hint">{phase === "dough" ? "把米团，轻轻压入木模" : phase === "press" ? "米粉慢慢贴进纹样" : phase === "strike" ? ["拿起木槌，轻敲木模", "再一下，年礼慢慢松动", "最后一下，把年礼敲出来"][hits] : phase==="release"?"木模离开，纹样留在米粉里":"点一点朱红"}</div>}
     </Stage>
     {phase === "pages" && shot === 2 && <button className="year-step" onClick={() => { setBeat(0); setPhase("reflection"); }}>把这一席年留在心里<span aria-hidden> →</span></button>}
     {phase === "reflection" && beat > 0 && <div className="year-reflection" role="status"><p>一张桌，原来在一座老宅里。</p>{beat === 2 && <p className="second-beat">年礼、红纸、天井，<br />最后，是一席年。</p>}</div>}

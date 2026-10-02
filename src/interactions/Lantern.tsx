@@ -39,6 +39,8 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
     [],
   );
   function paperDown(e: PointerEvent) {
+    if (!e.isPrimary || origin.current) return;
+    e.preventDefault();
     action.start();
     origin.current = { x: e.clientX, y: e.clientY };
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -80,6 +82,8 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
     });
   }
   function holdStart(e: PointerEvent) {
+    if (!e.isPrimary || holding) return;
+    e.preventDefault();
     action.start();
     e.currentTarget.setPointerCapture(e.pointerId);
     setHolding(true);
@@ -124,33 +128,21 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
           className="lantern-target"
           data-testid="lantern-target"
         >
-          {phase === 0 ? (
-            <img
-              src={asset("assets/lantern/skeleton-final.webp")}
-              alt="鳌鱼鱼灯竹篾骨架"
-              draggable={false}
-            />
-          ) : (
-            <>
-              {phase === 1 ? <svg className="painted-paper" viewBox="0 0 780 390" preserveAspectRatio="none" aria-hidden><defs><mask id="fish-paint"><rect width="780" height="390" fill="black"/>{brushMarks.map((d, i) => <path key={i} d={d} fill="none" stroke="white" strokeWidth="115" strokeLinecap="round"/>)}</mask></defs><image href={asset("assets/lantern/unlit.webp")} width="780" height="390" style={{ filter: "grayscale(1)" }}/><image href={asset("assets/lantern/unlit.webp")} width="780" height="390" mask="url(#fish-paint)"/></svg> : <img
-                className="lantern-base"
-                style={{ filter: `grayscale(${phase >= 2 ? 0 : 1 - color})` }}
-                src={asset("assets/lantern/unlit.webp")}
-                alt="纸面贴合的鳌鱼鱼灯"
-                draggable={false}
-              />}
-              <img
-                className="lantern-color"
-                style={{ opacity: phase === 3 ? 1 : 0 }}
-                src={asset("assets/lantern/lit-final.webp")}
-                alt="暖光透过手绘鱼灯"
-                draggable={false}
-              />
+          <svg className="fish-material" viewBox="0 0 780 390" preserveAspectRatio="none" role="img" aria-label={phase===0?"鳌鱼鱼灯竹篾骨架":phase===3?"暖光透过手绘鱼灯":"纸面贴合的鳌鱼鱼灯"}>
+            <defs>
+              <mask id="fish-wrap"><rect width="780" height="390" fill="black"/><ellipse className={"paper-wrap " + (phase>0?"wrapped":"")} cx="390" cy="195" rx="440" ry="230" fill="white"/></mask>
+              <mask id="fish-paint"><rect width="780" height="390" fill="black"/>{brushMarks.map((d,i)=><path key={i} d={d} fill="none" stroke="white" strokeWidth="115" strokeLinecap="round"/>)}<rect className="fish-color-settle" width="780" height="390" fill="white" style={{opacity:phase>=2?1:0}}/></mask>
+            </defs>
+            <image href={asset("assets/lantern/skeleton-final.webp")} width="780" height="390" className="fish-bone" style={{opacity:phase===0?1:0}}/>
+            <g mask="url(#fish-wrap)">
+              <image href={asset("assets/lantern/unlit.webp")} width="780" height="390" style={{filter:"grayscale(1)"}}/>
+              <image href={asset("assets/lantern/unlit.webp")} width="780" height="390" mask="url(#fish-paint)"/>
+              <image href={asset("assets/lantern/lit-final.webp")} width="780" height="390" className="fish-warm-light" style={{opacity:phase===3?1:0}}/>
+            </g>
+          </svg>
               {phase === 1 && <svg ref={brush} className="paint-guide" data-testid="paint" viewBox="0 0 780 390" preserveAspectRatio="none" role="button" tabIndex={0} aria-label="轻划灯纸，为鱼灯添色"
                 onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setBrushMarks(m => [...m, `M80 ${100 + m.length * 90} H700`]); setColor(c => { const n = Math.min(1, c + .34); if (n === 1) setPhase(2); return n; }); } }}
-                onPointerDown={e => { action.start(); prev.current = e.clientX; e.currentTarget.setPointerCapture(e.pointerId); const m = e.currentTarget.getScreenCTM(); if (m) { const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse()); setBrushMarks(v => [...v, `M${p.x} ${p.y}`]); } }} onPointerMove={paint} onPointerUp={e => { paint(e); prev.current = null; action.unlock(); }} onPointerCancel={() => { prev.current = null; action.unlock(); }} />}
-            </>
-          )}
+                onPointerDown={e => { if(!e.isPrimary||prev.current!==null)return;e.preventDefault();action.start(); prev.current = e.clientX; e.currentTarget.setPointerCapture(e.pointerId); const m = e.currentTarget.getScreenCTM(); if (m) { const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse()); setBrushMarks(v => [...v, `M${p.x} ${p.y}`]); } }} onPointerMove={paint} onPointerUp={e => { paint(e); prev.current = null; action.unlock(); }} onPointerCancel={() => { prev.current = null; action.unlock(); }} onLostPointerCapture={()=>{if(prev.current!==null){prev.current=null;action.unlock();}}} />}
         </div>
         {phase === 0 && (
           <button
@@ -162,6 +154,7 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
             onPointerDown={paperDown}
             onPointerMove={paperMove}
             onPointerUp={paperUp}
+            onLostPointerCapture={()=>{if(origin.current){origin.current=null;setDrag({x:0,y:0});action.unlock();}}}
             onPointerCancel={() => {
               origin.current = null;
               setDrag({ x: 0, y: 0 });
@@ -182,6 +175,7 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
             onPointerDown={holdStart}
             onPointerUp={holdEnd}
             onPointerCancel={holdEnd}
+            onLostPointerCapture={holdEnd}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
