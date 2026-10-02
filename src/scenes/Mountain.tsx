@@ -2,135 +2,60 @@ import { asset } from "../utils/asset";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useJourney } from "../app/JourneyContext";
 import { useReducedMotion } from "../hooks/useInteraction";
+type Shot = "near" | "cloud" | "summit" | "caption";
 export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
   const { dispatch } = useJourney();
-  const [height, setHeight] = useState(0);
+  const reduced = useReducedMotion();
+  const [shot, setShot] = useState<Shot>("near");
+  const [push, setPush] = useState(0);
   const [settled, setSettled] = useState(false);
-  const [arrived, setArrived] = useState(false);
-  const above = height >= .85;
+  const hand = useRef<{ y: number; distance: number } | null>(null);
+  const moving = useRef(false);
   useEffect(() => {
-    const opening = setTimeout(() => setHeight(1), 80);
-    const landing = setTimeout(() => setArrived(true), 2000);
-    return () => { clearTimeout(opening); clearTimeout(landing); };
+    onRest(!settled);
+  }, [settled, onRest]);
+  useEffect(() => {
+    const image = new Image(); image.src = asset("assets/mountain/panorama.webp");
   }, []);
   useEffect(() => {
-    onRest(!arrived || above && !settled);
-  }, [arrived, above, settled, onRest]);
-  useEffect(() => {
-    setSettled(false);
-    if (!above) return;
-    const timer = setTimeout(() => setSettled(true), 1800);
+    if (shot === "near") return;
+    const timer = setTimeout(() => {
+      if (shot === "cloud") setShot("summit");
+      else if (shot === "summit") setShot("caption");
+      else setSettled(true);
+    }, shot === "cloud" ? (reduced ? 700 : 2600) : shot === "summit" ? 4500 : 1200);
     return () => clearTimeout(timer);
-  }, [above]);
-  const origin = useRef<{ y: number; value: number } | null>(null);
-  const reduced = useReducedMotion();
-  const drag = (e: PointerEvent) => {
-    if (origin.current)
-      setHeight(
-        Math.max(
-          0,
-          Math.min(
-            1,
-            origin.current.value + (origin.current.y - e.clientY) / 230,
-          ),
-        ),
-      );
-  };
-  return (
-    <>
-      <div
-        className={"mountain-art arriving" + (!arrived || above && !settled ? " peak-rest" : "")}
-        data-interaction
-        role="slider"
-        tabIndex={0}
-        aria-label="向上推动画面，进入黄山云端"
-        aria-valuenow={Math.round(height * 100)}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        onPointerDown={(e) => {
-          dispatch({ type: "lock", value: true });
-          origin.current = { y: e.clientY, value: height };
-          e.currentTarget.setPointerCapture(e.pointerId);
-        }}
-        onPointerMove={drag}
-        onPointerUp={() => {
-          origin.current = null;
-          dispatch({ type: "lock", value: false });
-        }}
-        onPointerCancel={() => {
-          origin.current = null;
-          dispatch({ type: "lock", value: false });
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-            e.preventDefault();
-            setHeight((h) =>
-              Math.max(
-                0,
-                Math.min(1, h + (e.key === "ArrowUp" ? 0.15 : -0.15)),
-              ),
-            );
-          }
-        }}
-      >
-        <img
-          className="mountain-panorama"
-          src={asset("assets/mountain/panorama.webp")}
-          alt="黄山冬日峰峦与云海"
-          style={{
-            transform: `translateY(${reduced ? 0 : height * 20}px) scale(1.12)`,
-          }}
-        />
-        {["clouds", "snow", "rocks", "pine", "forest"].map((layer, i) => (
-          <img
-            key={layer}
-            className={"mountain-layer " + layer}
-            src={asset("assets/mountain/" + layer + ".webp")}
-            alt=""
-            draggable={false}
-            style={{
-              transform: `translateY(${reduced ? 0 : height * (50 + i * 28)}px)`,
-              opacity: layer === "clouds" ? .12 * (1 - height * .5) : (layer === "forest" ? .5 : layer === "pine" ? .25 : .12) * (1 - height),
-            }}
-          />
-        ))}
-      </div>
-      <div className={"mountain-heading" + (above ? " quiet-heading" : "")}>
-        <div className="eyebrow">DAY 4 — DAY 5</div>
-        <h1>
-          从徽州人间，
-          <br />
-          走到黄山云端。
-        </h1>
-      </div>
-      <div
-        className="mountain-route"
-        style={{ opacity: Math.max(0, 1 - height * 3) }}
-      >
-        <small>DAY 4</small>
-        <p>
-          玉屏景区 · 迎客松
-          <br />
-          在迎客松前，认识黄山的松
-        </p>
-        <span>北海区域</span>
-      </div>
-      <div
-        className="mountain-route later"
-        style={{ opacity: above && settled ? 1 : 0 }}
-      >
-        <small>DAY 5</small>
-        <p>
-          冬日黄山 · 日出可选
-          <br />
-          山顶亲子时光
-        </p>
-      </div>
-      <div className={"mountain-instruction" + (above && !settled ? " quiet-heading" : "")} data-interaction>
-        <button onClick={() => setHeight((h) => (h > 0.5 ? 0 : 1))}>
-          {height > 0.5 ? "回望山下" : "向上轻推，慢慢入云"}
-        </button>
-      </div>
-    </>
-  );
+  }, [shot, reduced]);
+  useEffect(() => () => { dispatch({ type: "lock", value: false }); }, [dispatch]);
+  function enterCloud() {
+    if (moving.current) return;
+    moving.current = true; setPush(1); setShot("cloud");
+    hand.current = null; dispatch({ type: "lock", value: false });
+  }
+  function move(e: PointerEvent) {
+    if (!hand.current) return;
+    hand.current.distance = Math.max(0, hand.current.y - e.clientY);
+    setPush(Math.min(.65, hand.current.distance / 250));
+  }
+  return <div className={"cloud-arrival shot-"+shot+(settled?" arrival-settled":"")} data-shot={shot} data-interaction>
+    <div className="cloud-camera" role={shot==="near"?"button":"group"} tabIndex={shot==="near"?0:-1} aria-label={shot==="near"?"向上推开近景，穿过云层":shot==="cloud"?"正在穿过云层":"黄山群峰的静观时刻"} data-testid="cloud-camera"
+      onPointerDown={e=>{if(shot!=="near")return;dispatch({type:"lock",value:true});hand.current={y:e.clientY,distance:0};e.currentTarget.setPointerCapture(e.pointerId);}}
+      onPointerMove={move} onPointerUp={e=>{move(e);if((hand.current?.distance??0)>=70)enterCloud();else {hand.current=null;setPush(0);dispatch({type:"lock",value:false});}}}
+      onPointerCancel={()=>{hand.current=null;setPush(0);dispatch({type:"lock",value:false});}}
+      onKeyDown={e=>{if(shot==="near"&&["ArrowUp","Enter"," "].includes(e.key)){e.preventDefault();enterCloud();}}}>
+      <img className="arrival-peaks" src={asset("assets/mountain/panorama.webp")} alt="穿云之后，黄山冬日群峰第一次完整展开" draggable={false}/>
+      <div className="arrival-near" style={{transform:reduced?undefined:`translateY(${push*90}px) scale(${1+push*.12})`}}><img src={asset("assets/directors-cut/mountain-near.webp")} alt="残雪山路、近处的岩石与松枝" draggable={false}/></div>
+      <img className="arrival-pine" src={asset("assets/directors-cut/forest-foreground.webp")} alt="" style={{transform:reduced?undefined:`translateY(${push*270}px) scale(${1+push*.25})`}} aria-hidden/>
+      <div className="cloud-whiteout" aria-hidden/>
+      <svg className="arrival-cloud" viewBox="0 0 390 844" preserveAspectRatio="none" style={{opacity:shot==="near"?push*.78:undefined}} aria-hidden>
+        <defs><linearGradient id="cloud-depth" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#e8eeed" stopOpacity=".1"/><stop offset=".5" stopColor="#edf1ef" stopOpacity=".98"/><stop offset="1" stopColor="#e7eeec" stopOpacity=".4"/></linearGradient><filter id="cloud-edge" x="-30%" y="-20%" width="160%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".009 .014" numOctaves="2" seed="8" result="mist"/><feDisplacementMap in="SourceGraphic" in2="mist" scale="65"/><feGaussianBlur stdDeviation="8"/></filter></defs>
+        <defs><filter id="fog-density" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".006 .008" numOctaves="2" seed="4"/><feColorMatrix type="matrix" values=".26 0 0 0 .71 .26 0 0 0 .75 .26 0 0 0 .74 0 0 0 0 1"/><feGaussianBlur stdDeviation="3"/></filter></defs>
+        <g filter="url(#cloud-edge)">{[0,1,2].map(i=><path key={i} className={"cloud-bank cloud-bank-"+i} d={`M-250 ${-120+i*170} Q50 ${-210+i*130} 450 ${-80+i*170} T800 ${-120+i*170} V${820+i*180} H-250Z`} fill="url(#cloud-depth)"/>)}</g>
+        <rect className="cloud-density" x="-100" y="-180" width="600" height="1250" filter="url(#fog-density)" opacity=".8"/>
+      </svg>
+    </div>
+    {shot==="near"&&<p className="cloud-invitation">再往前，是云。<br/><small>向上轻推，走进去</small></p>}
+    {shot==="caption"&&<div className="arrival-caption"><h1>从徽州人间，<br/>走到黄山云端。</h1>{settled&&<p>DAY 4 · 玉屏 · 迎客松 · 北海<br/>DAY 5 · 黄山冬日 · 日出可选</p>}</div>}
+    {shot!=="caption"&&<h1 className="sr-only">穿过云层，抵达黄山</h1>}
+  </div>;
 }

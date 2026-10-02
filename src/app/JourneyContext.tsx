@@ -17,6 +17,7 @@ interface JourneyState {
   locked: boolean;
   direction: number;
   observation: { discovery: string; question: string } | null;
+  inkGold: number[][];
 }
 type Action =
   | { type: "scene"; scene: SceneId }
@@ -27,6 +28,7 @@ type Action =
   | { type: "sound"; value: boolean }
   | { type: "result" }
   | { type: "observation"; discovery: string; question: string }
+  | { type: "inkGold"; value: number[][] }
   | { type: "lead"; value: LeadState };
 const initial: JourneyState = {
   currentScene: 0,
@@ -39,6 +41,7 @@ const initial: JourneyState = {
   locked: false,
   direction: 1,
   observation: null,
+  inkGold: [[], [], []],
 };
 function reducer(state: JourneyState, action: Action): JourneyState {
   switch (action.type) {
@@ -62,13 +65,15 @@ function reducer(state: JourneyState, action: Action): JourneyState {
         collectedStamps: [...new Set([...state.collectedStamps, action.stamp])],
       };
     case "retry":
-      return { ...state, completedInteractions: state.completedInteractions.filter(id => id !== action.id) };
+      return { ...state, completedInteractions: state.completedInteractions.filter(id => id !== action.id), inkGold: action.id === "ink" ? [[], [], []] : state.inkGold };
     case "sound":
       return { ...state, soundEnabled: action.value };
     case "result":
       return { ...state, resultGenerated: true };
     case "observation":
       return { ...state, observation: { discovery: action.discovery, question: action.question } };
+    case "inkGold":
+      return { ...state, inkGold: action.value.map(branch => [...branch]) };
     case "lead":
       return { ...state, leadState: action.value };
   }

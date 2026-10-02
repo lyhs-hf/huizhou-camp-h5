@@ -3,10 +3,12 @@ export function Sheet({
   children,
   onClose,
   titleId,
+  className = "",
 }: {
   children: ReactNode;
   onClose: () => void;
   titleId: string;
+  className?: string;
 }) {
   const panel = useRef<HTMLDivElement>(null);
   const begin = useRef<number | null>(null);
@@ -63,7 +65,7 @@ export function Sheet({
     >
       <div
         ref={panel}
-        className="sheet"
+        className={"sheet " + className}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

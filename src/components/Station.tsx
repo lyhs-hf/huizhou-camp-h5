@@ -4,29 +4,20 @@ import { useJourney } from "../app/JourneyContext";
 import { stationCopy } from "../content/copy";
 export function StationHeader({ id, quiet = false, introduce = false }: { id: InteractionId; quiet?: boolean; introduce?: boolean }) {
   return (
-    <div className={"station-heading" + (quiet ? " quiet-heading" : "")}>
-      <div className="eyebrow">
-        {id === "macaque"
-          ? "DAY 4 · 山林里的一站"
-          : id === "year"
-            ? "DAY 3 · 老宅里的一站"
-            : "DAY 2 · 指尖的一站"}
-      </div>
-      <h1>{stationCopy[id].title}</h1>
+    <div className={"scene-introduction" + (quiet ? " quiet-heading" : "")}>
+      <h1 className="sr-only">{stationCopy[id].title}</h1>
       {introduce && <p className="scene-reason">{stationCopy[id].context}</p>}
     </div>
   );
 }
 export function StationFinish({ id }: { id: InteractionId }) {
   return (
-    <div className="station-finish" role="status">
-      <span className="stamp-mark">{stationCopy[id].stamp}</span>
+    <div className="scene-afterword" role="status">
       {stationCopy[id].finish.map((x, i) => (
         <p key={x} className={i === 0 ? "first" : ""}>
           {x}
         </p>
       ))}
-      <small className="route-label">{stationCopy[id].route}</small>
     </div>
   );
 }
@@ -46,13 +37,10 @@ export function StationTools({ done, onRetry, onAssist, onInfo, assistLabel = "�
   }, [done, progressKey, quiet, locked]);
   useEffect(() => { if (done || quiet) setMenu(false); }, [done, quiet]);
   const canHelp = !done && (waiting || requested) && !quiet && !locked;
-  return <div className={"station-tools editorial-tools" + (quiet ? " quiet-tools" : "")} data-interaction>
-    <button className="knowledge-button" onClick={(e) => { e.currentTarget.focus(); onInfo(); }}>
-      这一站，孩子在经历什么？<span aria-hidden>＋</span>
-    </button>
+  return <div className={"scene-edge-tools" + (quiet ? " quiet-tools" : "")} data-interaction>
     {(done || canHelp) && <button className="station-more" aria-label="更多体验选项" aria-expanded={menu} onClick={() => setMenu(!menu)}>···</button>}
-    {canHelp && !menu && <button className="help-whisper" onClick={() => { setRequested(true); setMenu(true); }}>需要一点帮助？</button>}
     {menu && !quiet && (done || canHelp) && <div className="station-menu">
+      <button className="knowledge-button" onClick={(e) => { e.currentTarget.focus(); onInfo(); }}>这一站，孩子在经历什么？</button>
       {done ? <button onClick={() => { onRetry(); setMenu(false); setRequested(false); }}>重新体验</button>
         : <button onClick={() => { setRequested(true); onAssist(); }}>{assistLabel}</button>}
     </div>}

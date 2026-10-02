@@ -7,7 +7,8 @@ export default defineConfig({
   fullyParallel: true,
   outputDir: "test-results/artifacts",
   workers: 3,
-  timeout: 90000,
+  // A full pointer route includes film transitions and uninterrupted viewing time.
+  timeout: 120000,
   expect: { timeout: 10000 },
   reporter: [
     ["list"],

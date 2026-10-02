@@ -2,67 +2,100 @@ import { asset } from "../utils/asset";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useInteraction } from "../hooks/useInteraction";
 import { useJourney } from "../app/JourneyContext";
-import { Stage, StationHeader, StationFinish, StationTools } from "../components/Station";
-type Phase = "search" | "focus" | "observe" | "record" | "rest" | "done";
+import { StationTools } from "../components/Station";
+const details = [
+  { id: "body", x: 70, y: 54, w: 11, h: 22, fact: "它坐着，前肢收在身前。" },
+  { id: "rock", x: 70, y: 72, w: 17, h: 12, fact: "它脚下是岩石，边缘留着残雪。" },
+  { id: "pine", x: 85, y: 69, w: 16, h: 20, fact: "它旁边，松枝伸进了视野。" },
+];
 export function Macaque({ onInfo }: { onInfo: () => void }) {
   const action = useInteraction("macaque", "山", "macaque");
   const { state, dispatch } = useJourney();
-  const [phase, setPhase] = useState<Phase>(action.done ? "done" : "search");
-  const [view, setView] = useState({ x: 0, y: 0 });
-  const [focus, setFocus] = useState(action.done ? 1 : 0);
-  const [entry, setEntry] = useState(state.observation?.discovery ?? "");
+  const [camera, setCamera] = useState(action.done ? {x:.70,y:.56} : { x: .32, y: .5 });
+  const [found, setFound] = useState(action.done);
+  const [seen, setSeen] = useState<string[]>(action.done ? details.filter(d=>state.observation?.discovery.includes(d.fact)).map(d=>d.id) : []);
+  const [notebook, setNotebook] = useState(false);
   const [question, setQuestion] = useState(state.observation?.question ?? "");
-  const search = useRef<{ x: number; y: number; view: typeof view } | null>(null);
-  const wheel = useRef<{ x: number; focus: number } | null>(null);
-  const complete = action.complete;
-  const near = Math.hypot(view.x + 105, view.y - 35) < 32;
-  useEffect(() => {
-    if (phase === "observe") { const t = setTimeout(() => setPhase("record"), 3000); return () => clearTimeout(t); }
-    if (phase === "rest") { const t = setTimeout(() => { setPhase("done"); complete(); }, 1400); return () => clearTimeout(t); }
-  }, [phase, complete]);
-  function wheelMove(e: PointerEvent) {
-    if (wheel.current) setFocus(Math.max(0, Math.min(1, wheel.current.focus + (e.clientX - wheel.current.x) / 160)));
+  const [gaze, setGaze] = useState({ x: .5, y: .5 });
+  const [looking, setLooking] = useState(false);
+  const [caption, setCaption] = useState("");
+  const viewport = useRef<HTMLDivElement>(null);
+  const world = useRef<HTMLDivElement>(null);
+  const regions = useRef<(HTMLSpanElement | null)[]>([]);
+  const noteTitle = useRef<HTMLHeadingElement>(null);
+  const discovered = useRef(action.done);
+  const visited = useRef(new Set(seen));
+  const gesture = useRef<{ x: number; y: number; lastX: number; lastY: number; distance: number; camera: typeof camera } | null>(null);
+  useEffect(() => { if (notebook) noteTitle.current?.focus({ preventScroll: true }); }, [notebook]);
+  function observe(x: number, y: number, distance: number) {
+    const box = viewport.current!.getBoundingClientRect();
+    const body = regions.current[0]!.getBoundingClientRect();
+    const visibleWidth = Math.max(0, Math.min(body.right, box.right) - Math.max(body.left, box.left));
+    const visibleHeight = Math.max(0, Math.min(body.bottom, box.bottom) - Math.max(body.top, box.top));
+    if (!discovered.current && visibleWidth * visibleHeight >= body.width * body.height * .65 && distance > 25) {
+      discovered.current = true; setFound(true); setCaption("先别急着拍。看看它现在在做什么。");
+      const attention = { x: details[0].x / 100, y: .56 };
+      setCamera(attention);
+      if (gesture.current) { gesture.current.camera = attention; gesture.current.x = x; gesture.current.y = y; }
+      return;
+    }
+    if (!discovered.current || distance < 12) return;
+    regions.current.forEach((node, i) => {
+      if (!node) return;
+      const r = node.getBoundingClientRect();
+      if (x < Math.max(r.left, box.left) || x > Math.min(r.right, box.right) || y < Math.max(r.top, box.top) || y > Math.min(r.bottom, box.bottom)) return;
+      visited.current.add(details[i].id); setSeen([...visited.current]); setCaption(details[i].fact);
+    });
   }
-  function releaseWheel() { wheel.current = null; action.unlock(); if (focus > .85) setPhase("observe"); }
-  const quiet = phase === "observe" || phase === "rest";
-  return <>
-    <StationHeader id="macaque" quiet={phase === "rest"} introduce={phase === "search" && view.x === 0 && view.y === 0} />
-    <Stage className={"macaque-stage field-observation phase-" + phase + (phase === "rest" ? " visual-rest" : "")}>
-      <div className={"binocular " + (phase === "search" ? "search-window" : "") + (phase === "observe" ? " breathing-forest" : "")} data-testid="binocular">
-        {phase === "search" ? <>
-          <div className="search-world" style={{ transform: `translate(${view.x}px,${view.y}px)` }}>
-            <img className="forest" src={asset("assets/macaque/search-final.webp")} alt="更宽的冬日山林视野，短尾猴停在右侧岩石上" />
-          </div>
-          <div className="search-view" data-testid="search-view" role="group" aria-label="拖动望远镜视野，在林间寻找" tabIndex={0}
-            onPointerDown={e => { action.start(); search.current = { x: e.clientX, y: e.clientY, view }; e.currentTarget.setPointerCapture(e.pointerId); }}
-            onPointerMove={e => { if (search.current) setView({ x: Math.max(-165, Math.min(80, search.current.view.x + e.clientX - search.current.x)), y: Math.max(-75, Math.min(75, search.current.view.y + e.clientY - search.current.y)) }); }}
-            onPointerUp={() => { search.current = null; action.unlock(); if (near) setPhase("focus"); }} onPointerCancel={() => { search.current = null; action.unlock(); }}
-            onKeyDown={e => { if (e.key.startsWith("Arrow")) { e.preventDefault(); setView(v => ({ x: Math.max(-165, Math.min(80, v.x + (e.key === "ArrowRight" ? 20 : e.key === "ArrowLeft" ? -20 : 0))), y: Math.max(-75, Math.min(75, v.y + (e.key === "ArrowDown" ? 20 : e.key === "ArrowUp" ? -20 : 0))) })); } else if (e.key === "Enter" && near) { e.preventDefault(); setPhase("focus"); } }} />
-        </> : <>
-          <img className="forest" src={asset("assets/macaque/forest.webp")} alt="冬季山林" />
-          <img className="macaque-sharp" src={asset("assets/macaque/macaque.webp")} alt="山林中自然侧身停驻的短尾猴" style={{ opacity: focus }} />
-          <img className="macaque-blurred" src={asset("assets/macaque/macaque.webp")} alt="" style={{ opacity: 1 - focus }} />
-        </>}
-        <span className="crosshair" aria-hidden />
+  function down(e: PointerEvent<HTMLDivElement>) {
+    if (notebook || action.done) return;
+    action.start(); e.currentTarget.setPointerCapture(e.pointerId);
+    gesture.current = { x: e.clientX, y: e.clientY, lastX: e.clientX, lastY: e.clientY, distance: 0, camera };
+    setLooking(true);
+  }
+  function move(e: PointerEvent<HTMLDivElement>) {
+    const g = gesture.current; if (!g || !world.current || !viewport.current) return;
+    g.distance += Math.hypot(e.clientX - g.lastX, e.clientY - g.lastY); g.lastX = e.clientX; g.lastY = e.clientY;
+    const size = world.current.getBoundingClientRect(), box = viewport.current.getBoundingClientRect();
+    const halfX = box.width / size.width / 2, halfY = box.height / size.height / 2;
+    const gain = discovered.current ? .22 : 1;
+    setCamera({ x: Math.max(halfX, Math.min(1 - halfX, g.camera.x - (e.clientX - g.x) / size.width * gain)), y: Math.max(halfY, Math.min(1 - halfY, g.camera.y - (e.clientY - g.y) / size.height * gain)) });
+    setGaze({ x: Math.max(.08, Math.min(.92, (e.clientX - box.left) / box.width)), y: Math.max(.12, Math.min(.88, (e.clientY - box.top) / box.height)) });
+    observe(e.clientX, e.clientY, g.distance);
+  }
+  function end(cancelled = false) {
+    gesture.current = null; setLooking(false); action.unlock();
+    if (!cancelled && visited.current.has("body") && visited.current.size >= 2) setNotebook(true);
+  }
+  function save() {
+    const facts = details.filter(d => visited.current.has(d.id)).map(d => d.fact).join(" ");
+    dispatch({ type: "observation", discovery: facts, question: question.trim() });
+    setNotebook(false); action.complete();
+  }
+  return <div className={"forest-observation" + (found ? " discovered" : "") + (looking ? " looking" : "")} data-interaction data-found={found} data-seen={seen.join(",")}>
+    <h1 className="sr-only">进入山林，发现一只短尾猴</h1>
+    <div ref={viewport} className="forest-viewport" role="group" aria-label="移动山林视野，近看身体与岩石" tabIndex={0} data-testid="forest-view"
+      onPointerDown={down} onPointerMove={move} onPointerUp={e => { move(e); end(); }} onPointerCancel={() => end(true)}
+      onKeyDown={e => { if (!notebook && !action.done && e.key.startsWith("Arrow")) {
+        e.preventDefault();
+        const dx=e.key==="ArrowRight"?.07:e.key==="ArrowLeft"?-.07:0,dy=e.key==="ArrowDown"?.08:e.key==="ArrowUp"?-.08:0;
+        const look=found?{x:Math.max(.1,Math.min(.9,gaze.x+dx)),y:Math.max(.15,Math.min(.85,gaze.y+dy))}:{x:.5,y:.5};
+        setGaze(look); if(!found)setCamera(v=>({x:Math.max(.14,Math.min(.86,v.x+dx)),y:Math.max(.4,Math.min(.6,v.y+dy))}));
+        requestAnimationFrame(()=>{if(!viewport.current)return;const b=viewport.current.getBoundingClientRect();observe(b.x+b.width*look.x,b.y+b.height*look.y,30);if(visited.current.has("body")&&visited.current.size>=2)setNotebook(true);});
+      } }}>
+      <div ref={world} className="forest-world" style={{ transform: `translate(${-camera.x * 100}%,${-camera.y * 100}%)` }}>
+        <img src={asset("assets/directors-cut/forest-observation.webp")} alt="冬季松林里，一只短尾猴坐在带残雪的岩石上" draggable={false}/>
+        {details.map((d,i)=><span key={d.id} ref={el=>{regions.current[i]=el;}} className="forest-detail" data-detail={d.id} style={{left:d.x+"%",top:d.y+"%",width:d.w+"%",height:d.h+"%"}} aria-hidden/>)}
       </div>
-      {phase === "search" && <div className="stage-hint">{near ? "好像有什么……" : "轻移视野，在林间找一找"}</div>}
-      {phase === "focus" && <>
-        <div className="focus-wheel" data-testid="focus-wheel" role="slider" tabIndex={0} aria-label="望远镜调焦轮" aria-valuenow={Math.round(focus * 100)} aria-valuemin={0} aria-valuemax={100}
-          onPointerDown={e => { action.start(); wheel.current = { x: e.clientX, focus }; e.currentTarget.setPointerCapture(e.pointerId); }} onPointerMove={wheelMove} onPointerUp={releaseWheel} onPointerCancel={() => { wheel.current = null; action.unlock(); }}
-          onKeyDown={e => { if (["ArrowLeft", "ArrowRight", "End", "Home"].includes(e.key)) { e.preventDefault(); const value = e.key === "End" ? 1 : e.key === "Home" ? 0 : Math.min(1, Math.max(0, focus + (e.key === "ArrowRight" ? .1 : -.1))); setFocus(value); if (value > .85) setPhase("observe"); } }}>
-          <div style={{ transform: `translateX(${focus * 22}px)` }} /><span />
-        </div><div className="stage-hint">慢慢调焦，让眼前清晰</div>
-      </>}
-      {phase === "observe" && <p className="observe-pause" role="status">先看三秒：<br />它坐在哪儿，身体怎样放着？</p>}
-      {phase === "record" && <div className="field-notebook" data-testid="field-notebook"><h2>山林观察记录</h2><p>{entry ? "看见之后，我还想知道：" : "只记录这张画面能看见的事。"}</p>
-        {!entry ? <div>{["它坐在岩石上。", "它的前肢靠近身体。"].map(x => <button key={x} onClick={() => setEntry(x)}><span aria-hidden>○</span>我看到{x}</button>)}</div> : <><p className="record-fact">我看到：{entry}</p><div>{["它会一直停在这里吗？", "它为什么选这个落脚处？"].map(x => <button key={x} onClick={() => { setQuestion(x); dispatch({ type: "observation", discovery: entry, question: x }); setPhase("rest"); }}><span aria-hidden>○</span>{x}</button>)}</div></>}
-      </div>}
-      {(phase === "rest" || action.done) && <div className="recorded-dimension"><span>我看到：{entry}<br /><small>我还想知道：{question}</small></span></div>}
-    </Stage>
-    {action.done && <StationFinish id="macaque" />}
-    <StationTools done={action.done} quiet={quiet || phase === "record"} progressKey={phase} onInfo={onInfo}
-      onRetry={() => { action.retry(); setPhase("search"); setView({ x: 0, y: 0 }); setFocus(0); setEntry(""); setQuestion(""); }}
-      onAssist={() => { if (phase === "search") { setView({ x: -105, y: 35 }); setPhase("focus"); } else if (phase === "focus") { setFocus(1); setPhase("observe"); } }}
-      assistLabel={phase === "search" ? "帮助寻找山林中的身影" : "慢慢调清楚"} />
-  </>;
+      <svg className="forest-air" viewBox="0 0 390 844" preserveAspectRatio="none" aria-hidden><defs><linearGradient id="forest-mist"><stop stopColor="#bac7c0" stopOpacity="0"/><stop offset=".5" stopColor="#bac7c0" stopOpacity=".12"/><stop offset="1" stopColor="#bac7c0" stopOpacity="0"/></linearGradient></defs><path fill="url(#forest-mist)" d="M-200 250 Q150 200 450 310 T800 280 V520 H-200Z"/></svg>
+      <div className="forest-focus" style={{background:`radial-gradient(ellipse 150px 175px at ${gaze.x*100}% ${gaze.y*100}%,transparent 25%,#10201955 75%,#09140e88)`}} aria-hidden/>
+      <img className="near-pine" src={asset("assets/directors-cut/forest-foreground.webp")} alt="" style={{transform:`translate(${(camera.x-.32)*-32}px,${(camera.y-.5)*-22}px)`}} aria-hidden/>
+    </div>
+    {!found && <p className="forest-invitation">松枝后，好像有一个身影。<br/><small>轻移视野，往林子里看一看</small></p>}
+    {found && !notebook && !action.done && <p className="forest-caption" role="status">{caption || "轻移目光，看看它的身体与脚下。"}</p>}
+    {notebook && <div className="observation-page" role="dialog" aria-modal="false" aria-label="自然观察札记" data-testid="field-notebook"><span>山林 · 一页观察札记</span><h2 ref={noteTitle} tabIndex={-1}>刚才，我留意到</h2>{details.filter(d=>seen.includes(d.id)).map(d=><p key={d.id}>{d.fact}</p>)}<label>还有一个问题<input maxLength={100} value={question} onChange={e=>setQuestion(e.target.value)} placeholder="我还想知道……（可选）"/></label><button onClick={save}>收起这页札记<span aria-hidden> →</span></button></div>}
+    {action.done && <p className="forest-conclusion">观察，不只是多看一会儿。<br/>是知道自己在找什么。</p>}
+    <StationTools done={action.done} quiet={notebook} progressKey={seen.join(",")+found} onInfo={onInfo} onRetry={()=>{action.retry();setFound(false);discovered.current=false;visited.current.clear();setSeen([]);setCamera({x:.32,y:.5});setCaption("");}}
+      onAssist={()=>{setCaption(found?"让目光从它的前肢，移到脚下的岩石。":"往右边的岩石看一看。向左轻移视野。");}} assistLabel="给我一点观察提示"/>
+  </div>;
 }

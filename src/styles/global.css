@@ -2525,3 +2525,224 @@ button { min-width: 44px; }
   .room-panel, .wish-paper, .mountain-art.arriving .mountain-panorama, .mountain-art.arriving .mountain-layer { transition: none; }
   .wish-paper span, .window-atmosphere path { animation: none; }
 }
+
+/* EXPERIENCE DIRECTOR'S CUT — edge navigation, each scene owns its space. */
+.immersive-canvas .scene-content { position:absolute; inset:0; padding:0; animation:none; }
+.immersive-canvas:after { opacity:.035; }
+.edge-back { position:absolute; left:12px; top:calc(12px + env(safe-area-inset-top)); width:44px; height:44px; z-index:30; color:#faf8f3; font-family:var(--serif); font-size:30px; opacity:0; transition:opacity 1s; text-shadow:0 1px 8px #0008; }
+.edge-back.awake { opacity:.55; }
+.edge-back:focus-visible { opacity:1; }
+.scene-departure { position:absolute; z-index:25; bottom:calc(22px + env(safe-area-inset-bottom)); right:22px; left:70px; min-height:48px; text-align:right; font-family:var(--serif); font-size:15px; color:#faf8f3; text-shadow:0 1px 8px #18140ecc; animation:departure-appear 1.2s both; }
+.scene-departure span { margin-left:16px; }
+.scene-introduction { position:absolute; left:28px; right:28px; top:calc(85px + env(safe-area-inset-top)); z-index:8; pointer-events:none; }
+.scene-introduction .scene-reason { color:#f5f0e6; font-family:var(--serif); font-size:17px; line-height:1.9; text-shadow:0 1px 12px #18140e; animation:fade-in 1.2s both; }
+.immersive-canvas .interaction-stage { position:absolute; inset:0; margin:0; min-height:0; }
+.scene-afterword { position:absolute; left:30px; right:30px; bottom:108px; color:#faf8f3; z-index:10; pointer-events:none; text-shadow:0 1px 10px #13100fcc; animation:fade-in 1s both; }
+.scene-afterword p { font-family:var(--serif); font-size:19px; line-height:1.8; }
+.scene-edge-tools { position:absolute; z-index:26; left:17px; bottom:24px; color:#faf8f3; margin:0; }
+.scene-edge-tools .station-menu { bottom:52px; left:0; right:auto; width:240px; background:#f5f0e6f2; color:var(--ink); padding:12px; }
+.scene-edge-tools .station-more { position:static; color:inherit; text-shadow:0 1px 8px #15100c; }
+.immersive-canvas .interaction-note, .immersive-canvas .ink-progress, .immersive-canvas .water-route { display:none; }
+.immersive-canvas .stage-hint { bottom:105px; color:#faf8f3; font-family:var(--serif); font-size:16px; text-shadow:0 1px 10px #18140ecc; }
+.scene-4.immersive-canvas { background:#332820; }
+.scene-4 .lantern-stage { background:radial-gradient(ellipse at 50% 48%,#806348,#32231d 80%); }
+.scene-4 .lantern-target { width:86%; }
+.scene-4 .phase-3 { background-size:cover; }
+.scene-4 .mother-perspective { position:absolute; left:28px; bottom:104px; z-index:9; color:#fff4dc; }
+.scene-5.immersive-canvas { background:#0c0d0b; }
+.scene-5 .ink-world { background:radial-gradient(ellipse at 48% 45%,#32332c,#090b09 70%); }
+.scene-5 .ink-object { width:100%; height:78%; }
+.scene-6 .year-process .year-image { position:absolute; inset:0; width:100%; height:100%; }
+.scene-6 .year-step { position:absolute; z-index:12; bottom:84px; right:28px; left:28px; color:var(--paper); text-align:right; font-size:16px; }
+.scene-6 .year-reflection { position:absolute; z-index:10; bottom:110px; left:30px; right:30px; color:var(--paper); text-shadow:0 1px 8px #201610; }
+.scene-9.immersive-canvas { background:#c6c8c2; }
+@keyframes departure-appear { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+@media(prefers-reduced-motion:reduce) { .scene-departure,.scene-introduction .scene-reason { animation:none; } .edge-back { transition:none; } }
+/* Forest is the viewing instrument. No focus slider, targets, or answer buttons. */
+.forest-observation,.forest-viewport { position:absolute; inset:0; overflow:hidden; background:#253b32; }
+.forest-viewport { touch-action:none; cursor:grab; }
+.forest-viewport:focus-visible { outline:none; box-shadow:inset 0 -2px #eee7cc; }
+.forest-world { position:absolute; width:max(180%,220dvh); height:124%; left:50%; top:50%; }
+.forest-world > img { width:100%; height:100%; object-fit:fill; max-width:none; filter:brightness(.83) saturate(.78) blur(.8px); transition:filter 1.3s; }
+.discovered .forest-world > img { filter:brightness(.95) saturate(.82); }
+.forest-detail { position:absolute; transform:translate(-50%,-50%); pointer-events:none; }
+.forest-air,.near-pine { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+.forest-air path { animation:forest-mist-pass 26s ease-in-out infinite alternate; }
+.near-pine { opacity:.92; filter:blur(.7px); transform-origin:0 35%; transition:transform .2s; }
+.forest-focus { position:absolute; inset:0; pointer-events:none; opacity:.85; transition:opacity 1s; }
+.discovered .forest-focus { opacity:.5; }
+.looking .near-pine { opacity:.78; }
+.forest-invitation,.forest-caption,.forest-conclusion { position:absolute; left:28px; right:28px; bottom:110px; z-index:9; font-family:var(--serif); font-size:20px; line-height:1.8; color:#f1f2e7; text-shadow:0 2px 12px #152118; pointer-events:none; }
+.forest-invitation small { font-size:14px; }
+.forest-caption { font-size:17px; }
+.observation-page { position:absolute; z-index:18; left:26px; right:26px; bottom:94px; padding:30px 24px; background:#eeeaddf5; transform:rotate(-.5deg); box-shadow:0 15px 50px #08150e3b; color:#39453b; animation:notebook-open 1.2s both; }
+.observation-page > span { font-size:13px; letter-spacing:.13em; }
+.observation-page h2 { margin:18px 0; font-size:24px; }
+.observation-page p { font-family:var(--serif); font-size:17px; border-bottom:1px solid #434d3420; padding:9px 0; }
+.observation-page label { display:block; margin:20px 0 10px; font-size:14px; }
+.observation-page input { display:block; width:100%; min-height:44px; background:transparent; border:0; border-bottom:1px solid #43503940; font-size:15px; border-radius:0; padding:8px 0; }
+.observation-page button { min-height:48px; margin-top:15px; width:100%; text-align:right; font-family:var(--serif); }
+@keyframes forest-mist-pass { from { transform:translateX(-45px); } to { transform:translateX(45px); } }
+@keyframes notebook-open { from { opacity:0; transform:translateY(18px) rotate(-.5deg); } to { opacity:1; transform:rotate(-.5deg); } }
+@media(prefers-reduced-motion:reduce) { .forest-air path,.observation-page { animation:none; } .forest-world > img,.near-pine { transition:none; } }
+.discovered .forest-world { transition:transform 1.15s cubic-bezier(.2,.6,.15,1); }
+.discovered.looking .forest-world { transition:transform .14s; }
+@media(prefers-reduced-motion:reduce) { .discovered .forest-world { transition:none; } }
+img.near-pine { width:100%; height:100%; object-fit:cover; filter:blur(1.3px); opacity:.48; mask-image:linear-gradient(#000,transparent 85%); }
+/* One gesture becomes a camera journey: near stone / white cloud / open peaks. */
+.cloud-arrival,.cloud-camera { position:absolute; inset:0; overflow:hidden; background:#e7edeb; }
+.cloud-camera { touch-action:none; }
+.cloud-camera:focus-visible { outline:none; box-shadow:inset 0 -2px #e8e3ce; }
+.arrival-peaks,.arrival-near,.arrival-pine { position:absolute; inset:0; width:100%; height:100%; }
+.arrival-peaks { object-fit:cover; opacity:0; transform:scale(1.15); filter:saturate(.82); }
+.arrival-near { transform-origin:50% 65%; transition:transform .1s; }
+.arrival-near > img { width:100%; height:100%; object-fit:cover; }
+.arrival-pine { object-fit:cover; opacity:.42; pointer-events:none; transform-origin:20% 55%; transition:transform .1s; }
+.arrival-cloud { position:absolute; inset:-10%; width:120%; height:120%; pointer-events:none; }
+.cloud-whiteout { position:absolute; inset:0; background:#eaf0ee; opacity:0; pointer-events:none; }
+.shot-cloud .arrival-near,.shot-cloud .arrival-pine { transition:transform 2.6s cubic-bezier(.1,.3,.15,1),opacity 1.6s; opacity:0; }
+.shot-cloud .arrival-peaks { opacity:1; transition:opacity 1.5s 1s; }
+.shot-cloud .cloud-whiteout { animation:cloud-passage-white 2.6s both; }
+.shot-cloud .arrival-cloud { opacity:1; animation:cloud-travel 2.6s cubic-bezier(.15,.4,.2,1) both; }
+.shot-summit .arrival-near,.shot-summit .arrival-pine,.shot-caption .arrival-near,.shot-caption .arrival-pine { opacity:0; }
+.shot-summit .arrival-peaks,.shot-caption .arrival-peaks { opacity:1; transform:scale(1); transition:transform 5s cubic-bezier(.1,.4,.2,1); }
+.shot-summit .arrival-cloud,.shot-caption .arrival-cloud { opacity:0; transition:opacity 1.2s; }
+.cloud-bank-0 { animation:cloud-drift 19s ease-in-out infinite alternate; }
+.cloud-bank-1 { animation:cloud-drift 23s ease-in-out infinite alternate-reverse; }
+.cloud-bank-2 { animation:cloud-drift 29s ease-in-out infinite alternate; }
+.cloud-invitation { position:absolute; left:28px; bottom:108px; color:#edf1e9; font-family:var(--serif); font-size:22px; line-height:1.8; text-shadow:0 1px 12px #22372c; pointer-events:none; }
+.cloud-invitation small { font-size:15px; }
+.arrival-caption { position:absolute; top:calc(75px + env(safe-area-inset-top)); left:30px; right:30px; color:#2e3c39; animation:fade-in 1.5s both; pointer-events:none; }
+.arrival-caption h1 { font-size:27px; }
+.arrival-caption p { font-size:14px; margin-top:22px; animation:fade-in 1.2s both; }
+.scene-8:has(.shot-cloud) .edge-back,.scene-8:has(.shot-summit) .edge-back { opacity:0; pointer-events:none; }
+.immersive-canvas:has(.visual-rest) .edge-back { opacity:0; pointer-events:none; }
+@keyframes cloud-passage-white { 0% { opacity:0; } 35%,68% { opacity:.99; } 100% { opacity:.35; } }
+@keyframes cloud-travel { from { transform:translateY(20%) scale(.95); } to { transform:translateY(-12%) scale(1.18); } }
+@keyframes cloud-drift { from { transform:translateX(-30px); } to { transform:translateX(30px); } }
+@media(prefers-reduced-motion:reduce) { .arrival-cloud,.cloud-bank,.cloud-whiteout { animation:none!important; filter:none; } .shot-cloud .cloud-whiteout { opacity:1; } .arrival-peaks,.arrival-near,.arrival-pine { transform:none!important; transition:none!important; } .shot-summit .arrival-cloud { opacity:0; transition:none; } }
+img.near-pine { opacity:.94; mask-image:linear-gradient(#000 0%,#000 55%,transparent 95%); }
+.arrival-pine { opacity:.96; filter:blur(.6px); mask-image:linear-gradient(#000 0%,#000 40%,transparent 80%); }
+.cloud-density { animation:cloud-breathe 12s ease-in-out infinite alternate; }
+@keyframes cloud-breathe { from { transform:translate(-12px,20px); } to { transform:translate(12px,-20px); } }
+.scene-5 .scene-introduction { top:auto; bottom:155px; }
+.scene-5 .scene-introduction .scene-reason { font-size:16px; }
+.scene-5 .ink-object { inset:45px 0 auto; height:72%; }
+.ink-world .trace-guide { stroke:#a39d7e; stroke-width:1.25; stroke-dasharray:none; filter:none; }
+.ink-world .gold-line { stroke-width:1.7; transition:none; }
+.ink-world.phase-rest .gold-line { animation:none; }
+.scene-5 .ink-side-light.sweeping { animation:ink-light 2.6s ease both; }
+.scene-4 .paper-piece { right:25px; bottom:155px; }
+.scene-4 .paper-piece span { display:none; }
+.scene-4 .light-button { bottom:150px; }
+/* Red paper unfolds on the table; a brushstroke travels with it into the house. */
+.director-paper { width:90px; height:176px; padding:13px 9px; writing-mode:initial; overflow:hidden; transition:clip-path 1.2s,transform 1.2s,left 1.2s,top 1.2s; }
+.director-paper svg { width:100%; height:100%; }
+.director-paper.paper-folded { clip-path:inset(0 0 62%); transform:rotate(-31deg) skewY(6deg) scale(.7,.8); }
+.spring-brush { fill:none; stroke:#251811; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:180; stroke-dashoffset:180; }
+.paper-open .spring-brush { animation:spring-ink 1.2s ease forwards; }
+.red-paper-touch { position:absolute; z-index:6; width:125px; height:175px; left:calc(51% - 30px); top:48%; touch-action:none; cursor:grab; }
+.scene-6 .phase-paper .year-caption { bottom:112px; }
+.scene-6 .phase-done .year-caption { display:none; }
+.scene-6 .year-process .stage-hint { background:none; bottom:95px; font-size:17px; }
+.scene-6 .rice-dough:active { filter:drop-shadow(1px 4px 3px #34211333); }
+.scene-6 .rice-dough.pressed { animation:rice-soften .65s ease both; }
+@keyframes spring-ink { to { stroke-dashoffset:0; } }
+@keyframes rice-soften { 0% { transform:scale(1,.98); } 45% { transform:scale(1.14,.7); } 100% { transform:scale(1.08,.83); } }
+@media(prefers-reduced-motion:reduce) { .director-paper { transition:none; } .paper-open .spring-brush { animation:none; stroke-dashoffset:0; } .rice-dough.pressed { animation:none; } }
+
+.scene-6 .director-paper { left:52%; top:57%; width:132px; height:225px; transform:rotate(-24deg) skewY(6deg) scale(.85); background:#b54531; }
+.scene-6 .director-paper.paper-folded { transform:rotate(-24deg) skewY(6deg) scale(.85); }
+.scene-6 .director-paper.at-door { top:20%; left:8%; transform:scale(.48); }
+.scene-6 .red-paper-touch { left:calc(52% - 30px); top:56%; width:160px; height:200px; }
+.year-keepsake { position:absolute; z-index:3; left:18%; top:71%; width:82px; height:auto; transform:rotate(-10deg); filter:drop-shadow(3px 5px 3px #20130740); pointer-events:none; }
+
+.ink-world .gold-line { stroke-width:3.1; }
+.ink-world .trace-guide { stroke-width:2.6; }
+
+/* A private window in the trip, never another activity card. */
+.parallel-space { position:absolute; inset:0; overflow:hidden; background:#a0a397; }
+.parallel-space .parallel-images { position:absolute; inset:0; margin:0; height:100%; }
+.parallel-space .parallel-images > img,.parallel-space .child-view img { width:100%; height:100%; }
+.parallel-space .child-view img { width:min(100vw,430px); }
+.parallel-whisper { position:absolute; z-index:5; top:100px; left:28px; right:28px; font-family:var(--serif); font-size:24px; line-height:1.8; color:#f6f0e3; text-shadow:0 1px 12px #211a14; pointer-events:none; }
+.parallel-space .divider > span { width:32px; height:48px; background:transparent; border:0; color:#fff8ec; text-shadow:0 1px 8px #31251b; font-size:21px; }
+.parallel-space .divider:before { background:#f3eee291; box-shadow:none; }
+.parallel-space .parallel-label { bottom:210px; font-size:14px; }
+.parallel-space .divider-hint { position:absolute; bottom:150px; left:25px; right:25px; margin:0; color:#faf4e4; text-shadow:0 1px 8px #181c11; }
+.parallel-space .mother-enter { position:absolute; z-index:6; bottom:72px; left:28px; right:28px; margin:0; border:0; min-height:48px; font-size:17px; color:#faf4e4; text-shadow:0 1px 8px #181c11; }
+.parallel-space .mother-choice-art,.reunion-window { position:absolute; inset:0; width:100%; height:100%; max-height:none; margin:0; object-fit:cover; }
+.parallel-space .mother-slips { position:absolute; left:28px; right:28px; bottom:80px; margin:0; padding:18px 10px; background:linear-gradient(transparent,#241d17a3); color:#faf4e4; }
+.parallel-space .mother-slips button { border-color:#e8dfc340; padding:17px 4px; font-size:20px; transform:none; }
+.parallel-space .mother-slips span { color:#e8dfc3; }
+.parallel-space .private-moment { position:absolute; inset:0; margin:0; height:100%; }
+.parallel-space .private-moment > img { object-fit:cover; }
+.parallel-space .keep-moment { bottom:32px; right:25px; min-height:48px; font-size:16px; background:transparent; }
+.parallel-space .moment-note { bottom:115px; font-size:17px; background:transparent; }
+.parallel-space .tea-ripple ellipse { animation-iteration-count:2; }
+.parallel-space .incense-guide { opacity:.2; stroke-width:3; }
+.parallel-space .incense-drawn { stroke:#79664e; stroke-width:6; }
+.parallel-space .parallel-reunion { position:absolute; left:28px; right:28px; bottom:145px; margin:0; color:#faf4e4; text-shadow:0 1px 10px #241c10; pointer-events:none; }
+.parallel-space .parallel-reunion p { font-size:21px; line-height:1.8; }
+.parallel-space .parallel-reunion h2 { font-size:31px; line-height:1.6; margin-top:24px; }
+.parallel-space .rejoining .child-view { mask-image:linear-gradient(90deg,#000 80%,transparent); }
+.parallel-space .parallel-images.rejoining { animation:worlds-join 7s ease both; }
+.parallel-space:after { content:''; position:absolute; inset:65% 0 0; z-index:1; background:linear-gradient(transparent,#231d1160); pointer-events:none; }
+.parallel-space .moment-note,.parallel-space .keep-moment { z-index:2; }
+.parallel-space .parallel-reunion { z-index:5; }
+@keyframes worlds-join { 0%,40% { opacity:1; } 100% { opacity:0; } }
+@media(prefers-reduced-motion:reduce) { .parallel-space .parallel-images.rejoining { animation:none; opacity:0; } .parallel-space .tea-ripple ellipse { animation:none; } }
+
+.parallel-return { position:absolute; z-index:26; left:22px; bottom:24px; min-height:48px; font-size:14px; color:#f3eee2; text-shadow:0 1px 10px #211b10; }
+
+/* The handmade silhouette keeps its proportions from bamboo to lit paper. */
+.scene-4 .lantern-worktable { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:-1; transition:opacity 1.8s; }
+.scene-4 .phase-3 .lantern-worktable { opacity:0; }
+.scene-4 .lantern-stage { background:#2c211a; }
+.scene-4 .lantern-target { height:auto; aspect-ratio:2; width:86%; transition:transform 2s cubic-bezier(.16,.5,.25,1); }
+.scene-4 .paint-guide { width:100%; height:100%; }
+.scene-4 .phase-3 .lantern-target { transform:translateY(-23dvh); }
+.scene-4 .lantern-stage:before { inset:0; transition:opacity 2.8s .55s; }
+.scene-4 .lantern-stage.phase-3:after { inset:0; }
+.scene-4 .phase-3 .lantern-color { transition:opacity 1.5s; filter:drop-shadow(0 0 8px #a65b2633); }
+.scene-4 .scene-afterword { bottom:165px; }
+.scene-4 .mother-perspective { bottom:95px; font-size:14px; }
+.parallel-space .window-atmosphere { opacity:.3; filter:blur(14px); }
+.theatre-sheet { position:absolute; inset:0; height:100%; max-height:none; border-radius:0; background:#302218; padding:0; overflow:hidden; }
+.theatre-sheet .sheet-grip { display:none; }
+.theatre-sheet .sheet-close { z-index:8; color:#f7f0e2; top:20px; }
+.theatre-sheet .mother-interlude { height:100%; }
+.theatre-sheet .mother-interlude > img { position:absolute; inset:0; width:100%; height:100%; max-height:none; object-fit:cover; border-radius:0; }
+.theatre-sheet .mother-interlude h2 { position:absolute; left:28px; right:28px; bottom:180px; font-size:24px; color:#faf4e8; text-shadow:0 1px 10px #24180d; }
+.theatre-sheet .mother-interlude p { position:absolute; left:28px; bottom:97px; font-size:19px; color:#faf4e8; text-shadow:0 1px 10px #24180d; }
+.theatre-sheet .mother-leave { position:absolute; bottom:28px; right:28px; color:#faf4e8; }
+/* A material crosses the frame before the next space is revealed. */
+.film-transition { position:absolute; z-index:70; inset:0; overflow:hidden; pointer-events:auto; background:#171a16; }
+.film-cover { animation:film-cover .65s cubic-bezier(.3,.1,.35,1) both; }
+.film-uncover { animation:film-uncover .85s cubic-bezier(.2,.6,.3,1) both; }
+.film-ink { background:radial-gradient(ellipse at 63% 35%,#292c24,#090b09 70%); }
+.film-warm { background:radial-gradient(ellipse at 60% 60%,#c38e4f,#3e2b1e 75%); }
+.film-wood { background:url('/assets/directors-cut/year-writing-table.webp') center/cover; }
+.film-forest { background:linear-gradient(90deg,#1b211d,#39483b,#1b211d); }
+.film-forest > img { width:100%; height:100%; object-fit:cover; filter:blur(3px); }
+.film-mist { background:#e8eeea; }
+.film-mist > svg { width:100%; height:100%; }
+.film-window { background:url('/assets/parallel/parent.webp') center/cover; filter:blur(8px); }
+.film-paper { background:var(--paper); }
+@keyframes film-cover { from { opacity:0; clip-path:ellipse(0 0 at 55% 53%); } to { opacity:1; clip-path:ellipse(110% 110% at 55% 53%); } }
+@keyframes film-uncover { from { opacity:1; } to { opacity:0; } }
+.film-forest.film-cover { animation-name:door-to-forest; }
+.film-mist.film-cover,.film-window.film-cover,.film-paper.film-cover { animation-name:material-cover; }
+@keyframes door-to-forest { from { opacity:0; clip-path:inset(0 50%); } to { opacity:1; clip-path:inset(0); } }
+@keyframes material-cover { from { opacity:0; } to { opacity:1; } }
+@media(prefers-reduced-motion:reduce) { .film-cover,.film-uncover { animation:none; } .scene-4 .lantern-target,.scene-4 .lantern-stage:before,.scene-4 .lantern-worktable { transition:none; } .scene-4 .phase-3 .lantern-target { transform:none; } .film-window { filter:none; } }
+
+.hero-product { bottom:calc(158px + env(safe-area-inset-bottom)); font-size:13px; }
+.experience-length { bottom:calc(96px + env(safe-area-inset-bottom)); font-size:12px; }
+
+.arrival-settled:after { content:''; position:absolute; inset:auto 0 0; height:115px; background:linear-gradient(transparent,#23372f80); pointer-events:none; animation:fade-in 1s both; }
+@media(prefers-reduced-motion:reduce) { .arrival-settled:after { animation:none; } }
+
+/* Rasterize cloud grain once; move the cloud layer, never regenerate its filters per frame. */
+.cloud-bank-0,.cloud-bank-1,.cloud-bank-2,.cloud-density { animation:none; }
+.shot-cloud .arrival-cloud { will-change:transform; }

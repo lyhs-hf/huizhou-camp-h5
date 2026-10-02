@@ -24,7 +24,7 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
   useEffect(() => {
     if (phase !== 3 || action.done) return;
     const image = new Image(); image.src = asset("assets/lantern/mother-theatre-tea.webp");
-    const rest = setTimeout(() => { complete(); onMother(); }, 2200);
+    const rest = setTimeout(() => { complete(); }, 4200);
     return () => clearTimeout(rest);
   }, [phase, action.done, complete, onMother]);
   const resting = phase === 3 && !action.done;
@@ -117,6 +117,7 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
     <>
     <StationHeader id="lantern" quiet={resting} introduce={phase === 0} />
       <Stage className={"lantern-stage phase-" + phase + (resting ? " visual-rest" : "")}>
+        <img className="lantern-worktable" src={asset("assets/directors-cut/lantern-worktable.webp")} alt="" aria-hidden/>
         {phase === 3 && <svg className="lantern-reflection" viewBox="0 0 300 360" preserveAspectRatio="none" aria-hidden><defs><radialGradient id="lantern-warmth"><stop stopColor="#e6a452" stopOpacity=".52"/><stop offset="1" stopColor="#d49b51" stopOpacity="0"/></radialGradient></defs><ellipse cx="145" cy="190" rx="125" ry="130" fill="url(#lantern-warmth)"/><path d="M130 160 L110 335 L195 335 L178 160Z" fill="url(#lantern-warmth)" opacity=".4"/></svg>}
         <div
           ref={target}

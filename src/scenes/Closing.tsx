@@ -105,7 +105,7 @@ export function Closing({ onLead }: { onLead: () => void }) {
             </div>
           ))}
         </div>
-        {state.observation && <div className="value-outro travel-note"><small>刚刚，你留下的一条山林记录</small><p>我看到：{state.observation.discovery}</p><p>我还想知道：{state.observation.question}</p><small>带着这个问题，在真实山林里继续观察。</small></div>}
+        {state.observation && <div className="value-outro travel-note"><small>刚刚，你留下的一条山林记录</small><p>我看到：{state.observation.discovery}</p>{state.observation.question && <p>我还想知道：{state.observation.question}</p>}<small>带着这页札记，在真实山林里继续观察。</small></div>}
       </section>
       <section className="result-section">
         <div ref={card} className="result-card" data-testid="result-card">
