@@ -2587,7 +2587,9 @@ button { min-width: 44px; }
 @media(prefers-reduced-motion:reduce) { .forest-air path,.observation-page { animation:none; } .forest-world > img,.near-pine { transition:none; } }
 .discovered .forest-world { transition:transform 1.15s cubic-bezier(.2,.6,.15,1); }
 .discovered.looking .forest-world { transition:transform .14s; }
-@media(prefers-reduced-motion:reduce) { .discovered .forest-world { transition:none; } }
+/* The global reduced-motion 0.01ms duration otherwise creates a transform
+   transition even before discovery. WebKit can defer its geometry a frame. */
+@media(prefers-reduced-motion:reduce) { .forest-world { transition:none!important; } }
 img.near-pine { width:100%; height:100%; object-fit:cover; filter:blur(1.3px); opacity:.48; mask-image:linear-gradient(#000,transparent 85%); }
 /* One gesture becomes a camera journey: near stone / white cloud / open peaks. */
 .cloud-arrival,.cloud-camera { position:absolute; inset:0; overflow:hidden; background:#e7edeb; }

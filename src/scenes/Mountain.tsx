@@ -11,6 +11,8 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
   const [settled, setSettled] = useState(false);
   const hand = useRef<{ y: number; distance: number } | null>(null);
   const moving = useRef(false);
+  const cloud = useRef<SVGSVGElement>(null);
+  const peaks = useRef<HTMLImageElement>(null);
   useEffect(() => {
     onRest(!settled);
   }, [settled, onRest]);
@@ -19,11 +21,27 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
   }, []);
   useEffect(() => {
     if (shot === "near") return;
+    if (shot === "summit") {
+      const began = performance.now();
+      let frame = 0, clearFrames = 0;
+      let quietTimer: ReturnType<typeof setTimeout> | undefined;
+      const watchArrival = () => {
+        // Start stillness after the world is visibly clear, rather than from
+        // React's phase change. A busy phone can paint the cloud fade late.
+        const visible = performance.now() - began >= (reduced ? 0 : 1200)
+          && cloud.current && Number(getComputedStyle(cloud.current).opacity) <= .01
+          && peaks.current?.complete && peaks.current.naturalWidth > 0;
+        clearFrames = visible ? clearFrames + 1 : 0;
+        if (clearFrames >= 2) quietTimer = setTimeout(() => setShot("caption"), 3200);
+        else frame = requestAnimationFrame(watchArrival);
+      };
+      frame = requestAnimationFrame(watchArrival);
+      return () => { cancelAnimationFrame(frame); clearTimeout(quietTimer); };
+    }
     const timer = setTimeout(() => {
       if (shot === "cloud") setShot("summit");
-      else if (shot === "summit") setShot("caption");
       else setSettled(true);
-    }, shot === "cloud" ? (reduced ? 700 : 2600) : shot === "summit" ? 4500 : 1200);
+    }, shot === "cloud" ? (reduced ? 700 : 2600) : 1200);
     return () => clearTimeout(timer);
   }, [shot, reduced]);
   useEffect(() => () => { dispatch({ type: "lock", value: false }); }, [dispatch]);
@@ -43,11 +61,11 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
       onPointerMove={move} onPointerUp={e=>{move(e);if((hand.current?.distance??0)>=70)enterCloud();else {hand.current=null;setPush(0);dispatch({type:"lock",value:false});}}}
       onPointerCancel={()=>{hand.current=null;setPush(0);dispatch({type:"lock",value:false});}}
       onKeyDown={e=>{if(shot==="near"&&["ArrowUp","Enter"," "].includes(e.key)){e.preventDefault();enterCloud();}}}>
-      <img className="arrival-peaks" src={asset("assets/mountain/panorama.webp")} alt="穿云之后，黄山冬日群峰第一次完整展开" draggable={false}/>
+      <img ref={peaks} className="arrival-peaks" src={asset("assets/mountain/panorama.webp")} alt="穿云之后，黄山冬日群峰第一次完整展开" draggable={false}/>
       <div className="arrival-near" style={{transform:reduced?undefined:`translateY(${push*90}px) scale(${1+push*.12})`}}><img src={asset("assets/directors-cut/mountain-near.webp")} alt="残雪山路、近处的岩石与松枝" draggable={false}/></div>
       <img className="arrival-pine" src={asset("assets/directors-cut/forest-foreground.webp")} alt="" style={{transform:reduced?undefined:`translateY(${push*270}px) scale(${1+push*.25})`}} aria-hidden/>
       <div className="cloud-whiteout" aria-hidden/>
-      <svg className="arrival-cloud" viewBox="0 0 390 844" preserveAspectRatio="none" style={{opacity:shot==="near"?push*.78:undefined}} aria-hidden>
+      <svg ref={cloud} className="arrival-cloud" viewBox="0 0 390 844" preserveAspectRatio="none" style={{opacity:shot==="near"?push*.78:undefined}} aria-hidden>
         <defs><linearGradient id="cloud-depth" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#e8eeed" stopOpacity=".1"/><stop offset=".5" stopColor="#edf1ef" stopOpacity=".98"/><stop offset="1" stopColor="#e7eeec" stopOpacity=".4"/></linearGradient><filter id="cloud-edge" x="-30%" y="-20%" width="160%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".009 .014" numOctaves="2" seed="8" result="mist"/><feDisplacementMap in="SourceGraphic" in2="mist" scale="65"/><feGaussianBlur stdDeviation="8"/></filter></defs>
         <defs><filter id="fog-density" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".006 .008" numOctaves="2" seed="4"/><feColorMatrix type="matrix" values=".26 0 0 0 .71 .26 0 0 0 .75 .26 0 0 0 .74 0 0 0 0 1"/><feGaussianBlur stdDeviation="3"/></filter></defs>
         <g filter="url(#cloud-edge)">{[0,1,2].map(i=><path key={i} className={"cloud-bank cloud-bank-"+i} d={`M-250 ${-120+i*170} Q50 ${-210+i*130} 450 ${-80+i*170} T800 ${-120+i*170} V${820+i*180} H-250Z`} fill="url(#cloud-depth)"/>)}</g>

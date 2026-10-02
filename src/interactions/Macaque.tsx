@@ -1,5 +1,5 @@
 import { asset } from "../utils/asset";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { useInteraction } from "../hooks/useInteraction";
 import { useJourney } from "../app/JourneyContext";
 import { StationTools } from "../components/Station";
@@ -26,8 +26,15 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
   const discovered = useRef(action.done);
   const visited = useRef(new Set(seen));
   const gesture = useRef<{ x: number; y: number; lastX: number; lastY: number; distance: number; camera: typeof camera } | null>(null);
-  const pendingLook = useRef<{ x: number; y: number; distance: number } | null>(null);
+  const cameraPosition = useRef(camera);
   useEffect(() => { if (notebook) noteTitle.current?.focus({ preventScroll: true }); }, [notebook]);
+  const positionCamera = useCallback((position: typeof camera) => {
+    cameraPosition.current = position;
+    // Transform and visibility must describe the same pointer event. React may
+    // coalesce a fast sweep; keep the viewing instrument synchronous with hand.
+    if (world.current) world.current.style.transform = `translate(${-position.x * 100}%,${-position.y * 100}%)`;
+    setCamera(position);
+  }, []);
   const observe = useCallback((x: number, y: number, distance: number) => {
     const box = viewport.current!.getBoundingClientRect();
     const body = regions.current[0]!.getBoundingClientRect();
@@ -36,7 +43,7 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
     if (!discovered.current && visibleWidth * visibleHeight >= body.width * body.height * .65 && distance > 25) {
       discovered.current = true; setFound(true); setCaption("先别急着拍。看看它现在在做什么。");
       const attention = { x: details[0].x / 100, y: .56 };
-      setCamera(attention);
+      positionCamera(attention);
       if (gesture.current) { gesture.current.camera = attention; gesture.current.x = x; gesture.current.y = y; }
       return;
     }
@@ -50,20 +57,11 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
       }
       setCaption(details[i].fact);
     });
-  }, []);
-  useLayoutEffect(() => {
-    const look = pendingLook.current;
-    if (!look) return;
-    pendingLook.current = null;
-    // Pointer events can be coalesced before React paints, especially in WebKit.
-    // Read visible details only after the camera transform reached the DOM.
-    observe(look.x, look.y, look.distance);
-    if (!gesture.current && visited.current.has("body") && visited.current.size >= 2) setNotebook(true);
-  }, [camera, observe]);
+  }, [positionCamera]);
   function down(e: PointerEvent<HTMLDivElement>) {
     if (notebook || action.done) return;
     action.start(); e.currentTarget.setPointerCapture(e.pointerId);
-    gesture.current = { x: e.clientX, y: e.clientY, lastX: e.clientX, lastY: e.clientY, distance: 0, camera };
+    gesture.current = { x: e.clientX, y: e.clientY, lastX: e.clientX, lastY: e.clientY, distance: 0, camera: cameraPosition.current };
     setLooking(true);
   }
   function move(e: PointerEvent<HTMLDivElement>) {
@@ -72,12 +70,11 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
     const size = world.current.getBoundingClientRect(), box = viewport.current.getBoundingClientRect();
     const halfX = box.width / size.width / 2, halfY = box.height / size.height / 2;
     const gain = discovered.current ? .22 : 1;
-    setCamera({ x: Math.max(halfX, Math.min(1 - halfX, g.camera.x - (e.clientX - g.x) / size.width * gain)), y: Math.max(halfY, Math.min(1 - halfY, g.camera.y - (e.clientY - g.y) / size.height * gain)) });
+    positionCamera({ x: Math.max(halfX, Math.min(1 - halfX, g.camera.x - (e.clientX - g.x) / size.width * gain)), y: Math.max(halfY, Math.min(1 - halfY, g.camera.y - (e.clientY - g.y) / size.height * gain)) });
     setGaze({ x: Math.max(.08, Math.min(.92, (e.clientX - box.left) / box.width)), y: Math.max(.12, Math.min(.88, (e.clientY - box.top) / box.height)) });
-    pendingLook.current = { x: e.clientX, y: e.clientY, distance: g.distance };
+    observe(e.clientX, e.clientY, g.distance);
   }
   function end(cancelled = false) {
-    if (cancelled) pendingLook.current = null;
     gesture.current = null; setLooking(false); action.unlock();
     if (!cancelled && visited.current.has("body") && visited.current.size >= 2) setNotebook(true);
   }
@@ -94,7 +91,7 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
         e.preventDefault();
         const dx=e.key==="ArrowRight"?.07:e.key==="ArrowLeft"?-.07:0,dy=e.key==="ArrowDown"?.08:e.key==="ArrowUp"?-.08:0;
         const look=found?{x:Math.max(.1,Math.min(.9,gaze.x+dx)),y:Math.max(.15,Math.min(.85,gaze.y+dy))}:{x:.5,y:.5};
-        setGaze(look); if(!found)setCamera(v=>({x:Math.max(.14,Math.min(.86,v.x+dx)),y:Math.max(.4,Math.min(.6,v.y+dy))}));
+        setGaze(look); if(!found)positionCamera({x:Math.max(.14,Math.min(.86,cameraPosition.current.x+dx)),y:Math.max(.4,Math.min(.6,cameraPosition.current.y+dy))});
         requestAnimationFrame(()=>{if(!viewport.current)return;const b=viewport.current.getBoundingClientRect();observe(b.x+b.width*look.x,b.y+b.height*look.y,30);if(visited.current.has("body")&&visited.current.size>=2)setNotebook(true);});
       } }}>
       <div ref={world} className="forest-world" style={{ transform: `translate(${-camera.x * 100}%,${-camera.y * 100}%)` }}>
@@ -109,7 +106,7 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
     {found && !notebook && !action.done && <p className="forest-caption" role="status">{caption || "轻移目光，看看它的身体与脚下。"}</p>}
     {notebook && <div className="observation-page" role="dialog" aria-modal="false" aria-label="自然观察札记" data-testid="field-notebook"><span>山林 · 一页观察札记</span><h2 ref={noteTitle} tabIndex={-1}>刚才，我留意到</h2>{details.filter(d=>seen.includes(d.id)).map(d=><p key={d.id}>{d.fact}</p>)}<label>还有一个问题<input maxLength={100} value={question} onChange={e=>setQuestion(e.target.value)} placeholder="我还想知道……（可选）"/></label><button onClick={save}>收起这页札记<span aria-hidden> →</span></button></div>}
     {action.done && <p className="forest-conclusion">观察，不只是多看一会儿。<br/>是知道自己在找什么。</p>}
-    <StationTools done={action.done} quiet={notebook} progressKey={seen.join(",")+found} onInfo={onInfo} onRetry={()=>{action.retry();setFound(false);discovered.current=false;visited.current.clear();setSeen([]);setCamera({x:.32,y:.5});setCaption("");}}
+    <StationTools done={action.done} quiet={notebook} progressKey={seen.join(",")+found} onInfo={onInfo} onRetry={()=>{action.retry();setFound(false);discovered.current=false;visited.current.clear();setSeen([]);positionCamera({x:.32,y:.5});setCaption("");}}
       onAssist={()=>{setCaption(found?"让目光从它的前肢，移到脚下的岩石。":"往右边的岩石看一看。向左轻移视野。");}} assistLabel="给我一点观察提示"/>
   </div>;
 }
