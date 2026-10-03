@@ -79,7 +79,7 @@ export function NewYear({ onInfo }: { onInfo: () => void }) {
           </div>
           {shot === 0 && <div className={"year-keepsake"+(phase==="paper"?" arriving":"")} style={{"--rice-from-x":size.width*.119+"px","--rice-from-y":-.38*size.height+.0878*size.width+7+"px","--rice-from-scale":size.width*.3818/82} as CSSProperties} role="img" aria-label="刚刚做好的年礼，留在桌边"><RicePeach red name="keepsake-rice"/></div>}
           <div style={{clipPath: opened ? undefined : `inset(0 0 ${Math.max(0,62-Math.hypot(offset.x,offset.y)*.6)}% 0)`}} className={"wish-paper director-paper " + (opened ? "paper-open " : "paper-folded ") + (shot > 0 ? "at-door" : "")} aria-label="展开的红纸上，一笔新春祝愿">
-            <svg viewBox="0 0 100 155" aria-hidden><defs><filter id="red-fibers"><feTurbulence type="fractalNoise" baseFrequency=".6 .02" numOctaves="2" seed="7"/><feColorMatrix type="saturate" values="0"/></filter></defs><rect width="100" height="155" filter="url(#red-fibers)" opacity=".12"/>{["M18 36 Q50 32 78 37","M25 51 Q48 46 74 50","M13 69 Q48 62 86 67","M52 19 Q54 59 17 91","M59 63 Q70 83 88 89","M32 91 L34 137 L69 137 L69 90 Z","M35 113 H67"].map((d,i)=><path key={d} className="spring-brush" d={d} style={{animationDelay:i*.18+"s"}}/>)}</svg>
+            <svg viewBox="0 0 100 155" aria-hidden><defs><filter id="red-fibers"><feTurbulence type="fractalNoise" baseFrequency=".6 .02" numOctaves="2" seed="7"/><feColorMatrix type="saturate" values="0"/></filter></defs><rect width="100" height="155" filter="url(#red-fibers)" opacity=".12"/>{["M18 36 Q50 32 78 37","M25 51 Q48 46 74 50","M13 69 Q48 62 86 67","M52 19 Q54 59 17 91","M59 63 Q70 83 88 89","M32 91 Q33 113 34 136 Q51 139 69 136 Q70 114 69 91Z","M35 113 Q50 111 67 114"].map((d,i)=><path key={d} className="spring-brush" d={d} style={{animationDelay:i*.18+"s",strokeWidth:[4.2,3.4,6.1,5.2,4.8,4.1,3.6][i],opacity:[.94,.88,.97,.91,.84,.95,.89][i]}}/>)}</svg>
           </div>
         </> : <><img className="year-table" src={asset("assets/directors-cut/year-craft-table.webp")} alt="老宅里等待年礼的空木桌" draggable={false}/>
           <YearCraft phase={phase} hits={hits} offset={offset} held={held} mould={mould} down={down} move={move} up={up} cancel={cancel}
@@ -95,7 +95,7 @@ export function NewYear({ onInfo }: { onInfo: () => void }) {
     </Stage>
     {phase === "pages" && shot === 2 && <button className="year-step" onClick={() => { setBeat(0); setPhase("reflection"); }}>把这一席年留在心里<span aria-hidden> →</span></button>}
     {phase === "reflection" && beat > 0 && <div className="year-reflection" role="status"><p>一张桌，原来在一座老宅里。</p>{beat === 2 && <p className="second-beat">年礼、红纸、天井，<br />最后，是一席年。</p>}</div>}
-    {action.done && <><StationFinish id="year" /><div className="water-route">南屏 <svg viewBox="0 0 140 20"><path d="M0 10 Q25 0 50 10 T100 10 T140 10" /></svg> 宏村</div></>}
+    {action.done && <><StationFinish id="year" onInfo={onInfo}/><div className="water-route">南屏 <svg viewBox="0 0 140 20"><path d="M0 10 Q25 0 50 10 T100 10 T140 10" /></svg> 宏村</div></>}
     <StationTools done={action.done} quiet={quiet || phase === "reflection"} progressKey={phase + hits + shot} onInfo={onInfo}
       onRetry={() => { action.retry(); setPhase("dough"); setShot(0); setHits(0); setBeat(0); setOpened(false); setWritten(false); lastHit.current = -Infinity; }}
       onAssist={() => { if (phase === "dough") setPhase("press"); else if (phase === "strike") hit(); else if (phase === "red") setPhase("red-rest"); else if (phase === "paper") setOpened(true); else if (phase === "pages" && shot < 2) enterRoom(1); }}

@@ -1,3 +1,4 @@
+import { decodeImages } from "../utils/decodeImage";
 import { asset } from "../utils/asset";
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useJourney } from "./JourneyContext";
@@ -18,6 +19,7 @@ import { LeadSheet } from "../components/LeadSheet";
 import { Sheet } from "../components/Sheet";
 import { ScenePassage, type PassageState } from "../components/ScenePassage";
 import { useJourneySound } from "../components/JourneySound";
+const sceneAssets:Record<number,string[]>={4:["directors-cut/lantern-worktable.webp","lantern/skeleton-final.webp","lantern/unlit.webp"],5:["ink/ink.webp"],6:["directors-cut/year-craft-table.webp","new-year/courtyard.webp","new-year/banquet.webp","directors-cut/production-mould.webp","directors-cut/production-mallet.webp","directors-cut/production-rice.webp"],7:["directors-cut/forest-observation.webp","directors-cut/forest-foreground.webp"],8:["directors-cut/mountain-near.webp","mountain/panorama.webp","directors-cut/forest-foreground.webp"],9:["parallel/parent.webp","parallel/child.webp"]};
 export function App() {
   const { state, dispatch } = useJourney();
   const scene = state.currentScene;
@@ -30,8 +32,9 @@ export function App() {
   const [motherSettled, setMotherSettled] = useState(false);
   const openMother = useCallback(() => { setMotherSettled(false); setMother(true); }, []);
   const [parallelReady, setParallelReady] = useState(false);
+  const [mountainSummit,setMountainSummit]=useState(false);
   const [mountainResting, setMountainResting] = useState(false);
-  const music = useJourneySound(scene, (mountainResting && scene === 8) || knowledge !== null || lead || mother);
+  const music = useJourneySound(scene, (mountainResting && scene === 8) || knowledge !== null || lead || mother,mountainSummit);
   useEffect(() => {
     if (!mother) return;
     setMotherSettled(false);
@@ -72,10 +75,8 @@ export function App() {
       surface?.removeEventListener("contextmenu", protectGesture);
     };
   }, []);
-  useEffect(()=>{
-    const next:Record<number,string[]>={3:["directors-cut/lantern-worktable.webp","lantern/skeleton-final.webp","lantern/unlit.webp"],4:["ink/ink.webp"],5:["directors-cut/year-craft-table.webp","directors-cut/year-writing-table.webp"],6:["directors-cut/forest-observation.webp","directors-cut/forest-foreground.webp"],7:["directors-cut/mountain-near.webp","mountain/panorama.webp"],8:["parallel/parent.webp","parallel/child.webp","directors-cut/tea-clear-table.webp","parallel/incense-blank.webp"]};
-    for(const file of next[scene]??[]){const image=new Image();image.src=asset("assets/"+file);}
-  },[scene]);
+
+  useEffect(()=>{void decodeImages((sceneAssets[scene+1]??[]).map(file=>asset("assets/"+file)));},[scene]);
   function go(value: number) {
     if (modal || state.locked || transitioning.current) return;
     if (value > scene && !allowed) {
@@ -86,16 +87,16 @@ export function App() {
     if (scene === 1 && value > scene) { music.start(); track("journey_start"); }
     if (value === 8) track("mountain_enter");
     transitioning.current = true;
-    const arrival=()=>{if(value===8)setMountainResting(true);dispatch({type:"scene",scene:value as SceneId});};
+    const arrival=()=>{if(value===8){setMountainResting(true);setMountainSummit(false);}dispatch({type:"scene",scene:value as SceneId});};
     const materials:Record<number,string>={1:"paper",2:"paper",3:"paper",4:"warm",5:"ink",6:"wood",7:"forest",8:"mist",9:"window",10:"paper"};
     const material=materials[value];
     const bridgeImage=value===6&&state.completedInteractions.includes("year")?"new-year/banquet.webp":undefined;
     const forestComplete=value===7&&state.completedInteractions.includes("macaque");
     if(!material){arrival();transitionTimers.current.push(setTimeout(()=>{transitioning.current=false;},520));return;}
     setFilm({material,phase:"cover",bridgeImage,forestComplete});
-    transitionTimers.current.push(setTimeout(()=>{arrival();setFilm({material,phase:"uncover",bridgeImage,forestComplete});
+    transitionTimers.current.push(setTimeout(()=>{void decodeImages((sceneAssets[value]??[]).map(file=>asset("assets/"+file))).then(()=>{arrival();setFilm({material,phase:"uncover",bridgeImage,forestComplete});
       transitionTimers.current.push(setTimeout(()=>{setFilm(null);transitioning.current=false;},reduced?120:850));
-    },reduced?80:650));
+    });},reduced?80:650));
   }
   useEffect(() => {
     if (scene > 0 && !film) {
@@ -142,7 +143,7 @@ export function App() {
     <Ink onInfo={() => setKnowledge("ink")} />,
     <NewYear onInfo={() => setKnowledge("year")} />,
     <Macaque onInfo={() => setKnowledge("macaque")} />,
-    <Mountain onRest={setMountainResting} />,
+    <Mountain onRest={setMountainResting} onSummit={setMountainSummit} />,
     <Parallel ready={parallelReady} onReady={setParallelReady} />,
     <Closing
       onLead={() => {

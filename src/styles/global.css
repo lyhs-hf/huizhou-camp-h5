@@ -2835,3 +2835,87 @@ img.near-pine { opacity:.94; mask-image:linear-gradient(#000 0%,#000 55%,transpa
 .table-recede { animation:table-camera-back 1.3s cubic-bezier(.22,.6,.3,1) both; }
 @keyframes table-camera-back { from{transform:scale(1.055)} to{transform:scale(1)} }
 @media(prefers-reduced-motion:reduce) { .year-table { transform:none; } .table-recede { animation:none; } }
+
+/* Production: an explicit end to a material gesture, never an auto-fill. */
+.material-finish { position:absolute; z-index:12; left:24px; right:24px; bottom:128px; min-height:44px; font-size:15px; color:#e3d3ae; background:linear-gradient(90deg,transparent,#0e100bba,transparent); border:0; }
+
+#fish-paint path { transition:stroke-width 1.6s ease; }
+#fish-paint path.brush-settled { stroke-width:68px; }
+.lantern-brush-finish { position:absolute; left:15px; right:15px; bottom:84px; color:#faf0d7; }
+.mother-perspective { display:flex; align-items:center; gap:12px; font-size:15px; }
+.mother-perspective img { width:54px; height:38px; object-fit:cover; border-radius:2px; }
+
+.scene-afterword { pointer-events:auto; background:linear-gradient(90deg,#10140bcc, #10140b88 70%,transparent); padding:10px 12px; left:18px; right:18px; }
+.scene-afterword>p { font-size:17px; line-height:1.5; white-space:pre-line; }
+.child-value { margin-top:12px; font-family:var(--sans); }
+.child-value small { font-size:14px; color:#e6e4d7; }
+.child-value p { font-size:15px; line-height:1.65; margin:5px 0 0; color:#fff9eb; }
+.child-value button { display:flex; align-items:center; gap:10px; min-height:44px; font-size:15px; color:#ede2c7; }
+.child-value svg,.field-record svg { width:24px; height:12px; fill:none; stroke:currentColor; stroke-width:1.3; }
+.field-record { position:absolute; z-index:15; bottom:72px; right:26px; display:flex; align-items:center; gap:12px; font-size:15px; min-height:44px; color:#fff5df; background:linear-gradient(90deg,transparent,#142119bc); padding:0 14px; }
+.forest-conclusion { font-size:17px; line-height:1.5; bottom:95px; background:linear-gradient(90deg,#132018cc,transparent); padding:12px; left:18px; right:18px; pointer-events:auto; }
+
+/* Depth stays visible through the cloud; only compositor motion runs on Safari. */
+.shot-cloud .arrival-cloud { animation:production-cloud-pass 2.6s cubic-bezier(.2,.45,.2,1) both; }
+.cloud-bank-0 { animation:production-fog-drift 7s linear infinite alternate; }
+.cloud-bank-1 { animation:production-fog-drift 9s linear infinite alternate-reverse; }
+.cloud-bank-2 { animation:production-fog-drift 11s linear infinite alternate; }
+.cloud-bank-3 { animation:production-fog-drift 8s linear infinite alternate-reverse; }
+@keyframes production-fog-drift { from{transform:translate(-55px,75px)} to{transform:translate(65px,-110px)} }
+@keyframes production-cloud-pass { 0%{transform:translateY(-18%) scale(1);opacity:.45} 48%{transform:translateY(-3%) scale(1.08);opacity:1} 100%{transform:translateY(16%) scale(1.12);opacity:1} }
+.shot-caption .arrival-peaks { animation:summit-camera-breath 28s ease-in-out infinite alternate; }
+@keyframes summit-camera-breath { from{transform:scale(1.012) translate(-.1%,0)} to{transform:scale(1.023) translate(.25%,.18%)} }
+.summit-pine { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.16; pointer-events:none; animation:summit-pine-air 17s ease-in-out infinite alternate; }
+@keyframes summit-pine-air { from{transform:translate(0,5px) scale(1.03)} to{transform:translate(3px,8px) scale(1.03)} }
+@media(prefers-reduced-motion:reduce) { .cloud-bank,.summit-pine,.shot-caption .arrival-peaks{animation:none!important} .shot-cloud .arrival-cloud{animation:none!important;opacity:.8} }
+
+.material-boundary { transform-box:view-box; }
+.boundary-ink { animation:ink-light-cover .65s ease both; }
+.boundary-ink.boundary-uncover { animation:ink-light-cover .85s ease both; }
+@keyframes ink-light-cover { from{opacity:0} to{opacity:1} }
+.boundary-wood { animation:door-shadow-cover .65s cubic-bezier(.3,0,.2,1) both; }
+.boundary-wood.boundary-uncover { animation:door-shadow-cover .85s cubic-bezier(.3,0,.2,1) both; }
+@keyframes door-shadow-cover { from{clip-path:inset(28% 44%);opacity:0} to{clip-path:inset(0);opacity:1} }
+.boundary-forest { animation:tree-shadow-cover .65s ease both; }
+.boundary-forest.boundary-uncover { animation:tree-shadow-cover .85s ease both; }
+@keyframes tree-shadow-cover { from{clip-path:polygon(0 0,0 0,0 100%,0 100%);opacity:.1} to{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);opacity:1} }
+.boundary-mist,.boundary-window { animation:cloud-boundary-cover .65s ease both; }
+.boundary-mist.boundary-uncover,.boundary-window.boundary-uncover { animation:cloud-boundary-cover .85s ease both; }
+@keyframes cloud-boundary-cover { from{transform:translateY(70%);opacity:0} to{transform:translateY(0);opacity:1} }
+@media(prefers-reduced-motion:reduce) { .material-boundary {animation:none!important} }
+
+.ink-world .trace-guide {stroke:#9a9f98;stroke-width:1.4;}
+
+/* Production typography and local contrast, without darkening the whole scene. */
+.inline-arrow { width:24px; height:16px; flex:none; fill:none; stroke:currentColor; stroke-width:1.4; }
+.parallel-images:not(.divider-touched):not(.rejoining) .divider { animation:divider-invite 2.8s .8s ease-in-out 1; }
+@keyframes divider-invite { 0%,100%{transform:translateX(0)} 45%{transform:translateX(10px)} 70%{transform:translateX(-3px)} }
+.divider-touched .divider { animation:none; }
+.mother-slips { background:linear-gradient(90deg,#18201bbd,#18201b77,transparent); padding:10px 18px; }
+.mother-slips button { display:flex; align-items:center; justify-content:space-between; gap:14px; font-size:19px; color:#fff9e9; text-shadow:0 1px 4px #102014; min-height:58px; }
+.incense-air .quiet-smoke { fill:none; stroke-width:1.8; opacity:.68; filter:none; stroke-linecap:round; transform-box:fill-box; transform-origin:50% 100%; }
+.incense-air .smoke-a { animation:scent-air-a 10s ease-in-out infinite alternate; }
+.incense-air .smoke-b { stroke-width:1; opacity:.42; animation:scent-air-b 13s ease-in-out infinite alternate; }
+@keyframes scent-air-a { from{transform:translate(0,0) rotate(-2deg)} to{transform:translate(3px,-4px) rotate(3deg)} }
+@keyframes scent-air-b { from{transform:translate(0,-2px) rotate(2deg)} to{transform:translate(-4px,-8px) rotate(-3deg)} }
+.director-paper { box-shadow:2px 5px 8px #2c180b55,inset 0 1px 3px #ffb2a044; border-radius:2px 5px 1px 3px; background:linear-gradient(105deg,#9d2c25,#b6392e 32%,#9d2c25 96%,#c0503a); }
+.spring-brush { stroke-linecap:butt; stroke-linejoin:round; }
+.sound-toggle { color:#302b24; background:#faf8edcc; border:1px solid #a89b7944; border-radius:50%; width:44px; height:44px; opacity:1; }
+.sound-toggle.sound-quiet { opacity:.72; }
+.scene-departure { background:linear-gradient(90deg,transparent,#142018b0); padding:0 12px; font-size:15px; }
+.stage-hint,.year-caption small,.forest-invitation small,.cloud-invitation small,.divider-hint,.moment-note,.interaction-note { font-size:15px; line-height:1.65; }
+.arrival-caption { text-shadow:0 2px 10px #24342a; }
+.scene-8 .scene-departure { color:#fffbee; background:linear-gradient(90deg,transparent,#24372ecb); }
+.scene-6 .year-caption,.scene-6 .year-step { background:linear-gradient(90deg,#251a10ba,transparent); padding:10px 14px; color:#fff7e8; }
+.closing-content .full-route { padding:26px 24px; }
+.closing-content .route-day { margin:0; padding:12px 0; min-height:0; }
+.closing-content .route-day h2 { font-size:16px; line-height:1.5; padding-right:28px; }
+.closing-content .route-day p { font-size:14px; line-height:1.6; margin-top:3px; }
+.closing-content .route-day .day-number { font-size:15px; }
+.closing-content .route-stamp { font-size:15px; width:24px; height:24px; right:-5px; }
+.closing-content .value-section { padding-top:32px; padding-bottom:28px; }
+.closing-content .result-section { padding-top:18px; padding-bottom:24px; }
+.closing-content .closing-cta { padding-top:30px; padding-bottom:28px; }
+.closing-content .price,.closing-content .asset-disclosure,.closing-cta>small { font-size:14px; line-height:1.65; }
+@media(max-height:830px) { .scene-afterword>p {font-size:16px;} .child-value{margin-top:8px;} .child-value p{font-size:14px;} .scene-4 .scene-afterword{bottom:155px;} }
+@media(prefers-reduced-motion:reduce) { .divider,.incense-air .quiet-smoke {animation:none!important} }

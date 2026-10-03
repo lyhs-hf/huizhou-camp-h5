@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useId, useRef, useState } from "react";
 import { useJourney } from "../app/JourneyContext";
 import { useReducedMotion } from "../hooks/useInteraction";
+import { decodeImages } from "../utils/decodeImage";
 import { asset } from "../utils/asset";
 
 export type PassageState = { material:string;phase:"cover"|"uncover";bridgeImage?:string;forestComplete?:boolean };
@@ -35,7 +36,9 @@ export function ScenePassage({material,phase,bridgeImage,forestComplete=false}:P
         <linearGradient id={id+"-fog"} x1="0" y1="0" x2="0" y2="1"><stop stopColor="#e8eeeb" stopOpacity="0"/><stop offset=".45" stopColor="#e8eeeb" stopOpacity=".85"/><stop offset="1" stopColor="#dce6df" stopOpacity=".35"/></linearGradient>
         <mask id={id+"-lens"} maskUnits="userSpaceOnUse" x="0" y="0" width={w} height={h}>
           <rect width={w} height={h} fill={opening?"white":"black"}/>
-          <circle className={"material-lens lens-"+phase} cx={cx} cy={cy} r={Math.hypot(w,h)} fill={`url(#${id}-${opening?"unfeather":"feather"})`} style={{transformOrigin:`${cx}px ${cy}px`}}/>
+          {material==="paper"||material==="warm" ? <circle className={"material-lens lens-"+phase} cx={cx} cy={cy} r={Math.hypot(w,h)} fill={`url(#${id}-${opening?"unfeather":"feather"})`} style={{transformOrigin:`${cx}px ${cy}px`}}/> :
+          <rect className={`material-boundary boundary-${material} boundary-${phase}`} x={-w} y={-h} width={w*3} height={h*3} fill={opening?"black":"white"} style={{transformOrigin:`${w/2}px ${h/2}px`}}/>}
+
         </mask>
       </defs>
       <g className={"material-world material-"+phase} mask={`url(#${id}-lens)`}>
@@ -66,9 +69,10 @@ export function useMaterialPassage() {
     dispatch({type:"lock",value:true});
     setPassage({material,phase:"cover",bridgeImage});
     timers.current.push(setTimeout(() => {
-      change(); dispatch({type:"lock",value:true}); setPassage({material,phase:"uncover",bridgeImage});
+      const files=bridgeImage?[bridgeImage]:materialWorld[material]?.image?[materialWorld[material].image!]:[];
+      void decodeImages(files.map(file=>asset("assets/"+file))).then(()=>{change(); dispatch({type:"lock",value:true}); setPassage({material,phase:"uncover",bridgeImage});
       timers.current.push(setTimeout(() => { setPassage(null); busy.current=false; dispatch({type:"lock",value:false}); },reduced?120:850));
-    },reduced?80:650));
+    });},reduced?80:650));
   }
   return { enter, layer: passage && <ScenePassage {...passage}/> };
 }

@@ -1,0 +1,16 @@
+一卷冬日行旅 — original modern acoustic score, composed and arranged for this H5.
+Four related arrangements: 启程·人间 / 灯火·徽州年 / 山野·云端 / 一家人·归卷.
+This is not a historical Huizhou folk tune or a recording of a real camp.
+
+Instrument sample credits (build-time recordings, transformed into the finished score):
+Salamander Grand Piano V3, Alexander Holm — CC BY 3.0.
+Source: https://github.com/sfzinstruments/SalamanderGrandPiano
+License: https://creativecommons.org/licenses/by/3.0/
+Changes: pitch transposition, note envelopes, dynamic layering, stereo mix, EQ, room reverb and mastering.
+
+VS Chamber Orchestra: Community Edition (VSCO 2 CE), recorded by Sam Gossner & Simon Dalzell;
+sample cutting by Elan Hickler/Soundemote — CC0 1.0.
+Source: https://github.com/sgossner/VSCO-2-CE
+License: https://creativecommons.org/publicdomain/zero/1.0/
+Changes: pitch transposition, note envelopes, phrase dynamics, stereo mix, EQ, room reverb and mastering.
+No endorsement by sample creators is implied.

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { useJourney } from "../app/JourneyContext";
 import { useReducedMotion } from "../hooks/useInteraction";
 type Shot = "near" | "cloud" | "summit" | "caption";
-export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
+export function Mountain({ onRest,onSummit }: { onRest: (value: boolean) => void;onSummit:(value:boolean)=>void }) {
   const { dispatch } = useJourney();
   const reduced = useReducedMotion();
   const [shot, setShot] = useState<Shot>("near");
@@ -13,6 +13,7 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
   const moving = useRef(false);
   const cloud = useRef<SVGSVGElement>(null);
   const peaks = useRef<HTMLImageElement>(null);
+  useEffect(()=>{onSummit(shot==="summit"||shot==="caption");},[shot,onSummit]);
   useEffect(() => {
     onRest(!settled);
   }, [settled, onRest]);
@@ -72,13 +73,18 @@ export function Mountain({ onRest }: { onRest: (value: boolean) => void }) {
           <path className="valley-cloud close-cloud" d="M250 890Q520 760 740 870T1060 810V1200Q850 1050 690 1100T250 1020Z"/>
         </g>
       </svg>}
-      <div className="cloud-whiteout" aria-hidden/>
       <svg ref={cloud} className="arrival-cloud" viewBox="0 0 390 844" preserveAspectRatio="none" style={{opacity:shot==="near"?push*.78:undefined}} aria-hidden>
-        <defs><linearGradient id="cloud-depth" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#e8eeed" stopOpacity=".1"/><stop offset=".5" stopColor="#edf1ef" stopOpacity=".98"/><stop offset="1" stopColor="#e7eeec" stopOpacity=".4"/></linearGradient><filter id="cloud-edge" x="-30%" y="-20%" width="160%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".009 .014" numOctaves="2" seed="8" result="mist"/><feDisplacementMap in="SourceGraphic" in2="mist" scale="65"/><feGaussianBlur stdDeviation="8"/></filter></defs>
-        <defs><filter id="fog-density" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".006 .008" numOctaves="2" seed="4"/><feColorMatrix type="matrix" values=".26 0 0 0 .71 .26 0 0 0 .75 .26 0 0 0 .74 0 0 0 0 1"/><feGaussianBlur stdDeviation="3"/></filter></defs>
-        <g filter="url(#cloud-edge)">{[0,1,2].map(i=><path key={i} className={"cloud-bank cloud-bank-"+i} d={`M-250 ${-120+i*170} Q50 ${-210+i*130} 450 ${-80+i*170} T800 ${-120+i*170} V${820+i*180} H-250Z`} fill="url(#cloud-depth)"/>)}</g>
-        <rect className="cloud-density" x="-100" y="-180" width="600" height="1250" filter="url(#fog-density)" opacity=".8"/>
+        <defs>
+          <radialGradient id="cloud-soft"><stop stopColor="#eef0e9" stopOpacity=".86"/><stop offset=".4" stopColor="#d9e2df" stopOpacity=".68"/><stop offset="1" stopColor="#b3c7c8" stopOpacity="0"/></radialGradient>
+          <radialGradient id="cloud-shadow"><stop stopColor="#93b1b7" stopOpacity=".3"/><stop offset="1" stopColor="#a2bab9" stopOpacity="0"/></radialGradient>
+        </defs>
+        {[0,1,2,3].map(i=><g key={i} className={"cloud-bank cloud-bank-"+i}>
+          <ellipse cx={i%2?330:60} cy={180+i*170} rx="410" ry="240" fill="url(#cloud-soft)"/>
+          <ellipse cx={i%2?20:360} cy={260+i*170} rx="290" ry="180" fill="url(#cloud-shadow)"/>
+        </g>)}
       </svg>
+      {(shot==="summit"||shot==="caption")&&<img className="summit-pine" src={asset("assets/directors-cut/forest-foreground.webp")} alt="" aria-hidden/>}
+
     </div>
     {shot==="near"&&<p className="cloud-invitation">再往前，是云。<br/><small>向上轻推，走进去</small></p>}
     {shot==="caption"&&<div className="arrival-caption"><h1>从徽州人间，<br/>走到黄山云端。</h1>{settled&&<p>DAY 4 · 玉屏 · 迎客松 · 北海<br/>DAY 5 · 黄山冬日 · 日出可选</p>}</div>}

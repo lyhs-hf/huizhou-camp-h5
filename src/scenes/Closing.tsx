@@ -5,6 +5,7 @@ import { results } from "../content/results";
 import { valueCopy } from "../content/copy";
 import { renderCard } from "../utils/saveCard";
 import { track } from "../analytics";
+const closingPlaces = ["黄山集合", "徽州古城 · 胡开文 · 唐模", "南屏 · 宏村", "短尾猴观察 · 玉屏 · 北海", "黄山北海", "山顶结营 · 返程"];
 export function Closing({ onLead }: { onLead: () => void }) {
   const { state, dispatch } = useJourney();
   const expectation = state.expectation ?? "family";
@@ -61,14 +62,13 @@ export function Closing({ onLead }: { onLead: () => void }) {
       </div>
       <section className="full-route" aria-label="六日完整路线">
         <div className="route-landscape" />
-        <div className="eyebrow">六日 · 山水行旅图</div>
+        <div className="eyebrow">六日行旅回顾</div>
         {route.map((day) => (
           <article className="route-day" key={day.day}>
             <div className="day-number">D{day.day}</div>
             <div>
-              <h2>{day.title}</h2>
-              <p>{day.places.join(" · ")}</p>
-              <small>{day.subtitle}</small>
+              <h2>{closingPlaces[day.day-1]}</h2>
+              <p>{day.subtitle}</p>
             </div>
             {(day.day === 2
               ? ["灯", "墨"]

@@ -30,3 +30,19 @@ test('separate gestures retain covered material but never fill the untraced gap'
   assert.equal(covered.has(10), false);
   assert.equal(covered.size, 10);
 });
+
+import { traceRelief } from '../src/utils/reliefTrace.mjs';
+test('relief gold follows only the physical trajectory and retains gaps after cancellation',()=>{
+  const branches=[0,40,80].map(y=>Array.from({length:101},(_,x)=>({x,y})));
+  const coverage=[new Set(),new Set(),new Set()];
+  assert.deepEqual(coverage.map(s=>s.size),[0,0,0]);
+  traceRelief(branches,{x:10,y:0},{x:25,y:0},coverage);
+  assert.ok(coverage[0].size>0&&coverage[0].size<40);
+  assert.deepEqual(coverage.slice(1).map(s=>s.size),[0,0]);
+  const first=[...coverage[0]];
+  traceRelief(branches,{x:-30,y:-40},{x:-30,y:140},coverage);
+  assert.deepEqual([...coverage[0]],first);
+  traceRelief(branches,{x:80,y:0},{x:90,y:0},coverage);
+  assert.equal(coverage[0].has(50),false);
+  assert.deepEqual(coverage.slice(1).map(s=>s.size),[0,0]);
+});

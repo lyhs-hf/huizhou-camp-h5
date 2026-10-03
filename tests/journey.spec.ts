@@ -8,6 +8,7 @@ async function scene(page: Page, id: number) {
   await expect(page.locator("main")).toHaveAttribute("data-scene", String(id));
   await expect(page.getByTestId("film-transition")).toHaveCount(0);
   await page.waitForTimeout(560);
+  if([4,7,9].includes(id)&&await page.getByRole("button",{name:"关闭背景音乐"}).count())await expect(page.getByTestId("journey-bgm")).toHaveAttribute("data-state",id===4?"b":id===7?"c":"d");
 }
 async function next(page: Page, id: number) {
   if (id === 10 && await page.getByRole("button", { name: "把这一小时，留给自己" }).count()) await motherMoment(page, "tea");
@@ -99,6 +100,7 @@ async function completeCore(page: Page, id: number) {
     await drag(page, '[data-testid="paper"]', '[data-testid="lantern-target"]');
     const b = (await page.getByTestId("paint").boundingBox())!;
     await page.mouse.move(b.x + 25, b.y + b.height / 2); await page.mouse.down(); await page.mouse.move(b.x + b.width - 25, b.y + b.height / 2, { steps: 25 }); await page.mouse.up();
+    await page.getByRole("button",{name:"收好这一笔颜色"}).click();
     const l = (await page.getByRole("button", { name: "长按600毫秒点亮鱼灯" }).boundingBox())!;
     await page.mouse.move(l.x + l.width / 2, l.y + l.height / 2); await page.mouse.down(); await page.waitForTimeout(710); await page.mouse.up();
   } else if (id === 5) {
@@ -106,6 +108,7 @@ async function completeCore(page: Page, id: number) {
     await page.mouse.move(b.x+b.width/2,b.y+b.height/2);await page.mouse.down();
     await page.mouse.move(b.x+b.width/2+55,b.y+b.height/2,{steps:15});await page.mouse.up();
     for(let i=0;i<3;i++)await trace(page,page.locator('.trace-guide').nth(i));
+    await page.getByRole('button',{name:'收笔，看看刚留下的金纹'}).click();
   } else if (id === 6) {
     await drag(page, '[data-testid="rice-dough"]', '[data-testid="mould-target"]');
     await expect(page.getByTestId("mallet")).toBeVisible();
@@ -117,6 +120,7 @@ async function completeCore(page: Page, id: number) {
     await page.getByRole("button", { name: "把这一席年留在心里" }).click();
   } else {
     await findMacaque(page);await notice(page,'body');await notice(page,'rock');
+    await page.getByRole('button',{name:/记下这一眼/}).click();
     await page.getByRole('button',{name:'收起这页札记'}).click();
   }
   await expect(page.locator(".continue, .scene-departure")).toBeVisible();
@@ -196,6 +200,9 @@ test("06 鱼灯真实拖动、添色、600ms长按", async ({ page }) => {
   await page.mouse.down();
   await page.mouse.move(b.x + b.width - 35, b.y + b.height / 2, { steps: 25 });
   await page.mouse.up();
+  await expect(page.locator(".lantern-stage")).toHaveClass(/phase-1/);
+  await expect(page.locator("#fish-paint rect")).toHaveCount(1);
+  await page.getByRole("button",{name:"收好这一笔颜色"}).click();
   await expect(
     page.getByRole("button", { name: "长按600毫秒点亮鱼灯" }),
   ).toBeVisible();
@@ -216,15 +223,19 @@ test("06 鱼灯真实拖动、添色、600ms长按", async ({ page }) => {
   await expect(page.locator(".stamp-mark")).toHaveCount(0);
   await expect(page.locator("main")).toHaveAttribute("data-scene", "4");
 });
-test("07 指尖留下局部金纹，成品自动进入静观而非收笔任务",async({page})=>{
+test("07 指尖留下局部金纹，收笔保留真实局部笔迹",async({page})=>{
   await to(page,5);const ink=page.getByTestId('ink-path');await ink.press('Enter');
-  const points=await page.locator('.trace-guide').first().evaluate((p:SVGPathElement)=>{const m=p.getScreenCTM()!,l=p.getTotalLength();return[.03,.15].map(t=>{const q=p.getPointAtLength(l*t),r=new DOMPoint(q.x,q.y).matrixTransform(m);return{x:r.x,y:r.y};});});
+  const points=await page.locator('.trace-guide').first().evaluate((p:SVGPathElement)=>{const m=p.getScreenCTM()!,l=p.getTotalLength();return[.03,.28].map(t=>{const q=p.getPointAtLength(l*t),r=new DOMPoint(q.x,q.y).matrixTransform(m);return{x:r.x,y:r.y};});});
   await page.mouse.move(points[0].x,points[0].y);await page.mouse.down();await page.mouse.move(points[1].x,points[1].y,{steps:8});await page.mouse.up();
-  const count=await page.locator('#ink-leaf-0 circle').count();expect(count).toBeGreaterThan(0);expect(count).toBeLessThan(30);
-  for(let i=0;i<3;i++)await trace(page,page.locator('.trace-guide').nth(i));
+  const count=await page.locator('#ink-leaf-0 circle').count();expect(count).toBeGreaterThan(0);expect(count).toBeLessThan(150);
+  expect(await page.locator("#ink-leaf-1 circle").count()).toBe(0);
+  expect(await page.locator("#ink-leaf-2 circle").count()).toBe(0);
+  await expect(ink).toHaveAttribute('data-phase','trace');
+  await page.getByRole('button',{name:'收笔，看看刚留下的金纹'}).click();
   await expect(ink).toHaveAttribute('data-phase','rest');await expect(page.locator('.scene-departure')).toHaveCount(0);
   await expect(page.locator('.scene-afterword')).toContainText('真正碰过它');
-  for(let i=0;i<3;i++)expect(await page.locator(`#ink-leaf-${i} circle`).count()).toBeGreaterThanOrEqual(30);
+  expect(await page.locator("#ink-leaf-1 circle").count()).toBe(0);
+  expect(await page.locator("#ink-leaf-2 circle").count()).toBe(0);
   await expect(page.locator('.ink-progress')).toHaveCount(0);await expect(page.locator('.stamp-mark')).toHaveCount(0);
   const marks=await page.locator('mask[id^="ink-leaf-"]').evaluateAll(nodes=>nodes.map(n=>Array.from(n.querySelectorAll('circle')).map(c=>[c.getAttribute('cx'),c.getAttribute('cy')])));
   await next(page,6);await page.getByRole('button',{name:'返回上一幕'}).click();await scene(page,5);
@@ -248,6 +259,7 @@ test("徽墨一笔连续跨过全部凸纹，不被隐藏分段中断", async ({
   await page.mouse.move(points[0].x, points[0].y); await page.mouse.down();
   for (const point of points) await page.mouse.move(point.x, point.y);
   await page.mouse.up();
+  await page.getByRole("button", {name:"收笔，看看刚留下的金纹"}).click();
   await expect(ink).toHaveAttribute("data-phase", "rest");
   await expect(page.getByRole("button", { name: "墨香里，走进徽州年" })).toBeVisible();
   await next(page, 6);
@@ -279,34 +291,25 @@ test("徽墨从上端描起、取消再续画，文字长按不夺走手势", as
   await ink.dispatchEvent("pointercancel", { pointerId: 1, bubbles: true }); await page.mouse.up();
   await trace(page, page.locator(".trace-guide").nth(1), 8);
   await trace(page, page.locator(".trace-guide").nth(0), 8);
+  await page.getByRole("button", {name:"收笔，看看刚留下的金纹"}).click();
   await expect(page.getByRole("button", { name: "墨香里，走进徽州年" })).toBeVisible();
   await next(page, 6);
 });
-test("行旅音乐由启程手势播放、静音跨幕保留且刷新不自动播放", async ({ page }) => {
-  const errors:string[]=[];page.on("pageerror",error=>errors.push(error.message));
-  // A frame timestamp may precede an effect started later within that frame.
-  await page.addInitScript(()=>{const frame=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=callback=>frame(time=>callback(time-40));});
-  await open(page);
-  const music = page.getByTestId("journey-bgm");
-  expect(await music.getAttribute("src")).toBeNull();
-  await next(page, 2);
-  const toggle = page.getByRole("button", { name: "关闭背景音乐" });
-  await expect(toggle).toHaveAttribute("data-playing", "true");
-  const before = await music.evaluate((audio: HTMLAudioElement) => ({ time: audio.currentTime, loop: audio.loop, paused: audio.paused, duration: audio.duration }));
-  expect(before.loop).toBe(true); expect(before.paused).toBe(false); expect(before.duration).toBeGreaterThan(90);
-  await expect.poll(() => music.evaluate((audio: HTMLAudioElement) => audio.currentTime)).toBeGreaterThan(1.5);
-  await toggle.click(); await expect(page.getByRole("button", { name: "开启背景音乐" })).toHaveAttribute("data-playing", "false");
-  const pausedTime = await music.evaluate((audio: HTMLAudioElement) => audio.currentTime);
-  await page.getByRole("button", { name: /亲手做过的中国文化/ }).click(); await next(page, 3);
-  expect(await music.evaluate((audio: HTMLAudioElement) => audio.paused)).toBe(true);
-  await page.getByRole("button", { name: "开启背景音乐" }).click();
-  await expect(page.getByRole("button", { name: "关闭背景音乐" })).toHaveAttribute("data-playing", "true");
-  // WebKit's audio device clock can settle by a few milliseconds on resume.
-  expect(Math.abs(await music.evaluate((audio: HTMLAudioElement) => audio.currentTime) - pausedTime)).toBeLessThan(.2);
-  await page.reload(); await scene(page, 1);
-  expect(await music.getAttribute("src")).toBeNull();
-  expect(errors).toEqual([]);
+test("行旅配乐按场景切换、静音保留、后台暂停恢复",async({page})=>{
+  const errors:string[]=[];page.on("pageerror",e=>errors.push(e.message));
+  await open(page);const music=page.getByTestId("journey-bgm");
+  await expect(music).toHaveAttribute("data-contextstate","unstarted");
+  await next(page,2);await expect(music).toHaveAttribute("data-playing","true");
+  await expect(music).toHaveAttribute("data-state","a");
+  for(const key of ['a','b','c','d']) {const response=await page.request.get(`assets/audio/journey-${key}.mp3`);expect(response.ok()).toBe(true);expect((await response.body()).length).toBeGreaterThan(500000);}
+  await page.getByRole("button",{name:"关闭背景音乐"}).click();await expect(music).toHaveAttribute("data-contextstate","suspended");
+  await page.getByRole("button",{name:"开启背景音乐"}).click();await expect(music).toHaveAttribute("data-playing","true");
+  await page.evaluate(()=>window.dispatchEvent(new Event('pagehide')));await expect(music).toHaveAttribute('data-playing','false');
+  await page.evaluate(()=>window.dispatchEvent(new Event('pageshow')));await expect(music).toHaveAttribute('data-playing','true');
+  await page.getByRole("button",{name:/亲手做过的中国文化/}).click();await next(page,3);await next(page,4);await expect(music).toHaveAttribute('data-state','b');
+  await page.reload();await scene(page,1);await expect(music).toHaveAttribute("data-contextstate","unstarted");expect(errors).toEqual([]);
 });
+
 for (const width of [375, 390, 430]) {
   test(`徽墨 ${width}px 普通稀疏拖动可完成，落笔和偏离纹样不会跳过`, async ({ page }) => {
     await page.setViewportSize({ width, height: width === 430 ? 932 : width === 390 ? 844 : 812 });
@@ -324,7 +327,8 @@ for (const width of [375, 390, 430]) {
       await trace(page, page.locator(".trace-guide").nth(i), 8);
       await expect(page.locator(".gold-line").nth(i)).toHaveCSS("opacity", "1");
     }
-    await expect(ink).toHaveAttribute("data-phase", "rest");
+    await page.getByRole("button", {name:"收笔，看看刚留下的金纹"}).click();
+  await expect(ink).toHaveAttribute("data-phase", "rest");
     await expect(page.locator(".scene-departure")).toHaveCount(0);
     await expect(page.locator(".scene-afterword")).toContainText("真正碰过它");
   });
@@ -377,7 +381,7 @@ test("09 移动真实视野发现，只有看过的细节进入札记",async({pa
   await page.mouse.move(b.x+200,b.y+400);await page.mouse.down();await view.dispatchEvent('pointercancel',{pointerId:1,bubbles:true});await page.mouse.up();
   await expect(page.locator('.forest-observation')).toHaveAttribute('data-found','false');
   await findMacaque(page);await page.waitForTimeout(3500);await expect(page.getByTestId('field-notebook')).toHaveCount(0);
-  await notice(page,'body');await expect(page.getByTestId('field-notebook')).toHaveCount(0);await notice(page,'rock');await fixedSceneFit(page);
+  await notice(page,'body');await expect(page.getByTestId('field-notebook')).toHaveCount(0);await notice(page,'rock');await page.waitForTimeout(2000);await expect(page.getByTestId('field-notebook')).toHaveCount(0);await page.getByRole('button',{name:/记下这一眼/}).click();await fixedSceneFit(page);
   await expect(page.getByTestId('field-notebook')).toContainText('前肢收在身前');await expect(page.getByTestId('field-notebook')).toContainText('边缘留着残雪');
   await expect(page.getByTestId('field-notebook')).not.toContainText('松枝伸进了视野');
   await expect(page.getByTestId('field-notebook').getByRole('button')).toHaveCount(1);
@@ -423,12 +427,12 @@ test("12 六日总览可完整查看", async ({ page }) => {
   await to(page, 10);
   await expect(page.locator(".route-day")).toHaveCount(6);
   await page
-    .getByRole("heading", { name: "在云端结束这次旅程" })
+    .getByRole("heading", { name: "山顶结营 · 返程" })
     .scrollIntoViewIfNeeded();
   await expect(
-    page.getByRole("heading", { name: "在云端结束这次旅程" }),
+    page.getByRole("heading", { name: "山顶结营 · 返程" }),
   ).toBeVisible();
-  await expect(page.locator(".full-route")).toContainText("黄梅戏相关文化体验");
+  await expect(page.locator(".full-route")).toContainText("把亲手做的灯，提进夜色");
 });
 test("13 结果PNG生成且达到3倍分辨率", async ({ page }) => {
   await to(page, 10);
@@ -531,8 +535,8 @@ for (const [width, height] of [[375, 812], [390, 844], [430, 932]]) test(`21 red
 });
 test("22 抽屉Esc与焦点恢复", async ({ page }) => {
   await to(page, 4);
-  await page.getByRole("button",{name:"更多体验选项"}).click();
-  const trigger = page.getByRole("button", { name: /这一站，孩子在经历什么/ });
+  await completeCore(page,4);
+  const trigger = page.getByRole("button", { name: /再了解一点/ });
   await trigger.click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.keyboard.press("Escape");
@@ -558,7 +562,7 @@ test("FINAL 帮助入口在无阶段推进约8秒后才出现",async({page})=>{
   await expect(page.getByRole("button",{name:"需要一点帮助？"})).toHaveCount(0); await expect(page.getByRole("button",{name:"更多体验选项"})).toBeVisible();
 });
 test("FINAL 鱼灯夜巷停留和妈妈的可选古戏台片刻",async({page})=>{
-  await to(page,4); await completeCore(page,4); await page.getByRole("button",{name:"同一时间，看看妈妈这一刻"}).click();
+  await to(page,4); await completeCore(page,4); await page.getByRole("button",{name:/妈妈这一刻/}).click();
   await expect(page.getByRole("dialog")).toBeVisible(); await expect(page.locator(".mother-interlude")).toContainText("一曲黄梅戏");
   await page.waitForTimeout(5600); await expect(page.getByRole("dialog")).toBeVisible();
   await page.locator(".mother-leave").click();
@@ -603,6 +607,8 @@ test("FINAL 黄山仅上推一次穿云，取消安全且完整群峰后三秒�
     observer.observe(world, { attributes: true, attributeFilter: ['data-shot'] });
   }));
   await page.mouse.move(b.x+200,b.y+600);await page.mouse.down();await page.mouse.move(b.x+200,b.y+380,{steps:20});await page.mouse.up();
+  await expect(page.locator('.cloud-bank')).toHaveCount(4);
+  await expect(page.locator('.arrival-cloud filter,.cloud-whiteout')).toHaveCount(0);
   const quiet = await quietAudit;
   expect(quiet.milliseconds).toBeGreaterThanOrEqual(3000);
   expect(quiet.interruptions).toEqual([]);
@@ -612,6 +618,8 @@ test("FINAL 黄山仅上推一次穿云，取消安全且完整群峰后三秒�
 for (const choice of ["tea", "incense", "view"] as const) test(`FINAL ${choice}完成后由用户决定离开`, async ({page}) => {
   await to(page,9);
   await page.getByRole("button",{name:"把这一小时，留给自己"}).click();
+  await expect(page.locator('.mother-slips button svg')).toHaveCount(3);
+  expect(await page.locator('.mother-slips').innerText()).not.toMatch(/[↗➡👉]/u);
   await page.getByRole("button",{name:choice==="tea"?"点茶":choice==="incense"?"篆香":"什么都不做，只看山",exact:true}).click();
   await expect(page.getByTestId("film-transition")).toHaveCount(0);
   const ritual = page.getByTestId("mother-ritual");
@@ -632,16 +640,19 @@ for (const choice of ["tea", "incense", "view"] as const) test(`FINAL ${choice}�
 test("FINAL 全键盘手作与自定义焦点",async({page})=>{
   await to(page,4); await page.getByTestId("paper").press("Enter");
   for(let i=0;i<3;i++) await page.getByTestId("paint").press("Enter");
+  await page.getByRole("button",{name:"收好这一笔颜色"}).click();
   await page.getByRole("button",{name:"长按600毫秒点亮鱼灯"}).press("Enter");
   await expect(page.locator(".scene-departure")).toBeVisible();
-  await page.getByRole("button",{name:"同一时间，看看妈妈这一刻"}).click();
+  await page.getByRole("button",{name:/妈妈这一刻/}).click();
   await expect(page.getByRole("dialog")).toBeVisible();await page.locator(".mother-leave").click();
   await next(page,5); const ink=page.getByTestId("ink-path");
   await ink.focus(); await page.keyboard.press("Tab"); await page.keyboard.press("Shift+Tab");
   await expect(ink).toHaveCSS("outline-style","none");
   await expect(page.locator(".ink-object")).toHaveCSS("background-color","rgba(0, 0, 0, 0)");
   expect(await page.locator(".ink-object").evaluate(el => getComputedStyle(el,"::after").backgroundColor)).toBe("rgb(94, 89, 81)");
-  await ink.press("Enter"); for(let i=0;i<3;i++) await ink.press("Enter"); await ink.press("Enter");
+  await ink.press("Enter");
+  for(let i=0;i<8;i++)await ink.press("ArrowDown");
+  await page.getByRole("button",{name:"收笔，看看刚留下的金纹"}).press("Enter");
   await expect(page.locator(".scene-afterword")).toContainText("真正碰过它");
   await next(page,6);await page.getByTestId('rice-dough').press('Enter');await expect(page.getByTestId('mallet')).toBeVisible();
   for(let i=0;i<3;i++){await page.getByTestId('mallet').press('Enter');await page.waitForTimeout(400);}
@@ -651,6 +662,7 @@ test("FINAL 全键盘手作与自定义焦点",async({page})=>{
   await next(page,7);const forest=page.getByTestId('forest-view');for(let i=0;i<8 && await page.locator('.forest-observation').getAttribute('data-found')==='false';i++){await forest.press('ArrowRight');await page.waitForTimeout(100);}
   await expect(page.locator('.forest-observation')).toHaveAttribute('data-found','true');await page.waitForTimeout(1300);
   for(let i=0;i<4 && await page.getByTestId('field-notebook').count()===0;i++){await forest.press('ArrowDown');await page.waitForTimeout(120);}
+  await page.getByRole('button',{name:/记下这一眼/}).press('Enter');
   await page.getByRole('button',{name:'收起这页札记'}).click();await next(page,8);await page.getByTestId('cloud-camera').press('ArrowUp');await expect(page.locator('.arrival-settled')).toBeVisible();
 
 });
@@ -718,6 +730,7 @@ test("FINAL 鱼灯取消操作保留材料且松手不误点亮", async ({ page 
   await expect(paint).toBeVisible();
   await page.mouse.move(p.x+40,p.y+p.height/2); await page.mouse.down();
   await page.mouse.move(p.x+p.width-30,p.y+p.height/2); await page.mouse.up();
+  await page.getByRole("button",{name:"收好这一笔颜色"}).click();
   const light = page.getByRole("button", { name: "长按600毫秒点亮鱼灯" });
   await light.click(); await page.waitForTimeout(800);
   await expect(light).toBeVisible();
@@ -732,7 +745,7 @@ test("FINAL 实际触控拖纸、添色、取消长按与点亮", async ({ page,
   await to(page, 4);
   if (browserName === "webkit") {
     await completeCore(page, 4);
-    await page.getByRole("button", { name: "同一时间，看看妈妈这一刻" }).tap();
+    await page.getByRole("button", { name:/妈妈这一刻/ }).tap();
     await expect(page.getByRole("dialog")).toBeVisible();
     return;
   }
@@ -747,12 +760,13 @@ test("FINAL 实际触控拖纸、添色、取消长按与点亮", async ({ page,
   const p = (await page.getByTestId("paint").boundingBox())!;
   await touch("touchStart",p.x+30,p.y+p.height/2);
   await touch("touchMove",p.x+p.width-30,p.y+p.height/2); await touch("touchEnd");
+  await page.getByRole("button",{name:"收好这一笔颜色"}).tap();
   const light = page.getByRole("button", { name: "长按600毫秒点亮鱼灯" }), l = (await light.boundingBox())!;
   await touch("touchStart",l.x+l.width/2,l.y+l.height/2); await touch("touchCancel");
   await page.waitForTimeout(750); await expect(light).toBeVisible();
   await touch("touchStart",l.x+l.width/2,l.y+l.height/2); await page.waitForTimeout(700); await touch("touchEnd");
   await expect(page.locator(".scene-departure")).toBeVisible();
-  await page.getByRole("button",{name:"同一时间，看看妈妈这一刻"}).tap();
+  await page.getByRole("button",{name:/妈妈这一刻/}).tap();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.locator(".mother-leave").tap(); await expect(page.locator(".continue, .scene-departure")).toBeVisible();
   expect(errors).toEqual([]); await input.detach();

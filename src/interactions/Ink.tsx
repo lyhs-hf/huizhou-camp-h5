@@ -2,7 +2,7 @@ import { asset } from "../utils/asset";
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from "react";
 import { useInteraction } from "../hooks/useInteraction";
 import { useJourney } from "../app/JourneyContext";
-import { coverStroke } from "../utils/strokeCoverage.mjs";
+import { traceRelief } from "../utils/reliefTrace.mjs";
 import { Stage, StationHeader, StationFinish, StationTools } from "../components/Station";
 const segments = [
   "M315 1008 C324 970 344 939 374 923 C395 915 418 904 440 885 C475 867 503 847 490 818 L455 788",
@@ -18,38 +18,35 @@ export function Ink({ onInfo }: { onInfo: () => void }) {
   const [covered, setCovered] = useState<number[][]>(action.done ? state.inkGold : [[],[],[]]);
   const paths = useRef<(SVGPathElement | null)[]>([]);
   const [materialPoints,setMaterialPoints]=useState<{x:number;y:number}[][]>([]);
-  useLayoutEffect(()=>{setMaterialPoints(paths.current.map(path=>path?Array.from({length:40},(_,i)=>{const p=path.getPointAtLength(path.getTotalLength()*i/39);return{x:p.x,y:p.y};}):[]));},[]);
+  useLayoutEffect(()=>{setMaterialPoints(paths.current.map(path=>path?Array.from({length:Math.ceil(path.getTotalLength())+1},(_,i)=>{const p=path.getPointAtLength(i);return{x:p.x,y:p.y};}):[]));},[]);
   const bins = useRef(state.inkGold.map(branch => new Set(branch)));
+  const keyboardTip=useRef(0);
   const previous = useRef<{x:number;y:number}|null>(null);
   const hand = useRef<{x:number;last:number;distance:number}|null>(null);
   const complete = action.complete;
   useEffect(()=>{if(phase!=="rest")return;dispatch({type:"inkGold",value:covered});const timer=setTimeout(()=>{setPhase("done");complete();},2600);return()=>clearTimeout(timer);},[phase,complete,covered,dispatch]);
-  function revealMaterial() {
-    setCovered(bins.current.map(branch => [...branch]));
-    if (bins.current.every(branch => branch.size >= 30)) {
-      setAngle(0); setPhase("rest"); hand.current=null; previous.current=null; action.unlock();
-    }
-  }
+  function revealMaterial() { setCovered(bins.current.map(branch => [...branch])); }
   function move(e:PointerEvent) {
     if(!hand.current)return;
     hand.current.distance+=Math.abs(e.clientX-hand.current.last);hand.current.last=e.clientX;
     if(phase==="discover"){setAngle(Math.max(-5,Math.min(5,(e.clientX-hand.current.x)/10)));return;}
     if(phase!=="trace")return;
     const matrix=paths.current[0]?.getScreenCTM();if(!matrix)return;
-    const p=new DOMPoint(e.clientX,e.clientY).matrixTransform(matrix.inverse());
-    // All relief belongs to one object. Crossing a branch must never release
-    // the hand or require an invisible ordering / a new pointerdown.
-    const radius = Math.max(26, 16 / Math.hypot(matrix.a, matrix.b));
-    materialPoints.forEach((samples, i) => coverStroke(samples, previous.current??p, p, radius, bins.current[i]));
-    previous.current=p; revealMaterial();
+    const events=e.nativeEvent.getCoalescedEvents?.() ?? [];
+    for(const event of events.length?events:[e]) {
+      const p=new DOMPoint(event.clientX,event.clientY).matrixTransform(matrix.inverse());
+      // The tool touches only a narrow strip of the relief. A sparse event is
+      // a real line segment, never a branch-completion or distant flood fill.
+      traceRelief(materialPoints,previous.current??p,p,bins.current);
+      previous.current={x:p.x,y:p.y};
+    }
+    revealMaterial();
   }
+  function finish(){cancel();setAngle(0);setPhase("rest");}
   function cancel(){hand.current=null;previous.current=null;action.unlock();}
   function release(){if(hand.current&&phase==="discover"&&hand.current.distance>=45){setAngle(0);setPhase("trace");}cancel();}
-  function assist(){if(phase==="discover"){setAngle(0);setPhase("trace");}else if(phase==="trace"){
-    const branch=bins.current.findIndex(b=>b.size<30);
-    if(branch>=0)bins.current[branch]=new Set(Array.from({length:40},(_,n)=>n));
-    revealMaterial();
-  }action.unlock();}
+  function assist(){if(phase==="discover"){setAngle(0);setPhase("trace");}action.unlock();}
+  const participated=covered.reduce((sum,branch)=>sum+branch.length,0)>=60;
   const quiet=phase==="rest";
   return <>
     <StationHeader id="ink" quiet={quiet} introduce={phase==="discover"}/>
@@ -60,17 +57,18 @@ export function Ink({ onInfo }: { onInfo: () => void }) {
           onPointerDown={e=>{if(quiet||action.done||hand.current||!e.isPrimary)return;e.preventDefault();action.start();previous.current=null;hand.current={x:e.clientX,last:e.clientX,distance:0};e.currentTarget.setPointerCapture(e.pointerId);move(e);}}
           onPointerMove={move} onPointerUp={e=>{move(e);release();}} onPointerCancel={()=>{hand.current=null;previous.current=null;action.unlock();}}
           onLostPointerCapture={cancel}
-          onKeyDown={e=>{if(phase==="discover"&&["ArrowLeft","ArrowRight"].includes(e.key)){e.preventDefault();setAngle(e.key==="ArrowLeft"?-5:5);}if(e.key==="Enter"&&!quiet&&!action.done){e.preventDefault();assist();}}}>
+          onKeyDown={e=>{if(phase==="trace"&&["ArrowDown","ArrowUp"].includes(e.key)){e.preventDefault();const samples=materialPoints[0];if(samples?.length){const before=keyboardTip.current;keyboardTip.current=Math.max(0,Math.min(samples.length-1,before+(e.key==="ArrowDown"?16:-16)));traceRelief(materialPoints,samples[before],samples[keyboardTip.current],bins.current);revealMaterial();}}if(phase==="discover"&&["ArrowLeft","ArrowRight"].includes(e.key)){e.preventDefault();setAngle(e.key==="ArrowLeft"?-5:5);}if(e.key==="Enter"&&!quiet&&!action.done){e.preventDefault();assist();}}}>
           <defs><linearGradient id="ink-metal" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#8f7142"/><stop offset=".35" stopColor="#d8be7e"/><stop offset=".62" stopColor="#b7985c"/><stop offset="1" stopColor="#ddca95"/></linearGradient>
-            {segments.map((_,i)=><mask key={i} id={"ink-leaf-"+i}><rect width="780" height="1170" fill="black"/>{covered[i].map(n=>{const p=materialPoints[i]?.[n];return p && <circle key={n} cx={p.x} cy={p.y} r="8" fill="white"/>;})}</mask>)}
+            {segments.map((_,i)=><mask key={i} id={"ink-leaf-"+i}><rect width="780" height="1170" fill="black"/>{covered[i].map(n=>{const p=materialPoints[i]?.[n];return p && <circle key={n} cx={p.x} cy={p.y} r="1.8" fill="white"/>;})}</mask>)}
           </defs>
-          {segments.map((d,i)=><g key={d}><path ref={el=>{paths.current[i]=el;}} d={d} className="trace-guide" data-segment={i} style={{opacity:phase==="trace"&&covered[i].length<30?1:0}}/><path d={d} className="gold-line" mask={`url(#ink-leaf-${i})`} style={{opacity:phase==="discover"?0:1,stroke:"url(#ink-metal)"}}/></g>)}
+          {segments.map((d,i)=><g key={d}><path ref={el=>{paths.current[i]=el;}} d={d} className="trace-guide" data-segment={i} style={{opacity:phase==="trace"?.35:0}}/><path d={d} className="gold-line" mask={`url(#ink-leaf-${i})`} style={{opacity:phase==="discover"?0:1,stroke:"url(#ink-metal)"}}/></g>)}
         </svg>
         <div className={"ink-side-light "+(quiet?"sweeping":"")} style={{maskImage:`url(${asset("assets/ink/ink.webp")})`,maskSize:"contain",maskRepeat:"no-repeat",maskPosition:"center",opacity:quiet?undefined:Math.abs(angle)/12,transform:quiet?undefined:`translateX(${angle*7}%)`}}/>
       </div>
       {!quiet&&!action.done&&<div className="stage-hint">{phase==="discover"?"轻轻转动，侧光会找到纹样":"顺着亮起的凸纹描金，可以抬手接着描"}</div>}
     </Stage>
-    {action.done&&<StationFinish id="ink"/>}
-    <StationTools done={action.done} quiet={quiet} progressKey={phase+covered.map(b=>b.length).join(",")} onInfo={onInfo} onRetry={()=>{action.retry();setPhase("discover");setAngle(0);bins.current=[new Set(),new Set(),new Set()];previous.current=null;hand.current=null;setCovered([[],[],[]]);}} onAssist={assist} assistLabel={phase==="discover"?"让侧光显出凸纹":"帮助留下这一枝金纹"}/>
+    {phase==="trace"&&participated&&<button className="material-finish" onClick={finish}>收笔，看看刚留下的金纹</button>}
+    {action.done&&<StationFinish id="ink" onInfo={onInfo}/>}
+    <StationTools done={action.done} quiet={quiet} progressKey={phase+covered.map(b=>b.length).join(",")} onInfo={onInfo} onRetry={()=>{action.retry();setPhase("discover");setAngle(0);bins.current=[new Set(),new Set(),new Set()];previous.current=null;hand.current=null;setCovered([[],[],[]]);}} onAssist={assist} assistLabel={phase==="discover"?"让侧光显出凸纹":"沿松枝的亮边慢慢描，可抬手再继续"}/>
   </>;
 }

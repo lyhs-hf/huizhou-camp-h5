@@ -2,7 +2,7 @@ import { asset } from "../utils/asset";
 import { useCallback, useEffect, useRef, useState, type PointerEvent } from "react";
 import { useInteraction } from "../hooks/useInteraction";
 import { useJourney } from "../app/JourneyContext";
-import { StationTools } from "../components/Station";
+import { ChildValue, StationTools } from "../components/Station";
 const details = [
   { id: "body", x: 70, y: 54, w: 11, h: 22, fact: "它坐着，前肢收在身前。" },
   { id: "rock", x: 70, y: 72, w: 17, h: 12, fact: "它脚下是岩石，边缘留着残雪。" },
@@ -75,10 +75,7 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
     setGaze({ x: Math.max(.08, Math.min(.92, (e.clientX - box.left) / box.width)), y: Math.max(.12, Math.min(.88, (e.clientY - box.top) / box.height)) });
     observe(e.clientX, e.clientY, g.distance);
   }
-  function end(cancelled = false) {
-    gesture.current = null; setLooking(false); action.unlock();
-    if (!cancelled && visited.current.has("body") && visited.current.size >= 2) setNotebook(true);
-  }
+  function end() { gesture.current = null; setLooking(false); action.unlock(); }
   function save() {
     const facts = details.filter(d => visited.current.has(d.id)).map(d => d.fact).join(" ");
     dispatch({ type: "observation", discovery: facts, question: question.trim() });
@@ -87,13 +84,13 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
   return <div className={"forest-observation" + (found ? " discovered" : "") + (looking ? " looking" : "")} data-interaction data-found={found} data-seen={seen.join(",")}>
     <h1 className="sr-only">进入山林，发现一只短尾猴</h1>
     <div ref={viewport} className="forest-viewport" role="group" aria-label="移动山林视野，近看身体与岩石" tabIndex={0} data-testid="forest-view"
-      onPointerDown={down} onPointerMove={move} onPointerUp={e => { move(e); end(); }} onPointerCancel={() => end(true)} onLostPointerCapture={()=>{if(gesture.current)end(true);}}
+      onPointerDown={down} onPointerMove={move} onPointerUp={e => { move(e); end(); }} onPointerCancel={() => end()} onLostPointerCapture={()=>{if(gesture.current)end();}}
       onKeyDown={e => { if (!notebook && !action.done && e.key.startsWith("Arrow")) {
         e.preventDefault();
         const dx=e.key==="ArrowRight"?.07:e.key==="ArrowLeft"?-.07:0,dy=e.key==="ArrowDown"?.08:e.key==="ArrowUp"?-.08:0;
         const look=found?{x:Math.max(.1,Math.min(.9,gaze.x+dx)),y:Math.max(.15,Math.min(.85,gaze.y+dy))}:{x:.5,y:.5};
         setGaze(look); if(!found)positionCamera({x:Math.max(.14,Math.min(.86,cameraPosition.current.x+dx)),y:Math.max(.4,Math.min(.6,cameraPosition.current.y+dy))});
-        requestAnimationFrame(()=>{if(!viewport.current)return;const b=viewport.current.getBoundingClientRect();observe(b.x+b.width*look.x,b.y+b.height*look.y,30);if(visited.current.has("body")&&visited.current.size>=2)setNotebook(true);});
+        requestAnimationFrame(()=>{if(!viewport.current)return;const b=viewport.current.getBoundingClientRect();observe(b.x+b.width*look.x,b.y+b.height*look.y,30);});
       } }}>
       <div ref={world} className="forest-world" style={{ transform: `translate(${-camera.x * 100}%,${-camera.y * 100}%)` }}>
         <img src={asset("assets/directors-cut/forest-observation.webp")} alt="冬季松林里，一只短尾猴坐在带残雪的岩石上" draggable={false}/>
@@ -105,8 +102,9 @@ export function Macaque({ onInfo }: { onInfo: () => void }) {
     </div>
     {!found && <p className="forest-invitation">松枝后，好像有一个身影。<br/><small>轻移视野，往林子里看一看</small></p>}
     {found && !notebook && !action.done && <p className="forest-caption" role="status">{caption || "轻移目光，看看它的身体与脚下。"}</p>}
+    {found&&!notebook&&!action.done&&seen.length>=2&&<button className="field-record" onClick={()=>setNotebook(true)}>记下这一眼 <svg viewBox="0 0 24 12" aria-hidden><path d="M1 6H22M17 1L22 6L17 11"/></svg></button>}
     {notebook && <div className="observation-page" role="dialog" aria-modal="false" aria-label="自然观察札记" data-testid="field-notebook"><span>山林 · 一页观察札记</span><h2 ref={noteTitle} tabIndex={-1}>刚才，我留意到</h2>{details.filter(d=>seen.includes(d.id)).map(d=><p key={d.id}>{d.fact}</p>)}<label>还有一个问题<input maxLength={100} value={question} onChange={e=>setQuestion(e.target.value)} placeholder="我还想知道……（可选）"/></label><button onClick={save}>收起这页札记<span aria-hidden> →</span></button></div>}
-    {action.done && <p className="forest-conclusion">观察，不只是多看一会儿。<br/>是知道自己在找什么。</p>}
+    {action.done && <div className="forest-conclusion"><p>观察，不只是多看一会儿。<br/>是知道自己在找什么。</p><ChildValue id="macaque" onInfo={onInfo}/></div>}
     <StationTools done={action.done} quiet={notebook} progressKey={seen.join(",")+found} onInfo={onInfo} onRetry={()=>{action.retry();setFound(false);discovered.current=false;visited.current.clear();setSeen([]);positionCamera({x:.32,y:.5});setCaption("");}}
       onAssist={()=>{setCaption(found?"让目光从它的前肢，移到脚下的岩石。":"往右边的岩石看一看。向左轻移视野。");}} assistLabel="给我一点观察提示"/>
   </div>;
