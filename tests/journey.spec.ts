@@ -762,7 +762,16 @@ test("FINAL 实际触控拖纸、添色、取消长按与点亮", async ({ page,
   const p = (await page.getByTestId("paint").boundingBox())!;
   await touch("touchStart",p.x+30,p.y+p.height/2);
   await touch("touchMove",p.x+p.width-30,p.y+p.height/2); await touch("touchEnd");
-  await page.getByRole("button",{name:"收好这一笔颜色"}).tap();
+  const finish=page.getByRole("button",{name:"收好这一笔颜色"}), f=(await finish.boundingBox())!;
+  const fx=f.x+f.width/2,fy=f.y+f.height/2;
+  // The same real touch stream controls the brush and its explicit finish.
+  // Cancelling or swiping the finish must retain the existing painted material.
+  await touch("touchStart",fx,fy);await touch("touchCancel");
+  await expect(page.locator(".lantern-stage")).toHaveClass(/phase-1/);
+  await touch("touchStart",fx,fy);await touch("touchMove",fx+30,fy);await touch("touchEnd");
+  await expect(page.locator(".lantern-stage")).toHaveClass(/phase-1/);
+  await touch("touchStart",fx,fy);await touch("touchEnd");
+  await expect(page.locator(".lantern-stage")).toHaveClass(/phase-2/);
   const light = page.getByRole("button", { name: "长按600毫秒点亮鱼灯" }), l = (await light.boundingBox())!;
   await touch("touchStart",l.x+l.width/2,l.y+l.height/2); await touch("touchCancel");
   await page.waitForTimeout(750); await expect(light).toBeVisible();

@@ -31,6 +31,8 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
   const target = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prev = useRef<{x:number;y:number} | null>(null);
+  const finishTouch = useRef<{id:number;x:number;y:number} | null>(null);
+  const suppressFinishClick = useRef(false);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
@@ -169,7 +171,12 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
             <span>灯纸</span>
           </button>
         )}
-        {phase===1&&color>.3&&<button className="material-finish lantern-brush-finish" onClick={putBrushDown}>收好这一笔颜色</button>}
+        {phase===1&&color>.3&&<button className="material-finish lantern-brush-finish"
+          onPointerDown={e=>{suppressFinishClick.current=e.pointerType==="touch";if(e.pointerType!=="touch"||!e.isPrimary)return;e.preventDefault();finishTouch.current={id:e.pointerId,x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);}}
+          onPointerUp={e=>{const start=finishTouch.current;if(!start||start.id!==e.pointerId)return;e.preventDefault();finishTouch.current=null;if(Math.hypot(e.clientX-start.x,e.clientY-start.y)<=12)putBrushDown();}}
+          onPointerCancel={()=>{finishTouch.current=null;}}
+          onLostPointerCapture={()=>{finishTouch.current=null;}}
+          onClick={e=>{if(e.detail===0||!suppressFinishClick.current)putBrushDown();suppressFinishClick.current=false;}}>收好这一笔颜色</button>}
         {phase === 2 && (
           <button
             className={"light-button " + (holding ? "holding" : "")}
