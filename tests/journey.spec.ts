@@ -706,7 +706,9 @@ for (const [width, height] of [[375, 812], [390, 844], [430, 932]]) {
     }
     await page.mouse.up();
     await expect(surface).toHaveAttribute("aria-disabled", "true");
-    await expect(page.locator(".quiet-smoke")).toBeVisible();
+    await expect(page.locator(".quiet-smoke")).toHaveCount(2);
+    await expect(page.locator(".quiet-smoke").first()).toBeVisible();
+    await expect(page.locator(".quiet-smoke").last()).toBeVisible();
     await expect(page.getByRole("button", { name: "收好这一小时" })).toHaveCount(0);
     await page.getByRole("button", { name: "收好这一小时" }).click();
     await expect(page.locator(".rejoining")).toBeVisible();
