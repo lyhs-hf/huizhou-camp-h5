@@ -21,7 +21,7 @@
 
 ## Production v1.0.0 · 2026-10-03
 
-正式生产候选；最终标签 `v1.0.0` 仅在 CI、Pages 和公开验收通过后创建。历史标签保持原位。
+正式生产发布并冻结。Commit：`90dc3c6be34cb5ea4ae6913bb554e67d9c8ecdbb`；annotated Tag：[v1.0.0](https://github.com/lyhs-hf/huizhou-camp-h5/tree/v1.0.0)。[CI / Pages](https://github.com/lyhs-hf/huizhou-camp-h5/actions/runs/37092566754) 全量 116/116 PASS；公开双浏览器专项 6/6、390×844 完整真实指针路线 / PNG / 演示留资 PASS，54 个文件与本地一致。历史标签保持原位。
 
 - 描金按连续真实指迹局部留金，抬手续描，主动收笔，未描位置保持黑色。
 - 鱼灯以真实笔迹遮罩局部吸色，有效触控抬手主动收笔，取消 / 滑动不误触；自然沉色，点亮保留实际颜色。
