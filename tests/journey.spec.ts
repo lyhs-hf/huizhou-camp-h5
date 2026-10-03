@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Locator } from "@playwright/test";
+import sharp from "sharp";
 const labels = {
   culture: "亲手做过的中国文化",
   curiosity: "自己发现世界的好奇心",
@@ -194,6 +195,9 @@ test("06 鱼灯真实拖动、添色、600ms长按", async ({ page }) => {
   await to(page, 4);
   await drag(page, '[data-testid="paper"]', '[data-testid="lantern-target"]');
   const paint = page.getByTestId("paint");
+  await expect(page.getByTestId("painted-paper")).toHaveCount(0);
+  await expect(page.locator("#fish-paint path")).toHaveCount(0);
+  await expect(page.getByRole("button",{name:"收好这一笔颜色"})).toHaveCount(0);
   const b = await paint.boundingBox();
   if (!b) throw Error("No paint");
   await page.mouse.move(b.x + 35, b.y + b.height / 2);
@@ -201,7 +205,8 @@ test("06 鱼灯真实拖动、添色、600ms长按", async ({ page }) => {
   await page.mouse.move(b.x + b.width - 35, b.y + b.height / 2, { steps: 25 });
   await page.mouse.up();
   await expect(page.locator(".lantern-stage")).toHaveClass(/phase-1/);
-  await expect(page.locator("#fish-paint rect")).toHaveCount(1);
+  await expect(page.locator("#fish-paint rect")).toHaveCount(0);
+  await expect(page.getByTestId("painted-paper")).toHaveCount(1);
   await page.getByRole("button",{name:"收好这一笔颜色"}).click();
   await expect(
     page.getByRole("button", { name: "长按600毫秒点亮鱼灯" }),
@@ -222,6 +227,34 @@ test("06 鱼灯真实拖动、添色、600ms长按", async ({ page }) => {
   await expect(page.locator(".scene-afterword")).toContainText("徽州的夜");
   await expect(page.locator(".stamp-mark")).toHaveCount(0);
   await expect(page.locator("main")).toHaveAttribute("data-scene", "4");
+});
+test("鱼灯覆纸不提前显色，真实横划只改变笔迹内的像素", async ({ page }) => {
+  await to(page,4);
+  await drag(page,'[data-testid="paper"]','[data-testid="lantern-target"]');
+  await expect(page.getByTestId('paint')).toBeVisible();
+  await page.waitForTimeout(900); // Allow the actual paper-cover motion to settle.
+  await expect(page.getByTestId('painted-paper')).toHaveCount(0);
+  await expect(page.locator('#fish-paint path,#fish-paint rect')).toHaveCount(0);
+  const fish=page.locator('.fish-material');
+  const before=await sharp(await fish.screenshot()).removeAlpha().raw().toBuffer({resolveWithObject:true});
+  const pixel=(frame:typeof before,x:number,y:number)=>{
+    const i=(Math.floor(y/390*frame.info.height)*frame.info.width+Math.floor(x/780*frame.info.width))*frame.info.channels;
+    return Array.from(frame.data.subarray(i,i+3));
+  };
+  for(const point of [[300,140],[350,195],[450,235]]) {
+    const rgb=pixel(before,point[0],point[1]);
+    expect(Math.max(...rgb)-Math.min(...rgb)).toBeLessThanOrEqual(4);
+  }
+  const p=(await page.getByTestId('paint').boundingBox())!;
+  await page.mouse.move(p.x+35,p.y+p.height/2);await page.mouse.down();
+  await page.mouse.move(p.x+p.width-35,p.y+p.height/2,{steps:12});await page.mouse.up();
+  const after=await sharp(await fish.screenshot()).removeAlpha().raw().toBuffer({resolveWithObject:true});
+  const touched=pixel(after,350,195);
+  expect(Math.max(...touched)-Math.min(...touched)).toBeGreaterThan(10);
+  for(const point of [[300,140],[450,235]]) {
+    const initial=pixel(before,point[0],point[1]),untouched=pixel(after,point[0],point[1]);
+    expect(Math.max(...untouched.map((v,i)=>Math.abs(v-initial[i])))).toBeLessThanOrEqual(4);
+  }
 });
 test("07 指尖留下局部金纹，收笔保留真实局部笔迹",async({page})=>{
   await to(page,5);const ink=page.getByTestId('ink-path');await ink.press('Enter');

@@ -18,7 +18,7 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
   const brush = useRef<SVGSVGElement>(null);
   const complete = action.complete;
   useEffect(() => {
-    void decodeImages(["night-hand.webp", "lit-final.webp", "mother-theatre-tea.webp"].map(file=>asset("assets/lantern/"+file)));
+    void decodeImages(["unpainted.webp", "lit-unpainted.webp", "night-hand.webp", "lit-final.webp", "mother-theatre-tea.webp"].map(file=>asset("assets/lantern/"+file)));
   }, []);
   useEffect(() => {
     if (phase !== 3 || action.done) return;
@@ -131,15 +131,16 @@ export function Lantern({ onInfo, onMother }: { onInfo: () => void; onMother: ()
         >
           <svg className="fish-material" viewBox="0 0 780 390" preserveAspectRatio="none" role="img" aria-label={phase===0?"鳌鱼鱼灯竹篾骨架":phase===3?"暖光透过手绘鱼灯":"纸面贴合的鳌鱼鱼灯"}>
             <defs>
-              <mask id="fish-wrap"><rect width="780" height="390" fill="black"/><ellipse className={"paper-wrap " + (phase>0?"wrapped":"")} cx="390" cy="195" rx="440" ry="230" fill="white"/></mask>
-              <mask id="fish-paint"><rect width="780" height="390" fill="black"/>{brushMarks.map((d,i)=><path key={i} d={d} fill="none" stroke="white" strokeWidth="44" className={phase>=2?"brush-settled":""} strokeLinecap="round"/>)}</mask>
+              <mask id="fish-wrap" maskUnits="userSpaceOnUse" x="0" y="0" width="780" height="390" style={{maskType:"alpha"}}><ellipse className={"paper-wrap " + (phase>0?"wrapped":"")} cx="390" cy="195" rx="440" ry="230" fill="white"/></mask>
+              <mask id="fish-paint" maskUnits="userSpaceOnUse" x="0" y="0" width="780" height="390" style={{maskType:"alpha"}}>{brushMarks.map((d,i)=><path key={i} d={d} fill="none" stroke="white" strokeWidth="44" className={phase>=2?"brush-settled":""} strokeLinecap="round"/>)}</mask>
             </defs>
             <image href={asset("assets/lantern/skeleton-final.webp")} width="780" height="390" className="fish-bone" style={{opacity:phase===0?1:0}}/>
             <g mask="url(#fish-wrap)">
-              <image href={asset("assets/lantern/unlit.webp")} width="780" height="390" style={{filter:"grayscale(1)"}}/>
-              <image href={asset("assets/lantern/unlit.webp")} width="780" height="390" mask="url(#fish-paint)"/>
-              <image href={asset("assets/lantern/lit-final.webp")} width="780" height="390" className="fish-warm-light" style={{opacity:phase===3?1:0,filter:"grayscale(1) sepia(.25)"}}/>
-              <image href={asset("assets/lantern/lit-final.webp")} width="780" height="390" mask="url(#fish-paint)" className="fish-warm-light" style={{opacity:phase===3?1:0}}/>
+              {/* The untouched paper is truly neutral pixels, independent of Safari SVG CSS filters. */}
+              <image href={asset("assets/lantern/unpainted.webp")} width="780" height="390" data-testid="unpainted-paper"/>
+              {brushMarks.length>0&&<image href={asset("assets/lantern/unlit.webp")} width="780" height="390" mask="url(#fish-paint)" data-testid="painted-paper"/>}
+              <image href={asset("assets/lantern/lit-unpainted.webp")} width="780" height="390" className="fish-warm-light" style={{opacity:phase===3?1:0}}/>
+              {brushMarks.length>0&&<image href={asset("assets/lantern/lit-final.webp")} width="780" height="390" mask="url(#fish-paint)" className="fish-warm-light" style={{opacity:phase===3?1:0}}/>}
             </g>
           </svg>
               {phase === 1 && <svg ref={brush} className="paint-guide" data-testid="paint" viewBox="0 0 780 390" preserveAspectRatio="none" role="button" tabIndex={0} aria-label="轻划灯纸，为鱼灯添色"
